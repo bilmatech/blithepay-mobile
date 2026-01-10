@@ -7,7 +7,7 @@ import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/layouts/app_scaffold.dart';
 
 class PasswordChangedView extends StatelessWidget {
-  const PasswordChangedView({Key? key}) : super(key: key);
+  const PasswordChangedView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class PasswordChangedView extends StatelessWidget {
               Container(
                 width: 100,
                 height: 100,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.success,
                   shape: BoxShape.circle,
                 ),
@@ -33,16 +33,16 @@ class PasswordChangedView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              Text(AppStrings.passwordChanged, style: AppTextStyles.h2, textAlign: TextAlign.center),
+              const Text(AppStrings.passwordChanged, style: AppTextStyles.h2, textAlign: TextAlign.center),
               const SizedBox(height: 12),
-              Text(
+              const Text(
                 AppStrings.passwordChangedDesc,
                 style: AppTextStyles.bodyRegular,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
               PrimaryButton(
-                text: AppStrings.returnToLogIn,
+                label: AppStrings.returnToLogIn,
                 onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.login),
               ),
             ],

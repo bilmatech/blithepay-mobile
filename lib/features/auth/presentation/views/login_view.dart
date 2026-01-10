@@ -14,7 +14,7 @@ import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 
 class LoginView extends StatefulWidget {
-  const LoginView({Key? key}) : super(key: key);
+  const LoginView({super.key});
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -42,11 +42,11 @@ class _LoginViewState extends State<LoginView> {
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
-            LoginRequested(
-              email: _emailController.text,
-              password: _passwordController.text,
-            ),
-          );
+        LoginRequested(
+          email: _emailController.text,
+          password: _passwordController.text,
+        ),
+      );
     }
   }
 
@@ -81,10 +81,16 @@ class _LoginViewState extends State<LoginView> {
                         color: AppColors.surface,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Center(child: Icon(Icons.school, size: 80, color: AppColors.primary)),
+                      child: const Center(
+                        child: Icon(
+                          Icons.school,
+                          size: 80,
+                          color: AppColors.primary,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 32),
-                    Text(AppStrings.welcomeBack, style: AppTextStyles.h2),
+                    const Text(AppStrings.welcomeBack, style: AppTextStyles.h2),
                     const SizedBox(height: 24),
                     AppTextField(
                       label: AppStrings.email,
@@ -106,13 +112,16 @@ class _LoginViewState extends State<LoginView> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: SecondaryButton(
-                        text: AppStrings.forgotPassword,
-                        onPressed: () => Navigator.pushNamed(context, AppRoutes.forgotPassword),
+                        label: AppStrings.forgotPassword,
+                        onPressed: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.forgotPassword,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 32),
                     PrimaryButton(
-                      text: AppStrings.logIn,
+                      label: AppStrings.logIn,
                       onPressed: _handleLogin,
                       isLoading: state.status == AuthStatus.loading,
                       isEnabled: state.status != AuthStatus.loading,
@@ -120,9 +129,10 @@ class _LoginViewState extends State<LoginView> {
                     const SizedBox(height: 24),
                     Center(
                       child: GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, AppRoutes.signup),
+                        onTap: () =>
+                            Navigator.pushNamed(context, AppRoutes.signup),
                         child: RichText(
-                          text: TextSpan(
+                          text: const TextSpan(
                             text: "Don't have an account? ",
                             style: AppTextStyles.bodyRegular,
                             children: [

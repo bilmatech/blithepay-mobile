@@ -5,18 +5,28 @@ import '../../../../core/network/network_exceptions.dart';
 import '../models/auth_response_model.dart';
 
 abstract class AuthRepositoryInterface {
-  Future<AuthResponseModel> signup(String email, String password, String fullName, String phoneNumber);
+  Future<AuthResponseModel> signup(
+    String email,
+    String password,
+    String fullName,
+    String phoneNumber,
+  );
   Future<AuthResponseModel> login(String email, String password);
   Future<void> forgotPassword(String email);
   Future<void> verifyOtp(String email, String code);
-  Future<void> resetPassword(String email, String newPassword, String confirmPassword);
+  Future<void> resetPassword(
+    String email,
+    String newPassword,
+    String confirmPassword,
+  );
   Future<void> logout();
 }
 
 class AuthRepository implements AuthRepositoryInterface {
   final DioClient _dioClient;
 
-  AuthRepository({DioClient? dioClient}) : _dioClient = dioClient ?? DioClient();
+  AuthRepository({DioClient? dioClient})
+    : _dioClient = dioClient ?? DioClient();
 
   @override
   Future<AuthResponseModel> signup(
@@ -51,7 +61,7 @@ class AuthRepository implements AuthRepositoryInterface {
     try {
       // Mock response for demo
       await Future.delayed(const Duration(seconds: 1));
-      
+
       return AuthResponseModel(
         token: 'mock_token_${DateTime.now().millisecondsSinceEpoch}',
         user: UserModel(
@@ -93,7 +103,11 @@ class AuthRepository implements AuthRepositoryInterface {
   }
 
   @override
-  Future<void> resetPassword(String email, String newPassword, String confirmPassword) async {
+  Future<void> resetPassword(
+    String email,
+    String newPassword,
+    String confirmPassword,
+  ) async {
     try {
       await _dioClient.post(
         ApiEndpoints.resetPassword,
@@ -118,7 +132,8 @@ class AuthRepository implements AuthRepositoryInterface {
   }
 
   NetworkException _handleDioException(DioException e) {
-    if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.receiveTimeout) {
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout) {
       return const TimeoutException(message: 'Connection timeout');
     }
     if (e.type == DioExceptionType.connectionError) {
@@ -128,7 +143,9 @@ class AuthRepository implements AuthRepositoryInterface {
       return const UnauthorizedException(message: 'Unauthorized');
     }
     if (e.response?.statusCode == 400) {
-      return BadRequestException(message: e.response?.data['message'] ?? 'Bad request');
+      return BadRequestException(
+        message: e.response?.data['message'] ?? 'Bad request',
+      );
     }
     return ServerException(message: e.message ?? 'Unknown error');
   }

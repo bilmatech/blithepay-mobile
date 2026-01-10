@@ -51,20 +51,18 @@ class _SignupViewState extends State<SignupView> {
     if (_formKey.currentState!.validate()) {
       if (!_agreedToTerms) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please accept the Terms and Conditions'),
-          ),
+          const SnackBar(content: Text('Please accept the Terms and Conditions')),
         );
         return;
       }
       context.read<AuthBloc>().add(
-        SignupRequested(
-          email: _emailController.text,
-          password: _passwordController.text,
-          fullName: _nameController.text,
-          phoneNumber: _phoneController.text,
-        ),
-      );
+            SignupRequested(
+              email: _emailController.text,
+              password: _passwordController.text,
+              fullName: _nameController.text,
+              phoneNumber: _phoneController.text,
+            ),
+          );
     }
   }
 
@@ -137,8 +135,7 @@ class _SignupViewState extends State<SignupView> {
                       children: [
                         Checkbox(
                           value: _agreedToTerms,
-                          onChanged: (value) =>
-                              setState(() => _agreedToTerms = value ?? false),
+                          onChanged: (value) => setState(() => _agreedToTerms = value ?? false),
                         ),
                         const Expanded(
                           child: Text(
@@ -150,7 +147,7 @@ class _SignupViewState extends State<SignupView> {
                     ),
                     const SizedBox(height: 32),
                     PrimaryButton(
-                      text: AppStrings.createAccount,
+                      label: AppStrings.createAccount,
                       onPressed: _handleSignup,
                       isLoading: state.status == AuthStatus.loading,
                       isEnabled: state.status != AuthStatus.loading,

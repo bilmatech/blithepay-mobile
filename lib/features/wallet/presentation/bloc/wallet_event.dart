@@ -1,0 +1,29 @@
+import 'package:equatable/equatable.dart';
+
+abstract class WalletEvent extends Equatable {
+  const WalletEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class FetchWalletDataEvent extends WalletEvent {
+  const FetchWalletDataEvent();
+}
+
+class GetTransactionsEvent extends WalletEvent {
+  const GetTransactionsEvent();
+}
+
+class FundWalletEvent extends WalletEvent {
+  final String amount;
+  final String paymentMethod;
+
+  const FundWalletEvent({
+    required this.amount,
+    required this.paymentMethod,
+  });
+
+  @override
+  List<Object?> get props => [amount, paymentMethod];
+}

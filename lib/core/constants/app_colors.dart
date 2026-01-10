@@ -13,6 +13,8 @@ class AppColors {
   static const Color surfaceDark = Color(0xFF1F2937);
   static const Color border = Color(0xFFE5E7EB);
   static const Color borderDark = Color(0xFF374151);
+  static const Color borderColor = Color(0xFFE5E7EB);
+  static const Color lightBackground = Color(0xFFF3F4F6);
   
   // Semantic
   static const Color success = Color(0xFF10B981);
@@ -28,4 +30,8 @@ class AppColors {
   // Disabled
   static const Color disabled = Color(0xFFD1D5DB);
   static const Color disabledText = Color(0xFF9CA3AF);
+  
+  // Shimmer Colors
+  static const Color shimmerBase = Color(0xFFE0E0E0);
+  static const Color shimmerHighlight = Color(0xFFF5F5F5);
 }

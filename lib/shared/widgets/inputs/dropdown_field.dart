@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_text_styles.dart';
+import '../../../core/constants/app_text_styles.dart';
 
 class DropdownField<T> extends StatelessWidget {
   final String label;
@@ -27,16 +27,24 @@ class DropdownField<T> extends StatelessWidget {
         Text(label, style: AppTextStyles.bodyLarge),
         const SizedBox(height: 8),
         DropdownButtonFormField<T>(
-          value: value,
+          initialValue: value,
           items: items
-              .map((item) => DropdownMenuItem(
-                    value: item,
-                    child: Text(itemLabel(item), style: AppTextStyles.bodyRegular),
-                  ))
+              .map(
+                (item) => DropdownMenuItem(
+                  value: item,
+                  child: Text(
+                    itemLabel(item),
+                    style: AppTextStyles.bodyRegular,
+                  ),
+                ),
+              )
               .toList(),
           onChanged: enabled ? onChanged : null,
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),

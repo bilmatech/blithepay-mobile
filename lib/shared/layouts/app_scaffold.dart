@@ -11,7 +11,7 @@ class AppScaffold extends StatelessWidget {
   final FloatingActionButtonLocation? floatingActionButtonLocation;
 
   const AppScaffold({
-    Key? key,
+    super.key,
     this.title,
     required this.body,
     this.appBar,
@@ -19,7 +19,7 @@ class AppScaffold extends StatelessWidget {
     this.onBackPressed,
     this.floatingActionButton,
     this.floatingActionButtonLocation,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

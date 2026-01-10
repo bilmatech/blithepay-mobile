@@ -14,7 +14,7 @@ import '../bloc/auth_state.dart';
 class VerifyOtpView extends StatefulWidget {
   final String email;
 
-  const VerifyOtpView({Key? key, required this.email}) : super(key: key);
+  const VerifyOtpView({super.key, required this.email});
 
   @override
   State<VerifyOtpView> createState() => _VerifyOtpViewState();
@@ -46,8 +46,8 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
     final code = _otpControllers.map((c) => c.text).join();
     if (code.length == 4) {
       context.read<AuthBloc>().add(
-            VerifyOtpRequested(email: widget.email, code: code),
-          );
+        VerifyOtpRequested(email: widget.email, code: code),
+      );
     }
   }
 
@@ -72,7 +72,9 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
           );
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage ?? 'Verification failed')),
+            SnackBar(
+              content: Text(state.errorMessage ?? 'Verification failed'),
+            ),
           );
         }
       },
@@ -86,7 +88,10 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 40),
-                  Text(AppStrings.enterConfirmationCode, style: AppTextStyles.h3),
+                  const Text(
+                    AppStrings.enterConfirmationCode,
+                    style: AppTextStyles.h3,
+                  ),
                   const SizedBox(height: 12),
                   RichText(
                     textAlign: TextAlign.center,
@@ -96,7 +101,9 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                       children: [
                         TextSpan(
                           text: widget.email,
-                          style: AppTextStyles.bodyRegular.copyWith(fontWeight: FontWeight.bold),
+                          style: AppTextStyles.bodyRegular.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
@@ -117,14 +124,20 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
                           ],
-                          onChanged: (value) => _onOtpFieldChanged(index, value),
+                          onChanged: (value) =>
+                              _onOtpFieldChanged(index, value),
                           style: AppTextStyles.h3,
                           decoration: InputDecoration(
                             counter: const Offstage(),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                              borderSide: const BorderSide(
+                                color: AppColors.primary,
+                                width: 2,
+                              ),
                             ),
                           ),
                         ),
@@ -135,12 +148,15 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                   Center(
                     child: GestureDetector(
                       onTap: () {},
-                      child: Text(AppStrings.resendCode, style: AppTextStyles.link),
+                      child: const Text(
+                        AppStrings.resendCode,
+                        style: AppTextStyles.link,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 48),
                   PrimaryButton(
-                    text: AppStrings.verify,
+                    label: AppStrings.verify,
                     onPressed: _handleVerifyOtp,
                     isLoading: state.status == AuthStatus.loading,
                     isEnabled: state.status != AuthStatus.loading,

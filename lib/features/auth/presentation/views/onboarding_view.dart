@@ -61,8 +61,9 @@ class _OnboardingViewState extends State<OnboardingView> {
             top: 48,
             right: 24,
             child: GestureDetector(
-              onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.login),
-              child: Text(AppStrings.skip, style: AppTextStyles.link),
+              onTap: () =>
+                  Navigator.pushReplacementNamed(context, AppRoutes.login),
+              child: const Text(AppStrings.skip, style: AppTextStyles.link),
             ),
           ),
         ],
@@ -98,24 +99,39 @@ class _OnboardingViewState extends State<OnboardingView> {
                     width: _currentIndex == index ? 12 : 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: _currentIndex == index ? AppColors.primary : AppColors.border,
+                      color: _currentIndex == index
+                          ? AppColors.primary
+                          : AppColors.border,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
                 ),
               ),
               const SizedBox(height: 24),
-              Text(page.title, style: AppTextStyles.h2, textAlign: TextAlign.center),
+              Text(
+                page.title,
+                style: AppTextStyles.h2,
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 12),
-              Text(page.description, style: AppTextStyles.bodyRegular, textAlign: TextAlign.center),
+              Text(
+                page.description,
+                style: AppTextStyles.bodyRegular,
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 40),
               PrimaryButton(
-                text: _currentIndex == _pages.length - 1 ? AppStrings.next : AppStrings.next,
+                label: _currentIndex == _pages.length - 1
+                    ? AppStrings.next
+                    : AppStrings.next,
                 onPressed: () {
                   if (_currentIndex == _pages.length - 1) {
                     Navigator.pushReplacementNamed(context, AppRoutes.login);
                   } else {
-                    _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                    _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
                   }
                 },
               ),
@@ -132,5 +148,9 @@ class OnboardingPage {
   final String title;
   final String description;
 
-  OnboardingPage({required this.image, required this.title, required this.description});
+  OnboardingPage({
+    required this.image,
+    required this.title,
+    required this.description,
+  });
 }

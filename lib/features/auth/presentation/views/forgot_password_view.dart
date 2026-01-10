@@ -13,7 +13,7 @@ import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 
 class ForgotPasswordView extends StatefulWidget {
-  const ForgotPasswordView({Key? key}) : super(key: key);
+  const ForgotPasswordView({super.key});
 
   @override
   State<ForgotPasswordView> createState() => _ForgotPasswordViewState();
@@ -38,8 +38,8 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   void _handleForgotPassword() {
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
-            ForgotPasswordRequested(email: _emailController.text),
-          );
+        ForgotPasswordRequested(email: _emailController.text),
+      );
     }
   }
 
@@ -55,7 +55,9 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
           );
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage ?? 'Failed to send reset code')),
+            SnackBar(
+              content: Text(state.errorMessage ?? 'Failed to send reset code'),
+            ),
           );
         }
       },
@@ -71,12 +73,9 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 40),
-                    Text(
-                      AppStrings.forgotPassword,
-                      style: AppTextStyles.h2,
-                    ),
+                    const Text(AppStrings.forgotPassword, style: AppTextStyles.h2),
                     const SizedBox(height: 8),
-                    Text(
+                    const Text(
                       'Follow these steps to change your account password.',
                       style: AppTextStyles.bodyRegular,
                     ),
@@ -90,7 +89,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                     ),
                     const SizedBox(height: 48),
                     PrimaryButton(
-                      text: AppStrings.changePassword,
+                      label: AppStrings.changePassword,
                       onPressed: _handleForgotPassword,
                       isLoading: state.status == AuthStatus.loading,
                       isEnabled: state.status != AuthStatus.loading,
@@ -98,7 +97,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                     const SizedBox(height: 16),
                     Center(
                       child: SecondaryButton(
-                        text: 'Back To Log In',
+                        label: 'Back To Log In',
                         onPressed: () => Navigator.pop(context),
                       ),
                     ),

@@ -14,7 +14,7 @@ import '../bloc/auth_state.dart';
 class ResetPasswordView extends StatefulWidget {
   final String email;
 
-  const ResetPasswordView({Key? key, required this.email}) : super(key: key);
+  const ResetPasswordView({super.key, required this.email});
 
   @override
   State<ResetPasswordView> createState() => _ResetPasswordViewState();
@@ -75,7 +75,7 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 40),
-                    Text(AppStrings.resetPassword, style: AppTextStyles.h2),
+                    const Text(AppStrings.resetPassword, style: AppTextStyles.h2),
                     const SizedBox(height: 24),
                     AppTextField(
                       label: AppStrings.newPassword,
@@ -99,7 +99,7 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                     ),
                     const SizedBox(height: 32),
                     PrimaryButton(
-                      text: AppStrings.changePassword,
+                      label: AppStrings.changePassword,
                       onPressed: _handleResetPassword,
                       isLoading: state.status == AuthStatus.loading,
                       isEnabled: state.status != AuthStatus.loading,

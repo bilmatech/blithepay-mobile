@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_text_styles.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_text_styles.dart';
 
 class AppTextField extends StatefulWidget {
   final String label;
@@ -18,7 +18,7 @@ class AppTextField extends StatefulWidget {
   final Widget? suffixIcon;
 
   const AppTextField({
-    Key? key,
+    super.key,
     required this.label,
     this.hint,
     this.validator,
@@ -32,7 +32,7 @@ class AppTextField extends StatefulWidget {
     this.onChanged,
     this.textInputAction = TextInputAction.next,
     this.suffixIcon,
-  }) : super(key: key);
+  });
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -67,12 +67,16 @@ class _AppTextFieldState extends State<AppTextField> {
           style: AppTextStyles.bodyRegular,
           decoration: InputDecoration(
             hintText: widget.hint,
-            hintStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+            hintStyle: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textTertiary,
+            ),
             suffixIcon: widget.showPasswordToggle
                 ? GestureDetector(
                     onTap: () => setState(() => _obscureText = !_obscureText),
                     child: Icon(
-                      _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      _obscureText
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
                       color: AppColors.textSecondary,
                     ),
                   )

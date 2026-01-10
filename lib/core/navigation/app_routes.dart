@@ -1,4 +1,6 @@
 abstract class AppRoutes {
+  static const String home = '/home';
+  
   static const String splash = '/';
   static const String onboarding = '/onboarding';
   static const String login = '/login';
@@ -6,8 +8,29 @@ abstract class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String verifyOtp = '/verify-otp';
   static const String resetPassword = '/reset-password';
-  static const String home = '/home';
+  static const String passwordChanged = '/password-changed';
+  static const String confirmSchool = '/confirm-school';
+  static const String dashboard = '/dashboard';
+  static const String linkStudents = '/link-students';
+  static const String addSchool = '/add-school';
+  static const String changePhoneNumber = '/change-phone';
+  static const String guardianVerification = '/guardian-verification';
   static const String students = '/students';
   static const String fees = '/fees';
   static const String payments = '/payments';
+  static const String notifications = '/notifications';
+  static const String fundWallet = '/fund-wallet';
+  static const String linkedStudents = '/linked-students';
+  static const String transactions = '/transactions';
+  static const String profile = '/profile';
+  static const String walletManagement = '/wallet-management';
+  static const String payFees = '/pay-fees';
+  static const String helpSupport = '/help-support';
+  static const String transactionDetail = '/transaction-detail';
+  static const String editSchools = '/edit-schools';
+  static const String editSchoolDetail = '/edit-school/:id';
+  static const String searchSchool = '/search-school';
+  static const String requestPending = '/request-pending';
+  static const String requestFailed = '/request-failed';
+  static const String success = '/success';
 }
