@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_text_styles.dart';
@@ -75,20 +76,7 @@ class _LoginViewState extends State<LoginView> {
                   children: [
                     const SizedBox(height: 40),
                     // Header illustration
-                    Container(
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.school,
-                          size: 80,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
+                    Image.asset('assets/images/school_bag.png'),
                     const SizedBox(height: 32),
                     const Text(AppStrings.welcomeBack, style: AppTextStyles.h2),
                     const SizedBox(height: 24),
@@ -129,8 +117,7 @@ class _LoginViewState extends State<LoginView> {
                     const SizedBox(height: 24),
                     Center(
                       child: GestureDetector(
-                        onTap: () =>
-                            Navigator.pushNamed(context, AppRoutes.signup),
+                        onTap: () => context.push(AppRoutes.signup),
                         child: RichText(
                           text: const TextSpan(
                             text: "Don't have an account? ",

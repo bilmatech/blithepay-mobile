@@ -1,5 +1,5 @@
-import 'package:blithepay_mobile/core/constants/app_colors.dart';
-import 'package:blithepay_mobile/shared/widgets/loaders/shimmer_widget.dart';
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/shared/widgets/loaders/shimmer_widget.dart';
 import 'package:flutter/material.dart';
 
 class WalletManagementView extends StatefulWidget {

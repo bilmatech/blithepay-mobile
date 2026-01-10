@@ -1,7 +1,7 @@
-import 'package:blithepay_mobile/core/constants/app_colors.dart';
-import 'package:blithepay_mobile/shared/widgets/buttons/primary_button.dart';
-import 'package:blithepay_mobile/shared/widgets/inputs/app_text_field.dart';
-import 'package:blithepay_mobile/shared/widgets/inputs/dropdown_field.dart';
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
+import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
+import 'package:blithepay/shared/widgets/inputs/dropdown_field.dart';
 import 'package:flutter/material.dart';
 
 class PayFeesView extends StatefulWidget {

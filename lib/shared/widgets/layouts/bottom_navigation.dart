@@ -1,5 +1,5 @@
-import 'package:blithepay_mobile/core/constants/app_colors.dart';
-import 'package:blithepay_mobile/core/navigation/app_routes.dart';
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

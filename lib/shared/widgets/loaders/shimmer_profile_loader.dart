@@ -1,4 +1,4 @@
-import 'package:blithepay_mobile/core/constants/app_colors.dart';
+import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -22,15 +22,9 @@ class ShimmerProfileLoader extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Container(
-            height: 20,
-            color: Colors.white,
-          ),
+          Container(height: 20, color: Colors.white),
           const SizedBox(height: 8),
-          Container(
-            height: 20,
-            color: Colors.white,
-          ),
+          Container(height: 20, color: Colors.white),
           const SizedBox(height: 24),
           ...List.generate(
             3,

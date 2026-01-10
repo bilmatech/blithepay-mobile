@@ -1,4 +1,4 @@
-import 'package:blithepay_mobile/core/constants/app_colors.dart';
+import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class TransactionDetailView extends StatelessWidget {
@@ -17,10 +17,7 @@ class TransactionDetailView extends StatelessWidget {
         title: const Text('Transactions'),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
         ],
       ),
       body: SingleChildScrollView(
@@ -41,7 +38,10 @@ class TransactionDetailView extends StatelessWidget {
               const SizedBox(height: 16),
               const Text(
                 'Successful',
-                style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: AppColors.success,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -102,12 +102,12 @@ class TransactionDetailView extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+            ),
           ),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),
     );

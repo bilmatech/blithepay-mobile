@@ -6,7 +6,6 @@ import '../../features/auth/presentation/views/verify_otp_view.dart';
 import '../../features/auth/presentation/views/reset_password_view.dart';
 import '../../features/auth/presentation/views/password_changed_view.dart';
 import '../../features/auth/presentation/views/onboarding_view.dart';
-import '../../features/splash/presentation/views/splash_view.dart';
 import '../../features/dashboard/presentation/views/dashboard_view.dart';
 import '../../features/schools/presentation/views/confirm_school_view.dart';
 import '../../features/schools/presentation/views/search_school_view.dart';
@@ -33,24 +32,14 @@ import 'app_routes.dart';
 class AppRouterConfig {
   static GoRouter createRouter() {
     return GoRouter(
-      initialLocation: AppRoutes.splash,
+      initialLocation: AppRoutes.onboarding,
       routes: [
-        GoRoute(
-          path: AppRoutes.splash,
-          builder: (_, __) => const SplashView(),
-        ),
         GoRoute(
           path: AppRoutes.onboarding,
           builder: (_, __) => const OnboardingView(),
         ),
-        GoRoute(
-          path: AppRoutes.login,
-          builder: (_, __) => const LoginView(),
-        ),
-        GoRoute(
-          path: AppRoutes.signup,
-          builder: (_, __) => const SignupView(),
-        ),
+        GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginView()),
+        GoRoute(path: AppRoutes.signup, builder: (_, __) => const SignupView()),
         GoRoute(
           path: AppRoutes.forgotPassword,
           builder: (_, __) => const ForgotPasswordView(),

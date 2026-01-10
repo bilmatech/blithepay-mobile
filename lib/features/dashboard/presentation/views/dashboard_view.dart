@@ -1,5 +1,5 @@
-import 'package:blithepay_mobile/shared/widgets/app_drawer.dart';
-import 'package:blithepay_mobile/shared/widgets/loaders/shimmer_dashboard_loader.dart';
+import 'package:blithepay/shared/widgets/app_drawer.dart';
+import 'package:blithepay/shared/widgets/loaders/shimmer_dashboard_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';

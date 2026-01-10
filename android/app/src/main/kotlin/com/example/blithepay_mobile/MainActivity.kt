@@ -1,4 +1,4 @@
-package com.example.blithepay_mobile
+package com.example.blithepay
 
 import io.flutter.embedding.android.FlutterActivity
 

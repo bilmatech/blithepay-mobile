@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/navigation/app_routes.dart';
@@ -48,10 +49,9 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.otpSent) {
-          Navigator.pushNamed(
-            context,
+          context.pushNamed(
             AppRoutes.verifyOtp,
-            arguments: _emailController.text,
+            extra: _emailController.text,
           );
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -73,7 +73,10 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 40),
-                    const Text(AppStrings.forgotPassword, style: AppTextStyles.h2),
+                    const Text(
+                      AppStrings.forgotPassword,
+                      style: AppTextStyles.h2,
+                    ),
                     const SizedBox(height: 8),
                     const Text(
                       'Follow these steps to change your account password.',
