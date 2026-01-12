@@ -97,7 +97,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
-      await _authRepository.logout();
+     // await _authRepository.logout();
       emit(const AuthState.initial());
     } catch (e) {
       emit(AuthState.error(e.toString()));

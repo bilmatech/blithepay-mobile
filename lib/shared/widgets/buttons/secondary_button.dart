@@ -23,20 +23,23 @@ class SecondaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: width ?? double.infinity,
+      width: width,
       child: TextButton.icon(
         onPressed: isEnabled ? onPressed : null,
         style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
           foregroundColor: textColor ?? AppColors.primary,
           disabledForegroundColor: AppColors.disabled,
         ),
-        icon: prefixIcon != null 
-          ? Icon(prefixIcon, color: textColor ?? AppColors.primary) 
-          : const SizedBox.shrink(),
+        icon: prefixIcon != null
+            ? Icon(prefixIcon, color: textColor ?? AppColors.primary)
+            : const SizedBox.shrink(),
         label: Text(
           label,
           style: AppTextStyles.link.copyWith(
-            color: isEnabled ? (textColor ?? AppColors.primary) : AppColors.disabled,
+            color: isEnabled
+                ? (textColor ?? AppColors.primary)
+                : AppColors.disabled,
           ),
         ),
       ),

@@ -97,7 +97,7 @@ class _LoginViewState extends State<LoginView> {
                     ),
                     const SizedBox(height: 12),
                     Align(
-                      alignment: Alignment.centerLeft,
+                      alignment: Alignment.topRight,
                       child: SecondaryButton(
                         label: AppStrings.forgotPassword,
                         onPressed: () => context.push(AppRoutes.forgotPassword),

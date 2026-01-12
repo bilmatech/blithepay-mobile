@@ -14,7 +14,7 @@ class AppStrings {
   static const String logIn = 'Log In';
   static const String signUp = 'Sign Up';
   static const String createAccount = 'Create Account';
-  static const String forgotPassword = 'Forgot password';
+  static const String forgotPassword = 'Forgot password?';
   static const String resetPassword = 'Password Set-Up';
   static const String changePassword = 'Change Password';
   static const String returnToLogIn = 'Return To Log In';
