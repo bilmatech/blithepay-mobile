@@ -21,9 +21,7 @@ class AppDrawer extends StatelessWidget {
       child: Column(
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-            ),
+            decoration: const BoxDecoration(color: AppColors.primary),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -40,9 +38,7 @@ class AppDrawer extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   userName,
-                  style: AppTextStyles.heading2.copyWith(
-                    color: AppColors.white,
-                  ),
+                  style: AppTextStyles.h4.copyWith(color: AppColors.white),
                 ),
                 const SizedBox(height: 4),
                 GestureDetector(
@@ -167,9 +163,7 @@ class AppDrawer extends StatelessWidget {
             ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             onPressed: () {
               context.pop();
               context.go('/login');

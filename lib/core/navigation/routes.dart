@@ -47,10 +47,12 @@ class AppRouterConfig {
         GoRoute(
           path: AppRoutes.verifyOtp,
           builder: (context, state) {
-            final email = state.extra as String? ?? '';
-            return VerifyOtpView(email: email);
+            final args = state.extra as Map<String, dynamic>;
+
+            return VerifyOtpView(email: args['email'], flow: args['flow']);
           },
         ),
+
         GoRoute(
           path: AppRoutes.resetPassword,
           builder: (context, state) {

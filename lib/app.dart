@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'core/navigation/routes.dart';
 import 'core/theme/light_theme.dart';
 import 'core/theme/dark_theme.dart';
@@ -18,6 +19,8 @@ import 'features/notifications/data/repositories/notifications_repository.dart';
 import 'features/notifications/presentation/bloc/notifications_bloc.dart';
 import 'features/profile/presentation/bloc/profile_bloc.dart';
 
+final GoRouter appRouter = AppRouterConfig.createRouter();
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -26,21 +29,11 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => ThemeCubit()),
-        BlocProvider(
-          create: (_) => AuthBloc(authRepository: AuthRepository()),
-        ),
-        BlocProvider(
-          create: (_) => DashboardBloc(),
-        ),
-        BlocProvider(
-          create: (_) => FeesBloc(),
-        ),
-        BlocProvider(
-          create: (_) => WalletBloc(),
-        ),
-        BlocProvider(
-          create: (_) => SupportBloc(),
-        ),
+        BlocProvider(create: (_) => AuthBloc(authRepository: AuthRepository())),
+        BlocProvider(create: (_) => DashboardBloc()),
+        BlocProvider(create: (_) => FeesBloc()),
+        BlocProvider(create: (_) => WalletBloc()),
+        BlocProvider(create: (_) => SupportBloc()),
         BlocProvider(
           create: (_) => StudentsBloc(repository: StudentsRepositoryImpl()),
         ),
@@ -48,11 +41,10 @@ class MyApp extends StatelessWidget {
           create: (_) => SchoolsBloc(repository: SchoolsRepositoryImpl()),
         ),
         BlocProvider(
-          create: (_) => NotificationsBloc(repository: NotificationsRepositoryImpl()),
+          create: (_) =>
+              NotificationsBloc(repository: NotificationsRepositoryImpl()),
         ),
-        BlocProvider(
-          create: (_) => ProfileBloc(),
-        ),
+        BlocProvider(create: (_) => ProfileBloc()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, themeState) {
@@ -60,8 +52,10 @@ class MyApp extends StatelessWidget {
             title: 'BÜTHE',
             theme: buildLightTheme(),
             darkTheme: buildDarkTheme(),
-            themeMode: themeState.brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
-            routerConfig: AppRouterConfig.createRouter(),
+            themeMode: themeState.brightness == Brightness.dark
+                ? ThemeMode.dark
+                : ThemeMode.light,
+            routerConfig: appRouter,
             debugShowCheckedModeBanner: false,
           );
         },

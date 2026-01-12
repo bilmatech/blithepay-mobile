@@ -46,9 +46,13 @@ class ForgotPasswordRequested extends AuthEvent {
 class VerifyOtpRequested extends AuthEvent {
   final String email;
   final String code;
+  final OtpFlow flow;
 
-  const VerifyOtpRequested({required this.email, required this.code});
-
+  const VerifyOtpRequested({
+    required this.email,
+    required this.code,
+    required this.flow,
+  });
   @override
   List<Object?> get props => [email, code];
 }
@@ -71,3 +75,5 @@ class ResetPasswordRequested extends AuthEvent {
 class LogoutRequested extends AuthEvent {
   const LogoutRequested();
 }
+
+enum OtpFlow { signup, forgotPassword }

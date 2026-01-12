@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/navigation/app_routes.dart';
@@ -51,18 +52,20 @@ class _SignupViewState extends State<SignupView> {
     if (_formKey.currentState!.validate()) {
       if (!_agreedToTerms) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please accept the Terms and Conditions')),
+          const SnackBar(
+            content: Text('Please accept the Terms and Conditions'),
+          ),
         );
         return;
       }
       context.read<AuthBloc>().add(
-            SignupRequested(
-              email: _emailController.text,
-              password: _passwordController.text,
-              fullName: _nameController.text,
-              phoneNumber: _phoneController.text,
-            ),
-          );
+        SignupRequested(
+          email: _emailController.text,
+          password: _passwordController.text,
+          fullName: _nameController.text,
+          phoneNumber: _phoneController.text,
+        ),
+      );
     }
   }
 
@@ -71,7 +74,10 @@ class _SignupViewState extends State<SignupView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.authenticated) {
-          Navigator.pushReplacementNamed(context, AppRoutes.home);
+          context.push(
+            AppRoutes.verifyOtp,
+            extra: {'email': _emailController.text, 'flow': OtpFlow.signup},
+          );
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.errorMessage ?? 'Signup failed')),
@@ -135,7 +141,8 @@ class _SignupViewState extends State<SignupView> {
                       children: [
                         Checkbox(
                           value: _agreedToTerms,
-                          onChanged: (value) => setState(() => _agreedToTerms = value ?? false),
+                          onChanged: (value) =>
+                              setState(() => _agreedToTerms = value ?? false),
                         ),
                         const Expanded(
                           child: Text(

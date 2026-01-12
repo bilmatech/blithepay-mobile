@@ -58,3 +58,4 @@ enum AuthStatus {
   passwordReset,
   error,
 }
+

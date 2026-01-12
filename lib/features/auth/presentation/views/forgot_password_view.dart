@@ -49,9 +49,12 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.otpSent) {
-          context.pushNamed(
+          context.push(
             AppRoutes.verifyOtp,
-            extra: _emailController.text,
+            extra: {
+              'email': _emailController.text,
+              'flow': OtpFlow.forgotPassword,
+            },
           );
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -62,49 +65,50 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
         }
       },
       child: AppScaffold(
-        title: AppStrings.forgotPassword,
+        showBackButton: false,
         body: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 40),
-                    const Text(
-                      AppStrings.forgotPassword,
-                      style: AppTextStyles.h2,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Follow these steps to change your account password.',
-                      style: AppTextStyles.bodyRegular,
-                    ),
-                    const SizedBox(height: 32),
-                    AppTextField(
-                      label: AppStrings.email,
-                      hint: AppStrings.enterEmail,
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: Validators.validateEmail,
-                    ),
-                    const SizedBox(height: 48),
-                    PrimaryButton(
-                      label: AppStrings.changePassword,
-                      onPressed: _handleForgotPassword,
-                      isLoading: state.status == AuthStatus.loading,
-                      isEnabled: state.status != AuthStatus.loading,
-                    ),
-                    const SizedBox(height: 16),
-                    Center(
-                      child: SecondaryButton(
-                        label: 'Back To Log In',
-                        onPressed: () => Navigator.pop(context),
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 40),
+                      const Text(
+                        AppStrings.forgotPassword,
+                        style: AppTextStyles.h2,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Follow these steps to change your account password.',
+                        style: AppTextStyles.bodyRegular,
+                      ),
+                      const SizedBox(height: 32),
+                      AppTextField(
+                        label: AppStrings.email,
+                        hint: AppStrings.enterEmail,
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: Validators.validateEmail,
+                      ),
+                      const SizedBox(height: 48),
+                      PrimaryButton(
+                        label: AppStrings.changePassword,
+                        onPressed: _handleForgotPassword,
+                        isLoading: state.status == AuthStatus.loading,
+                        isEnabled: state.status != AuthStatus.loading,
+                      ),
+                      const SizedBox(height: 16),
+                      Center(
+                        child: SecondaryButton(
+                          label: 'Back To Log In',
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

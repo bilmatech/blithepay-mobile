@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_text_styles.dart';
@@ -33,7 +34,11 @@ class PasswordChangedView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              const Text(AppStrings.passwordChanged, style: AppTextStyles.h2, textAlign: TextAlign.center),
+              const Text(
+                AppStrings.passwordChanged,
+                style: AppTextStyles.h2,
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 12),
               const Text(
                 AppStrings.passwordChangedDesc,
@@ -43,7 +48,7 @@ class PasswordChangedView extends StatelessWidget {
               const SizedBox(height: 48),
               PrimaryButton(
                 label: AppStrings.returnToLogIn,
-                onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.login),
+                onPressed: () => context.go(AppRoutes.login),
               ),
             ],
           ),

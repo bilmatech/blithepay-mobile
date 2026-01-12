@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/navigation/app_routes.dart';
@@ -56,7 +55,7 @@ class _LoginViewState extends State<LoginView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.authenticated) {
-          Navigator.pushReplacementNamed(context, AppRoutes.home);
+          context.go(AppRoutes.home);
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.errorMessage ?? 'Login failed')),
@@ -98,13 +97,10 @@ class _LoginViewState extends State<LoginView> {
                     ),
                     const SizedBox(height: 12),
                     Align(
-                      alignment: Alignment.centerRight,
+                      alignment: Alignment.centerLeft,
                       child: SecondaryButton(
                         label: AppStrings.forgotPassword,
-                        onPressed: () => Navigator.pushNamed(
-                          context,
-                          AppRoutes.forgotPassword,
-                        ),
+                        onPressed: () => context.push(AppRoutes.forgotPassword),
                       ),
                     ),
                     const SizedBox(height: 32),
