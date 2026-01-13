@@ -54,101 +54,103 @@ class _OnboardingViewState extends State<OnboardingView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          const SizedBox(height: 40),
-          // Only the image changes here
-          Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: (index) => setState(() => _currentIndex = index),
-              itemCount: _pages.length,
-              itemBuilder: (context, index) {
-                final page = _pages[index];
-                return Stack(
-                  children: [
-                    // Image
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(12),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Only the image changes here
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                onPageChanged: (index) => setState(() => _currentIndex = index),
+                itemCount: _pages.length,
+                itemBuilder: (context, index) {
+                  final page = _pages[index];
+                  return Stack(
+                    children: [
+                      // Image
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Image.asset(
+                          page.image,
+                          fit: BoxFit.contain,
+                          width: double.infinity,
+                        ),
                       ),
-                      child: Image.asset(
-                        page.image,
-                        fit: BoxFit.contain,
-                        width: double.infinity,
-                      ),
-                    ),
 
-                    // Top-left clickable area
-                    Positioned(
-                      top: 40,
-                      right: 40,
-                      child: GestureDetector(
-                        onTap: _goToLogin,
-                        child: Container(
-                          width: 80,
-                          height: 40,
-                          color: Colors.transparent, // invisible tappable area
+                      // Top-left clickable area
+                      Positioned(
+                        top: 40,
+                        right: 40,
+                        child: GestureDetector(
+                          onTap: _goToLogin,
+                          child: Container(
+                            width: 80,
+                            height: 40,
+                            color:
+                                Colors.transparent, // invisible tappable area
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+
+            // Fixed section: dots, title, description, button
+            Container(
+              padding: const EdgeInsets.only(right: 24, left: 24, bottom: 24),
+              child: Column(
+                children: [
+                  // Dots indicator
+                  Row(
+                    children: List.generate(
+                      _pages.length,
+                      (index) => Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: _currentIndex == index ? 12 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: _currentIndex == index
+                              ? AppColors.primary
+                              : AppColors.border,
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                     ),
-                  ],
-                );
-              },
-            ),
-          ),
-
-          // Fixed section: dots, title, description, button
-          Container(
-            padding: const EdgeInsets.only(right: 24, left: 24, bottom: 24),
-            child: Column(
-              children: [
-                // Dots indicator
-                Row(
-                  children: List.generate(
-                    _pages.length,
-                    (index) => Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: _currentIndex == index ? 12 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: _currentIndex == index
-                            ? AppColors.primary
-                            : AppColors.border,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                Text(_pages[_currentIndex].title, style: AppTextStyles.h2),
-                const SizedBox(height: 12),
-                Text(
-                  _pages[_currentIndex].description,
-                  style: AppTextStyles.bodyRegular,
-                ),
-                const SizedBox(height: 40),
-                PrimaryButton(
-                  label: _currentIndex == _pages.length - 1
-                      ? AppStrings.next
-                      : AppStrings.next,
-                  onPressed: () {
-                    if (_currentIndex == _pages.length - 1) {
-                      _goToLogin();
-                    } else {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    }
-                  },
-                ),
-              ],
+                  const SizedBox(height: 24),
+                  Text(_pages[_currentIndex].title, style: AppTextStyles.h2),
+                  const SizedBox(height: 12),
+                  Text(
+                    _pages[_currentIndex].description,
+                    style: AppTextStyles.bodyRegular,
+                  ),
+                  const SizedBox(height: 40),
+                  PrimaryButton(
+                    label: _currentIndex == _pages.length - 1
+                        ? AppStrings.next
+                        : AppStrings.next,
+                    onPressed: () {
+                      if (_currentIndex == _pages.length - 1) {
+                        _goToLogin();
+                      } else {
+                        _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

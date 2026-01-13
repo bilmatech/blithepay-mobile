@@ -88,78 +88,80 @@ class _SignupViewState extends State<SignupView> {
         title: AppStrings.createAccount,
         body: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppTextField(
-                      label: AppStrings.fullName,
-                      controller: _nameController,
-                      validator: Validators.validateFullName,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      label: AppStrings.email,
-                      hint: AppStrings.enterEmail,
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: Validators.validateEmail,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      label: AppStrings.phoneNumber,
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      validator: Validators.validatePhoneNumber,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      label: AppStrings.password,
-                      hint: AppStrings.enterPassword,
-                      controller: _passwordController,
-                      obscureText: true,
-                      showPasswordToggle: true,
-                      validator: Validators.validatePassword,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      label: AppStrings.confirmPassword,
-                      hint: AppStrings.enterPassword,
-                      controller: _confirmPasswordController,
-                      obscureText: true,
-                      showPasswordToggle: true,
-                      validator: (value) => Validators.validatePasswordMatch(
-                        _passwordController.text,
-                        value,
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppTextField(
+                        label: AppStrings.fullName,
+                        controller: _nameController,
+                        validator: Validators.validateFullName,
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: _agreedToTerms,
-                          onChanged: (value) =>
-                              setState(() => _agreedToTerms = value ?? false),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        label: AppStrings.email,
+                        hint: AppStrings.enterEmail,
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: Validators.validateEmail,
+                      ),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        label: AppStrings.phoneNumber,
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        validator: Validators.validatePhoneNumber,
+                      ),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        label: AppStrings.password,
+                        hint: AppStrings.enterPassword,
+                        controller: _passwordController,
+                        obscureText: true,
+                        showPasswordToggle: true,
+                        validator: Validators.validatePassword,
+                      ),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        label: AppStrings.confirmPassword,
+                        hint: AppStrings.enterPassword,
+                        controller: _confirmPasswordController,
+                        obscureText: true,
+                        showPasswordToggle: true,
+                        validator: (value) => Validators.validatePasswordMatch(
+                          _passwordController.text,
+                          value,
                         ),
-                        const Expanded(
-                          child: Text(
-                            'By registering your school, you accept the Terms and Conditions',
-                            style: AppTextStyles.bodySmall,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _agreedToTerms,
+                            onChanged: (value) =>
+                                setState(() => _agreedToTerms = value ?? false),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
-                    PrimaryButton(
-                      label: AppStrings.createAccount,
-                      onPressed: _handleSignup,
-                      isLoading: state.status == AuthStatus.loading,
-                      isEnabled: state.status != AuthStatus.loading,
-                    ),
-                  ],
+                          const Expanded(
+                            child: Text(
+                              'By registering your school, you accept the Terms and Conditions',
+                              style: AppTextStyles.bodySmall,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      PrimaryButton(
+                        label: AppStrings.createAccount,
+                        onPressed: _handleSignup,
+                        isLoading: state.status == AuthStatus.loading,
+                        isEnabled: state.status != AuthStatus.loading,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

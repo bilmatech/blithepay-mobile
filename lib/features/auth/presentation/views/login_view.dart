@@ -66,69 +66,71 @@ class _LoginViewState extends State<LoginView> {
         showBackButton: false,
         body: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 40),
-                    // Header illustration
-                    Image.asset('assets/images/school_bag.png'),
-                    const SizedBox(height: 32),
-                    const Text(AppStrings.welcomeBack, style: AppTextStyles.h2),
-                    const SizedBox(height: 24),
-                    AppTextField(
-                      label: AppStrings.email,
-                      hint: AppStrings.enterEmail,
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: Validators.validateEmail,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      label: AppStrings.password,
-                      hint: AppStrings.enterPassword,
-                      controller: _passwordController,
-                      obscureText: true,
-                      showPasswordToggle: true,
-                      validator: Validators.validatePassword,
-                    ),
-                    const SizedBox(height: 12),
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: SecondaryButton(
-                        label: AppStrings.forgotPassword,
-                        onPressed: () => context.push(AppRoutes.forgotPassword),
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 40),
+                      // Header illustration
+                      Image.asset('assets/images/school_bag.png'),
+                      const SizedBox(height: 32),
+                      const Text(AppStrings.welcomeBack, style: AppTextStyles.h2),
+                      const SizedBox(height: 24),
+                      AppTextField(
+                        label: AppStrings.email,
+                        hint: AppStrings.enterEmail,
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: Validators.validateEmail,
                       ),
-                    ),
-                    const SizedBox(height: 32),
-                    PrimaryButton(
-                      label: AppStrings.logIn,
-                      onPressed: _handleLogin,
-                      isLoading: state.status == AuthStatus.loading,
-                      isEnabled: state.status != AuthStatus.loading,
-                    ),
-                    const SizedBox(height: 24),
-                    Center(
-                      child: GestureDetector(
-                        onTap: () => context.push(AppRoutes.signup),
-                        child: RichText(
-                          text: const TextSpan(
-                            text: "Don't have an account? ",
-                            style: AppTextStyles.bodyRegular,
-                            children: [
-                              TextSpan(
-                                text: 'Sign Up',
-                                style: AppTextStyles.link,
-                              ),
-                            ],
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        label: AppStrings.password,
+                        hint: AppStrings.enterPassword,
+                        controller: _passwordController,
+                        obscureText: true,
+                        showPasswordToggle: true,
+                        validator: Validators.validatePassword,
+                      ),
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: SecondaryButton(
+                          label: AppStrings.forgotPassword,
+                          onPressed: () => context.push(AppRoutes.forgotPassword),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      PrimaryButton(
+                        label: AppStrings.logIn,
+                        onPressed: _handleLogin,
+                        isLoading: state.status == AuthStatus.loading,
+                        isEnabled: state.status != AuthStatus.loading,
+                      ),
+                      const SizedBox(height: 24),
+                      Center(
+                        child: GestureDetector(
+                          onTap: () => context.push(AppRoutes.signup),
+                          child: RichText(
+                            text: const TextSpan(
+                              text: "Don't have an account? ",
+                              style: AppTextStyles.bodyRegular,
+                              children: [
+                                TextSpan(
+                                  text: 'Sign Up',
+                                  style: AppTextStyles.link,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );

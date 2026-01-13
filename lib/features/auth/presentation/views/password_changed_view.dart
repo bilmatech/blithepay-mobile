@@ -14,43 +14,45 @@ class PasswordChangedView extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScaffold(
       showBackButton: false,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: const BoxDecoration(
-                  color: AppColors.success,
-                  shape: BoxShape.circle,
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: const BoxDecoration(
+                    color: AppColors.success,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check,
+                    color: AppColors.white,
+                    size: 60,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.check,
-                  color: AppColors.white,
-                  size: 60,
+                const SizedBox(height: 32),
+                const Text(
+                  AppStrings.passwordChanged,
+                  style: AppTextStyles.h2,
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                AppStrings.passwordChanged,
-                style: AppTextStyles.h2,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                AppStrings.passwordChangedDesc,
-                style: AppTextStyles.bodyRegular,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 48),
-              PrimaryButton(
-                label: AppStrings.returnToLogIn,
-                onPressed: () => context.go(AppRoutes.login),
-              ),
-            ],
+                const SizedBox(height: 12),
+                const Text(
+                  AppStrings.passwordChangedDesc,
+                  style: AppTextStyles.bodyRegular,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 48),
+                PrimaryButton(
+                  label: AppStrings.returnToLogIn,
+                  onPressed: () => context.go(AppRoutes.login),
+                ),
+              ],
+            ),
           ),
         ),
       ),
