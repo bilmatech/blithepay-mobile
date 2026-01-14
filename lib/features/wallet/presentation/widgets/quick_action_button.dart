@@ -1,4 +1,6 @@
+import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 
@@ -22,10 +24,11 @@ class QuickActionButtons extends StatelessWidget {
           backgroundColor: const Color(0xFFEADDFF).withValues(alpha: 0.7),
           icon: Icons.payment_outlined,
           label: 'Pay Fees',
-          onTap: () {},
+          onTap: () {
+            context.push(AppRoutes.payFees);
+          },
         ),
         const SizedBox(width: 8),
-
         _buildActionButton(
           backgroundColor: const Color(0xFFD8E4).withValues(alpha: 0.7),
           icon: Icons.card_travel,

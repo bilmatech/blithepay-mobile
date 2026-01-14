@@ -1,6 +1,6 @@
 abstract class AppRoutes {
   static const String home = '/home';
-  
+
   static const String splash = '/';
   static const String onboarding = '/onboarding';
   static const String login = '/login';
@@ -23,6 +23,7 @@ abstract class AppRoutes {
   static const String linkedStudents = '/linked-students';
   static const String transactions = '/transactions';
   static const String profile = '/profile';
+  static const String profileDetail = '/profile-detail';
   static const String walletManagement = '/wallet-management';
   static const String payFees = '/pay-fees';
   static const String helpSupport = '/help-support';

@@ -1,3 +1,4 @@
+import 'package:blithepay/features/profile/presentation/views/profile_view.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/signup_view.dart';
@@ -16,7 +17,7 @@ import '../../features/students/presentation/views/link_students_view.dart';
 import '../../features/students/presentation/views/guardian_verification_view.dart';
 import '../../features/students/presentation/views/linked_students_view.dart';
 import '../../features/profile/presentation/views/change_phone_number_view.dart';
-import '../../features/profile/presentation/views/profile_view.dart';
+import '../../features/profile/presentation/views/profile_detail_view.dart';
 import '../../features/common/presentation/views/request_pending_view.dart';
 import '../../features/common/presentation/views/request_failed_view.dart';
 import '../../features/common/presentation/views/success_view.dart';
@@ -84,7 +85,10 @@ class AppRouterConfig {
             ),
           ],
         ),
-
+        GoRoute(
+          path: AppRoutes.profileDetail,
+          builder: (context, state) => const ProfileDetailView(),
+        ),
         GoRoute(
           path: AppRoutes.confirmSchool,
           builder: (_, __) => const ConfirmSchoolView(),

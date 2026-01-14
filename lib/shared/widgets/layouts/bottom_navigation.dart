@@ -28,7 +28,7 @@ class BottomNavigationWidget extends StatelessWidget {
         ),
         _buildItem(
           icon: Icons.home_outlined,
-          activeIcon: Icons.home,
+          activeIcon: Icons.home_outlined,
           label: 'Home',
           isActive: currentIndex == 1,
         ),
@@ -59,14 +59,11 @@ class BottomNavigationWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: isActive
-          ? BoxDecoration(
-              color: AppColors.primary.withOpacity(0.15),
-              shape: BoxShape.circle,
-            )
+          ? const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)
           : null,
       child: Icon(
         icon,
-        color: isActive ? AppColors.primary : AppColors.textSecondary,
+        color: isActive ? AppColors.white : AppColors.textSecondary,
       ),
     );
   }

@@ -42,8 +42,13 @@ class _WalletManagementViewState extends State<WalletManagementView> {
               else
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    //color: AppColors.primary,
                     borderRadius: BorderRadius.circular(12),
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primary, AppColors.primaryDark],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                   ),
                   child: Stack(
                     children: [

@@ -61,9 +61,7 @@ class _HelpSupportViewState extends State<HelpSupportView> {
         ),
         title: const Text('Help & Support'),
         centerTitle: true,
-        actions: [
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-        ],
+        
       ),
       body: SingleChildScrollView(
         child: Padding(

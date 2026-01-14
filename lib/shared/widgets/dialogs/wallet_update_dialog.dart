@@ -15,6 +15,7 @@ class WalletUpdateDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -22,28 +23,26 @@ class WalletUpdateDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 64,
-              height: 64,
+              width: 28,
+              height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.success.withValues(alpha: .1),
               ),
               child: const Center(
-                child: Icon(Icons.check, color: AppColors.success, size: 32),
+                child: Icon(Icons.check, color: AppColors.success, size: 18),
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Wallet balance updated!',
-              style: AppTextStyles.heading2,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
+            // const Text(
+            //   'Wallet balance updated!',
+            //   style: AppTextStyles.heading2,
+            //   textAlign: TextAlign.center,
+            // ),
+            // const SizedBox(height: 8),
             Text(
-              'N${amount.toStringAsFixed(2)} has been added to your balance.',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              'Wallet balance updated! N${amount.toStringAsFixed(2)} has been added to your balance.',
+              style: AppTextStyles.bodyMedium.copyWith(),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),

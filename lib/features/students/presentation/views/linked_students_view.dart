@@ -17,7 +17,6 @@ class LinkedStudentsView extends StatefulWidget {
 }
 
 class _LinkedStudentsViewState extends State<LinkedStudentsView> {
-
   @override
   void initState() {
     super.initState();
@@ -35,9 +34,6 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
         ),
         title: const Text('Linked Students'),
         centerTitle: true,
-        actions: [
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-        ],
       ),
       body: BlocBuilder<StudentsBloc, StudentsState>(
         builder: (context, state) {

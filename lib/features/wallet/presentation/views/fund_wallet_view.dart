@@ -1,6 +1,7 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
+import 'package:blithepay/shared/widgets/dialogs/wallet_update_dialog.dart';
 import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
 import 'package:flutter/material.dart';
 
@@ -25,9 +26,6 @@ class _FundWalletViewState extends State<FundWalletView> {
         ),
         title: const Text('Fund Wallet'),
         centerTitle: true,
-        actions: [
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -104,7 +102,16 @@ class _FundWalletViewState extends State<FundWalletView> {
               ],
 
               const SizedBox(height: 24),
-              PrimaryButton(label: 'Make Payment', onPressed: () {}),
+              PrimaryButton(
+                label: 'Make Payment',
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) =>
+                        WalletUpdateDialog(amount: 0.00, onViewReceipt: () {}),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -117,7 +124,7 @@ class _FundWalletViewState extends State<FundWalletView> {
     return GestureDetector(
       onTap: () => setState(() => _selectedMethod = value),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.borderColor,
@@ -126,13 +133,14 @@ class _FundWalletViewState extends State<FundWalletView> {
           borderRadius: BorderRadius.circular(8),
           color: isSelected ? AppColors.lightBackground : Colors.white,
         ),
-        child: Column(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               label == 'Card' ? Icons.credit_card : Icons.account_balance,
               color: isSelected ? AppColors.primary : AppColors.textSecondary,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(width: 4),
             Text(
               label,
               textAlign: TextAlign.center,

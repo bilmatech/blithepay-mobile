@@ -98,9 +98,10 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
               PrimaryButton(
                 label: 'Change Number',
                 onPressed: () {
-                  setState(() {
-                    _showOTP = !_showOTP;
-                  });
+                  
+                  // setState(() {
+                  //   _showOTP = !_showOTP;
+                  // });
                 },
               ),
             ],

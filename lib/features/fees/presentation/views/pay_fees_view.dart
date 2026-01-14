@@ -26,9 +26,6 @@ class _PayFeesViewState extends State<PayFeesView> {
         ),
         title: const Text('Pay Fees'),
         centerTitle: true,
-        actions: [
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
