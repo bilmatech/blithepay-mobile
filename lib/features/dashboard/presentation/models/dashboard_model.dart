@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 class DashboardModel extends Equatable {
   final String greeting;
   final String userName;
+  final String avatarUrl;
   final String totalOutstanding;
   final String nextDueDate;
   final String walletBalance;
@@ -13,6 +14,7 @@ class DashboardModel extends Equatable {
   const DashboardModel({
     required this.greeting,
     required this.userName,
+    required this.avatarUrl,
     required this.totalOutstanding,
     required this.nextDueDate,
     required this.walletBalance,
@@ -24,6 +26,8 @@ class DashboardModel extends Equatable {
   DashboardModel copyWith({
     String? greeting,
     String? userName,
+    String? avatarUrl,
+
     String? totalOutstanding,
     String? nextDueDate,
     String? walletBalance,
@@ -34,6 +38,7 @@ class DashboardModel extends Equatable {
     return DashboardModel(
       greeting: greeting ?? this.greeting,
       userName: userName ?? this.userName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
       totalOutstanding: totalOutstanding ?? this.totalOutstanding,
       nextDueDate: nextDueDate ?? this.nextDueDate,
       walletBalance: walletBalance ?? this.walletBalance,
@@ -47,6 +52,7 @@ class DashboardModel extends Equatable {
     return const DashboardModel(
       greeting: 'Good morning,',
       userName: 'Emmanuel Seaman',
+      avatarUrl: '',
       totalOutstanding: 'N120,000',
       nextDueDate: '13 June, 2026',
       walletBalance: 'N470,000',
@@ -94,15 +100,15 @@ class DashboardModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        greeting,
-        userName,
-        totalOutstanding,
-        nextDueDate,
-        walletBalance,
-        selectedChildId,
-        selectedChildName,
-        transactions,
-      ];
+    greeting,
+    userName,
+    totalOutstanding,
+    nextDueDate,
+    walletBalance,
+    selectedChildId,
+    selectedChildName,
+    transactions,
+  ];
 }
 
 class TransactionItem extends Equatable {

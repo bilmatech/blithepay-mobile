@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -30,6 +31,11 @@ class _LoginViewState extends State<LoginView> {
     super.initState();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
+
+    if (kDebugMode) {
+      _emailController.text = 'test@example.com';
+      _passwordController.text = 'Password123';
+    }
   }
 
   @override
@@ -78,7 +84,10 @@ class _LoginViewState extends State<LoginView> {
                       // Header illustration
                       Image.asset('assets/images/school_bag.png'),
                       const SizedBox(height: 32),
-                      const Text(AppStrings.welcomeBack, style: AppTextStyles.h2),
+                      const Text(
+                        AppStrings.welcomeBack,
+                        style: AppTextStyles.h2,
+                      ),
                       const SizedBox(height: 24),
                       AppTextField(
                         label: AppStrings.email,
@@ -101,7 +110,8 @@ class _LoginViewState extends State<LoginView> {
                         alignment: Alignment.topRight,
                         child: SecondaryButton(
                           label: AppStrings.forgotPassword,
-                          onPressed: () => context.push(AppRoutes.forgotPassword),
+                          onPressed: () =>
+                              context.push(AppRoutes.forgotPassword),
                         ),
                       ),
                       const SizedBox(height: 32),

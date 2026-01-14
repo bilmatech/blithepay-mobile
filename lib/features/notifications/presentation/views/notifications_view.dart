@@ -1,3 +1,6 @@
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/buttons/app_outlined_icon_button.dart';
+import 'package:blithepay/shared/widgets/inputs/dropdown_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +21,8 @@ class NotificationsView extends StatefulWidget {
 class _NotificationsViewState extends State<NotificationsView> {
   String _selectedNotification = '';
   String _searchQuery = '';
+  String? currentFilter;
+  String? currentSort;
 
   @override
   void initState() {
@@ -27,17 +32,14 @@ class _NotificationsViewState extends State<NotificationsView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => context.pop(),
         ),
         title: const Text('Notifications'),
         centerTitle: true,
-        actions: [
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-        ],
       ),
       body: BlocBuilder<NotificationsBloc, NotificationsState>(
         builder: (context, state) {
@@ -57,7 +59,6 @@ class _NotificationsViewState extends State<NotificationsView> {
                       decoration: InputDecoration(
                         hintText: 'Search Notifications',
                         prefixIcon: const Icon(Icons.search),
-                        suffixIcon: const Icon(Icons.send),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -72,16 +73,34 @@ class _NotificationsViewState extends State<NotificationsView> {
                         Text('Today:', style: AppTextStyles.headline3),
                         Row(
                           children: [
-                            OutlinedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.filter_list),
-                              label: const Text('Filter'),
+                            // Filter button with search
+                            AppOutlinedIconButton(
+                              onPressed: () => showFilterPopup<String>(
+                                context: context,
+                                items: ['Deposit'],
+                                selectedValue: currentFilter,
+                                onItemSelected: (value) =>
+                                    setState(() => currentFilter = value),
+                                enableSearch:
+                                    true, // only filter popup has search
+                              ),
+                              label: 'Filter',
+                              icon: Icons.tune,
                             ),
                             const SizedBox(width: 8),
-                            OutlinedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.sort),
-                              label: const Text('Sort by'),
+
+                            // Sort button without search
+                            AppOutlinedIconButton(
+                              onPressed: () => showFilterPopup<String>(
+                                context: context,
+                                items: ['Most Recent', 'Oldest'],
+                                selectedValue: currentSort,
+                                onItemSelected: (value) =>
+                                    setState(() => currentSort = value),
+                                enableSearch: false, // no search for sort
+                              ),
+                              label: 'Sort by',
+                              icon: Icons.sort,
                             ),
                           ],
                         ),
@@ -94,22 +113,34 @@ class _NotificationsViewState extends State<NotificationsView> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: notifications
-                          .where((notif) =>
-                              notif.sender.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                              notif.body.toLowerCase().contains(_searchQuery.toLowerCase()))
+                          .where(
+                            (notif) =>
+                                notif.sender.toLowerCase().contains(
+                                  _searchQuery.toLowerCase(),
+                                ) ||
+                                notif.body.toLowerCase().contains(
+                                  _searchQuery.toLowerCase(),
+                                ),
+                          )
                           .length,
                       itemBuilder: (context, index) {
                         final filteredNotifications = notifications
-                            .where((notif) =>
-                                notif.sender.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                                notif.body.toLowerCase().contains(_searchQuery.toLowerCase()))
+                            .where(
+                              (notif) =>
+                                  notif.sender.toLowerCase().contains(
+                                    _searchQuery.toLowerCase(),
+                                  ) ||
+                                  notif.body.toLowerCase().contains(
+                                    _searchQuery.toLowerCase(),
+                                  ),
+                            )
                             .toList();
                         final notif = filteredNotifications[index];
                         final isSelected = _selectedNotification == notif.id;
 
                         return GestureDetector(
-                          onTap: () =>
-                              setState(() => _selectedNotification = notif.id),
+                          // onTap: () =>
+                          //     setState(() => _selectedNotification = notif.id),
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.all(16),
@@ -122,29 +153,59 @@ class _NotificationsViewState extends State<NotificationsView> {
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Column(
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      notif.sender,
-                                      style: AppTextStyles.headline3,
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(
+                                      0.1,
+                                    ), // light background
+                                    shape: BoxShape.circle,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    notif.sender.isNotEmpty
+                                        ? notif.sender[0].toUpperCase()
+                                        : '',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
                                     ),
-                                    Text(
-                                      '${notif.date.month}/${notif.date.day}/${notif.date.year}',
-                                      style: AppTextStyles.bodySmall,
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  notif.body,
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.bodyRegular,
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            notif.sender,
+                                            style: AppTextStyles.headingSmall,
+                                          ),
+                                          Text(
+                                            '${notif.date.month}/${notif.date.day}/${notif.date.year}',
+                                            style: AppTextStyles.bodySmall,
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        notif.body,
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTextStyles.bodyRegular,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),

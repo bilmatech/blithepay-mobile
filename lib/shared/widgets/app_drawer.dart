@@ -94,7 +94,7 @@ class AppDrawer extends StatelessWidget {
                   },
                 ),
                 _DrawerItem(
-                  icon: Icons.notifications_outlined,
+                  icon: Icons.notifications_none,
                   label: 'Notifications',
                   onTap: () {
                     context.pop();

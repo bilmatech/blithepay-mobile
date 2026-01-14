@@ -1,3 +1,4 @@
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
@@ -9,7 +10,7 @@ class ConfirmSchoolView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: const Text('Confirm School'),
         elevation: 0,

@@ -65,13 +65,24 @@ class AppRouterConfig {
           builder: (_, __) => const PasswordChangedView(),
         ),
 
-        GoRoute(
-          path: AppRoutes.home,
-          builder: (_, __) => const DashboardView(),
-        ),
-        GoRoute(
-          path: AppRoutes.dashboard,
-          builder: (_, __) => const DashboardView(),
+        ShellRoute(
+          builder: (context, state, child) {
+            return DashboardView(child: child);
+          },
+          routes: [
+            GoRoute(
+              path: AppRoutes.home,
+              builder: (context, state) => const HomeView(),
+            ),
+            GoRoute(
+              path: AppRoutes.walletManagement,
+              builder: (context, state) => const WalletManagementView(),
+            ),
+            GoRoute(
+              path: AppRoutes.profile,
+              builder: (context, state) => const ProfileView(),
+            ),
+          ],
         ),
 
         GoRoute(
@@ -112,18 +123,10 @@ class AppRouterConfig {
         ),
 
         GoRoute(
-          path: AppRoutes.profile,
-          builder: (_, __) => const ProfileView(),
-        ),
-        GoRoute(
           path: AppRoutes.changePhoneNumber,
           builder: (_, __) => const ChangePhoneNumberView(),
         ),
 
-        GoRoute(
-          path: AppRoutes.walletManagement,
-          builder: (_, __) => const WalletManagementView(),
-        ),
         GoRoute(
           path: AppRoutes.fundWallet,
           builder: (_, __) => const FundWalletView(),

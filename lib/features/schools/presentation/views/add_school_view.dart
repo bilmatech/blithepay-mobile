@@ -1,3 +1,4 @@
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
@@ -23,7 +24,7 @@ class _AddSchoolViewState extends State<AddSchoolView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(title: const Text('Add School'), elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(

@@ -28,8 +28,8 @@ class QuickActionButtons extends StatelessWidget {
 
         _buildActionButton(
           backgroundColor: const Color(0xFFD8E4).withValues(alpha: 0.7),
-          icon: Icons.person_add_outlined,
-          label: 'Link Child',
+          icon: Icons.card_travel,
+          label: 'Withdraw',
           onTap: () {},
         ),
       ],

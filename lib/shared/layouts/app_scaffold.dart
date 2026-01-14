@@ -24,8 +24,9 @@ class AppScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: appBar ??
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar:
+          appBar ??
           (title != null
               ? AppBar(
                   title: Text(title!),
@@ -34,8 +35,12 @@ class AppScaffold extends StatelessWidget {
                   backgroundColor: AppColors.white,
                   leading: showBackButton
                       ? IconButton(
-                          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-                          onPressed: onBackPressed ?? () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
+                            color: AppColors.textPrimary,
+                          ),
+                          onPressed:
+                              onBackPressed ?? () => Navigator.pop(context),
                         )
                       : null,
                 )

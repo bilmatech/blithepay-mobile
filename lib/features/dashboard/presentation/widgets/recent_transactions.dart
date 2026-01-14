@@ -1,4 +1,6 @@
+import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../models/dashboard_model.dart';
@@ -6,10 +8,7 @@ import '../models/dashboard_model.dart';
 class RecentTransactions extends StatelessWidget {
   final List<TransactionItem> transactions;
 
-  const RecentTransactions({
-    super.key,
-    required this.transactions,
-  });
+  const RecentTransactions({super.key, required this.transactions});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +25,9 @@ class RecentTransactions extends StatelessWidget {
               ),
             ),
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                context.push(AppRoutes.transactions);
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -82,7 +83,7 @@ class RecentTransactions extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
-                          Icons.receipt_long_outlined,
+                          Icons.account_balance_wallet,
                           size: 20,
                           color: AppColors.textSecondary,
                         ),
@@ -93,16 +94,14 @@ class RecentTransactions extends StatelessWidget {
                         children: [
                           Text(
                             transaction.title,
-                            style: AppTextStyles.bodyMedium.copyWith(
+                            style: AppTextStyles.headingSmall.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '${transaction.date}. ${transaction.time}',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                            style: AppTextStyles.bodySmall,
                           ),
                         ],
                       ),
@@ -113,7 +112,7 @@ class RecentTransactions extends StatelessWidget {
                     children: [
                       Text(
                         transaction.amount,
-                        style: AppTextStyles.bodyMedium.copyWith(
+                        style: AppTextStyles.headingSmall.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),

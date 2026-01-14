@@ -1,4 +1,5 @@
 import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
 
 class TransactionDetailView extends StatelessWidget {
@@ -8,17 +9,14 @@ class TransactionDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('Transactions'),
         centerTitle: true,
-        actions: [
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -26,16 +24,16 @@ class TransactionDetailView extends StatelessWidget {
           child: Column(
             children: [
               // Success Indicator
-              Container(
-                width: 80,
-                height: 80,
-                decoration: const BoxDecoration(
-                  color: AppColors.success,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.check, color: Colors.white, size: 40),
-              ),
-              const SizedBox(height: 16),
+              // Container(
+              //   width: 80,
+              //   height: 80,
+              //   decoration: const BoxDecoration(
+              //     color: AppColors.success,
+              //     shape: BoxShape.circle,
+              //   ),
+              //   child: const Icon(Icons.check, color: Colors.white, size: 40),
+              // ),
+              // const SizedBox(height: 16),
               const Text(
                 'Successful',
                 style: TextStyle(
@@ -53,8 +51,8 @@ class TransactionDetailView extends StatelessWidget {
               // Transaction Details
               _buildDetailRow('Fee:', 'Tuition Fee'),
               const SizedBox(height: 12),
-              _buildDetailRow('Student:', 'Aishat Abdul Yusuf'),
-              const SizedBox(height: 12),
+              //  _buildDetailRow('Student:', 'Aishat Abdul Yusuf'),
+              // const SizedBox(height: 12),
               _buildDetailRow('Method:', 'Wallet Balance'),
               const SizedBox(height: 12),
               _buildDetailRow('Date:', '11/12/25. 09:22'),
@@ -69,8 +67,17 @@ class TransactionDetailView extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        minimumSize: const Size(0, 32),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        side: const BorderSide(color: AppColors.border),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                       onPressed: () {},
-                      child: const Text('Report Transaction'),
+                      child: const Text('Download Receipt'),
                     ),
                   ),
                   const SizedBox(width: 12),

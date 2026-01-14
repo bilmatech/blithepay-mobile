@@ -1,3 +1,7 @@
+import 'package:blithepay/core/navigation/app_routes.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/buttons/app_outlined_icon_button.dart';
+import 'package:blithepay/shared/widgets/inputs/dropdown_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -16,6 +20,8 @@ class TransactionsView extends StatefulWidget {
 
 class _TransactionsViewState extends State<TransactionsView> {
   String _searchQuery = '';
+  String? currentFilter;
+  String? currentSort;
 
   @override
   void initState() {
@@ -25,17 +31,14 @@ class _TransactionsViewState extends State<TransactionsView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => context.pop(),
         ),
         title: const Text('Transactions'),
         centerTitle: true,
-        actions: [
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-        ],
       ),
       body: BlocBuilder<WalletBloc, WalletState>(
         builder: (context, state) {
@@ -49,13 +52,13 @@ class _TransactionsViewState extends State<TransactionsView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Search
                     TextField(
                       onChanged: (value) =>
                           setState(() => _searchQuery = value),
                       decoration: InputDecoration(
                         hintText: 'Search transactions...',
                         prefixIcon: const Icon(Icons.search),
-                        suffixIcon: const Icon(Icons.send),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -63,51 +66,189 @@ class _TransactionsViewState extends State<TransactionsView> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Filter and sort
+                    // Filter & Sort buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Today:', style: AppTextStyles.headline3),
                         Row(
                           children: [
-                            OutlinedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.filter_list),
-                              label: const Text('Filter'),
+                            // Filter button with search
+                            AppOutlinedIconButton(
+                              onPressed: () => showFilterPopup<String>(
+                                context: context,
+                                items: [
+                                  'Successful',
+                                  'Failed',
+                                  'Pending',
+                                  'Withdrawal',
+                                  'Fee Payment',
+                                  'Deposit',
+                                ],
+                                selectedValue: currentFilter,
+                                onItemSelected: (value) =>
+                                    setState(() => currentFilter = value),
+                                enableSearch:
+                                    true, // only filter popup has search
+                              ),
+                              label: 'Filter',
+                              icon: Icons.tune,
                             ),
                             const SizedBox(width: 8),
-                            OutlinedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.sort),
-                              label: const Text('Sort by'),
+
+                            // Sort button without search
+                            AppOutlinedIconButton(
+                              onPressed: () => showFilterPopup<String>(
+                                context: context,
+                                items: [
+                                  'A-Z',
+                                  'Z-A',
+                                  'Highest - Lowest',
+                                  'Lowest - Highest',
+                                  'Most Recent',
+                                  'Oldest',
+                                ],
+                                selectedValue: currentSort,
+                                onItemSelected: (value) =>
+                                    setState(() => currentSort = value),
+                                enableSearch: false, // no search for sort
+                              ),
+                              label: 'Sort by',
+                              icon: Icons.sort,
                             ),
                           ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
 
                     // Transaction table
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
+                    SizedBox(
+                      width: double.infinity,
                       child: DataTable(
+                        headingRowColor: MaterialStateProperty.resolveWith(
+                          (states) => Colors.grey.shade200,
+                        ),
+                        dataRowHeight: 36,
+                        headingRowHeight: 36,
+                        columnSpacing: 12,
+                        horizontalMargin: 12,
                         columns: const [
-                          DataColumn(label: Text('Date')),
-                          DataColumn(label: Text('Amount')),
-                          DataColumn(label: Text('Method')),
-                          DataColumn(label: Text('Type')),
+                          DataColumn(
+                            label: Text(
+                              'Date',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Amount',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Method',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Type',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ],
                         rows: transactions
-                            .where((tx) =>
-                                tx['date']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false ||
-                                tx['amount']!.toString().toLowerCase().contains(_searchQuery.toLowerCase()))
+                            .where(
+                              (tx) =>
+                                  (tx['date']
+                                          ?.toString()
+                                          .toLowerCase()
+                                          .contains(
+                                            _searchQuery.toLowerCase(),
+                                          ) ??
+                                      false) ||
+                                  (tx['amount']
+                                          ?.toString()
+                                          .toLowerCase()
+                                          .contains(
+                                            _searchQuery.toLowerCase(),
+                                          ) ??
+                                      false),
+                            )
                             .map(
                               (tx) => DataRow(
                                 cells: [
-                                  DataCell(Text(tx['date'] ?? '')),
-                                  DataCell(Text(tx['amount'] ?? '')),
-                                  DataCell(Text(tx['method'] ?? '')),
-                                  DataCell(Text(tx['type'] ?? '')),
+                                  DataCell(
+                                    Text(
+                                      tx['date'] ?? '',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                    onTap: () {
+                                      context.push(
+                                        AppRoutes.transactionDetail,
+                                        extra: '12345678',
+                                      );
+                                      // handle cell click
+                                    },
+                                  ),
+                                  DataCell(
+                                    Text(
+                                      tx['amount'] ?? '',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                    onTap: () {
+                                      context.push(
+                                        AppRoutes.transactionDetail,
+                                        extra: '12345678',
+                                      );
+                                    },
+                                  ),
+                                  DataCell(
+                                    Text(
+                                      tx['method'] ?? '',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                    onTap: () {
+                                      context.push(
+                                        AppRoutes.transactionDetail,
+                                        extra: '12345678',
+                                      );
+                                    },
+                                  ),
+                                  DataCell(
+                                    Text(
+                                      tx['type'] ?? '',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                    onTap: () {
+                                      context.push(
+                                        AppRoutes.transactionDetail,
+                                        extra: '12345678',
+                                      );
+                                    },
+                                  ),
                                 ],
                               ),
                             )

@@ -1,4 +1,7 @@
 import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/features/wallet/presentation/widgets/quick_action_button.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/buttons/app_outlined_icon_button.dart';
 import 'package:blithepay/shared/widgets/loaders/shimmer_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -23,18 +26,8 @@ class _WalletManagementViewState extends State<WalletManagementView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('Wallet Management'),
-        centerTitle: true,
-        actions: [
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-        ],
-      ),
+    return AppScaffold(
+      appBar: AppBar(title: const Text('Wallet Management'), centerTitle: true),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -48,110 +41,105 @@ class _WalletManagementViewState extends State<WalletManagementView> {
                 )
               else
                 Container(
-                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Stack(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Tuesday, 11 July, 2026.',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Tuesday, 11 July, 2026.',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    _balanceVisible
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  onPressed: () => setState(
+                                    () => _balanceVisible = !_balanceVisible,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                ),
+                              ],
                             ),
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              _balanceVisible
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                              color: Colors.white,
-                              size: 20,
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Current Balance',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
                             ),
-                            onPressed: () => setState(
-                              () => _balanceVisible = !_balanceVisible,
+                            const SizedBox(height: 4),
+                            Text(
+                              _balanceVisible ? 'N200,000.32' : '•••••••••',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                        ],
+                            const SizedBox(height: 16),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Current Balance',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _balanceVisible ? 'N200,000.32' : '•••••••••',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
+
+                      // Bottom-right image
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Image.asset(
+                          'assets/images/dashboard.png',
+                          width: 80,
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ],
                   ),
                 ),
               const SizedBox(height: 20),
-
               // Quick Actions
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.wallet),
-                      label: const Text('Fund Wallet'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.payment),
-                      label: const Text('Pay Fees'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.call_made),
-                      label: const Text('Withdraw'),
-                    ),
-                  ),
-                ],
-              ),
+              const QuickActionButtons(),
               const SizedBox(height: 24),
 
               // Recent Transactions
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'Recent Transactions:',
                     style: Theme.of(context).textTheme.labelLarge,
                   ),
-                  OutlinedButton.icon(
+                  const Spacer(),
+                  AppOutlinedIconButton(
+                    label: 'Filter',
+                    icon: Icons.tune,
                     onPressed: () {},
-                    icon: const Icon(Icons.tune, size: 18),
-                    label: const Text('Filter'),
                   ),
-                  OutlinedButton.icon(
+                  const SizedBox(width: 8),
+                  AppOutlinedIconButton(
+                    label: 'Sort by',
+                    icon: Icons.sort,
+                    borderRadius: 8,
                     onPressed: () {},
-                    icon: const Icon(Icons.sort, size: 18),
-                    label: const Text('Sort by'),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 24),
 
               if (_isLoading)
                 ListView.builder(
@@ -164,57 +152,219 @@ class _WalletManagementViewState extends State<WalletManagementView> {
                   ),
                 )
               else
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                Container(
+                  width: double.infinity,
                   child: DataTable(
+                    headingRowColor: MaterialStateProperty.resolveWith(
+                      (states) => Colors.grey.shade200,
+                    ),
+                    dataRowHeight: 36,
+                    headingRowHeight: 36,
+                    columnSpacing: 12,
+                    horizontalMargin: 12,
                     columns: const [
-                      DataColumn(label: Text('Date')),
-                      DataColumn(label: Text('Amount')),
-                      DataColumn(label: Text('Method')),
-                      DataColumn(label: Text('Type')),
+                      DataColumn(
+                        label: Expanded(
+                          child: Text(
+                            'Date',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Expanded(
+                          child: Text(
+                            'Amount',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Expanded(
+                          child: Text(
+                            'Method',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Expanded(
+                          child: Text(
+                            'Type',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
                     ],
-                    rows: const [
+                    rows: [
                       DataRow(
                         cells: [
                           DataCell(
-                            Text(
-                              '11-09-25. 11:15',
-                              style: TextStyle(fontSize: 12),
+                            const Expanded(
+                              child: Text(
+                                '11-09-25. 11:15',
+                                style: TextStyle(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
+                            onTap: () {
+                              // handle row click
+                            },
                           ),
                           DataCell(
-                            Text('N300,000.00', style: TextStyle(fontSize: 12)),
+                            const Expanded(
+                              child: Text(
+                                'N300,000.00',
+                                style: TextStyle(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            onTap: () {},
                           ),
                           DataCell(
-                            Text('Wallet', style: TextStyle(fontSize: 12)),
+                            const Expanded(
+                              child: Text(
+                                'Wallet',
+                                style: TextStyle(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            onTap: () {},
                           ),
                           DataCell(
-                            Text('Withdrawal', style: TextStyle(fontSize: 12)),
+                            const Expanded(
+                              child: Text(
+                                'Withdrawal',
+                                style: TextStyle(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            onTap: () {},
                           ),
                         ],
                       ),
                       DataRow(
                         cells: [
                           DataCell(
-                            Text(
-                              '11-09-25. 11:15',
-                              style: TextStyle(fontSize: 12),
+                            const Expanded(
+                              child: Text(
+                                '11-09-25. 11:15',
+                                style: TextStyle(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
+                            onTap: () {},
                           ),
                           DataCell(
-                            Text('N300,000.00', style: TextStyle(fontSize: 12)),
+                            const Expanded(
+                              child: Text(
+                                'N300,000.00',
+                                style: TextStyle(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            onTap: () {},
                           ),
                           DataCell(
-                            Text('Wallet', style: TextStyle(fontSize: 12)),
+                            const Expanded(
+                              child: Text(
+                                'Wallet',
+                                style: TextStyle(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            onTap: () {},
                           ),
                           DataCell(
-                            Text('Fee Payment', style: TextStyle(fontSize: 12)),
+                            const Expanded(
+                              child: Text(
+                                'Fee Payment',
+                                style: TextStyle(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            onTap: () {},
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
+
+              // SingleChildScrollView(
+              //   scrollDirection: Axis.horizontal,
+              //   child: DataTable(
+              //     headingRowColor: WidgetStateProperty.resolveWith(
+              //       (states) => Colors.grey.shade200,
+              //     ),
+              //     dataRowHeight: 42,
+              //     headingRowHeight: 42,
+              //     columnSpacing: 24,
+              //     horizontalMargin: 24,
+              //     columns: const [
+              //       DataColumn(label: Text('Date')),
+              //       DataColumn(label: Text('Amount')),
+              //       DataColumn(label: Text('Method')),
+              //       DataColumn(label: Text('Type')),
+              //     ],
+              //     rows: const [
+              //       DataRow(
+              //         cells: [
+              //           DataCell(
+              //             Text(
+              //               '11-09-25. 11:15',
+              //               style: TextStyle(fontSize: 12),
+              //             ),
+              //           ),
+              //           DataCell(
+              //             Text('N300,000.00', style: TextStyle(fontSize: 12)),
+              //           ),
+              //           DataCell(
+              //             Text('Wallet', style: TextStyle(fontSize: 12)),
+              //           ),
+              //           DataCell(
+              //             Text('Withdrawal', style: TextStyle(fontSize: 12)),
+              //           ),
+              //         ],
+              //       ),
+              //       DataRow(
+              //         cells: [
+              //           DataCell(
+              //             Text(
+              //               '11-09-25. 11:15',
+              //               style: TextStyle(fontSize: 12),
+              //             ),
+              //           ),
+              //           DataCell(
+              //             Text('N300,000.00', style: TextStyle(fontSize: 12)),
+              //           ),
+              //           DataCell(
+              //             Text('Wallet', style: TextStyle(fontSize: 12)),
+              //           ),
+              //           DataCell(
+              //             Text('Fee Payment', style: TextStyle(fontSize: 12)),
+              //           ),
+              //         ],
+              //       ),
+              //     ],
+              //   ),
+              // ),
             ],
           ),
         ),
