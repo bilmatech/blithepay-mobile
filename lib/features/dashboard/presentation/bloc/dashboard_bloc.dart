@@ -13,11 +13,12 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     FetchDashboardData event,
     Emitter<DashboardState> emit,
   ) async {
+    if (state is DashboardLoaded) return;
     emit(const DashboardLoading());
     try {
       // Simulate API call
       await Future.delayed(const Duration(seconds: 2));
-      
+
       final mockData = DashboardModel.mock();
       emit(DashboardLoaded(mockData));
     } catch (e) {
@@ -31,7 +32,9 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   ) async {
     if (state is DashboardLoaded) {
       final currentState = state as DashboardLoaded;
-      final updated = currentState.dashboard.copyWith(selectedChildId: event.childId);
+      final updated = currentState.dashboard.copyWith(
+        selectedChildId: event.childId,
+      );
       emit(DashboardLoaded(updated));
     }
   }

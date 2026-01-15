@@ -19,7 +19,6 @@ class _LinkStudentsViewState extends State<LinkStudentsView> {
 
   String? _selectedSchool;
   String? _registrationError;
-  String? _studentError;
 
   @override
   void dispose() {

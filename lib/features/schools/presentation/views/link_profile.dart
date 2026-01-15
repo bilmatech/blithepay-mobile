@@ -5,8 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
-import '../../../../shared/widgets/inputs/app_text_field.dart';
-import '../../../../shared/widgets/inputs/dropdown_field.dart';
 
 class LinkProfileView extends StatefulWidget {
   const LinkProfileView({super.key});
@@ -19,9 +17,9 @@ class _LinkProfileViewState extends State<LinkProfileView> {
   final _regNumberController = TextEditingController();
   final _admissionNumberController = TextEditingController();
 
-  String? _selectedSchool;
-  String? _registrationError;
-  String? _studentError;
+  // String? _selectedSchool;
+  // String? _registrationError;
+  // String? _studentError;
 
   @override
   void dispose() {

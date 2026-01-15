@@ -16,8 +16,8 @@ class PayFeesView extends StatefulWidget {
 }
 
 class _PayFeesViewState extends State<PayFeesView> {
-  String? _selectedStudent;
-  String? _selectedFee;
+  // String? _selectedStudent;
+  // String? _selectedFee;
   String? _selectedSchool;
 
   @override

@@ -13,7 +13,7 @@ class WalletManagementView extends StatefulWidget {
 }
 
 class _WalletManagementViewState extends State<WalletManagementView> {
-  bool _isLoading = true;
+  bool _isLoading = false;
   bool _balanceVisible = true;
 
   @override

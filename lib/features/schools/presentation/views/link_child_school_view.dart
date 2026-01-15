@@ -21,7 +21,6 @@ class _LinkChildSchoolViewState extends State<LinkChildSchoolView> {
 
   String? _selectedSchool;
   String? _registrationError;
-  String? _studentError;
 
   @override
   void dispose() {
