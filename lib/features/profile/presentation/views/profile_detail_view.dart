@@ -50,7 +50,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Information:', style: AppTextStyles.headline3),
+                        Text('Information:'),
                         ElevatedButton(
                           onPressed: () => context.push('/edit-profile'),
                           child: const Text('Edit Profile'),

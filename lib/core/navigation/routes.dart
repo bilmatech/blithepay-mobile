@@ -1,4 +1,10 @@
+import 'package:blithepay/features/fees/presentation/views/payment_confirmation_view.dart';
+import 'package:blithepay/features/fees/presentation/views/payment_success_view.dart';
 import 'package:blithepay/features/profile/presentation/views/profile_view.dart';
+import 'package:blithepay/features/fees/presentation/views/fees_breakdown_view.dart';
+import 'package:blithepay/features/schools/presentation/views/link_child_school_view.dart';
+import 'package:blithepay/features/schools/presentation/views/link_profile.dart';
+import 'package:blithepay/features/schools/presentation/views/student_linked_success_view.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/signup_view.dart';
@@ -100,6 +106,39 @@ class AppRouterConfig {
         GoRoute(
           path: AppRoutes.addSchool,
           builder: (_, __) => const AddSchoolView(),
+        ),
+        GoRoute(
+          path: AppRoutes.linkchildSchool,
+          builder: (_, __) => const LinkChildSchoolView(),
+        ),
+        GoRoute(
+          path: AppRoutes.linkProfile,
+          builder: (_, __) => const LinkProfileView(),
+        ),
+        GoRoute(
+          path: AppRoutes.studentLinkedSuccess,
+          builder: (_, __) => const StudentLinkedSucessView(),
+        ),
+        GoRoute(
+          path: AppRoutes.feeSelection,
+          builder: (_, __) => const FeeBreakDownView(
+            fees: [
+              {'name': 'Tuition Fees', 'amount': 300000},
+              {'name': 'Exam Fees', 'amount': 50000},
+              {'name': 'Library Fees', 'amount': 10000},
+              {'name': 'Tuition Fees', 'amount': 300000},
+              {'name': 'Exam Fees', 'amount': 50000},
+              {'name': 'Library Fees', 'amount': 10000},
+            ],
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.feeConfirmation,
+          builder: (_, __) => const PaymentConfirmationView(),
+        ),
+        GoRoute(
+          path: AppRoutes.feeSuccess,
+          builder: (_, __) => const PaymentSuccessView(),
         ),
         GoRoute(
           path: AppRoutes.editSchools,

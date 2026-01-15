@@ -119,7 +119,4 @@ class AppTextStyles {
     color: AppColors.textPrimary,
     height: 1.3,
   );
-
-
-  static TextStyle? get headline3 => null;
 }

@@ -22,6 +22,15 @@ class StudentsRepositoryImpl implements StudentsRepository {
         feeStatus: 'Pending',
         amountDue: 300000,
       ),
+      StudentModel(
+        id: '2',
+        name: 'Emma Oluwatayo',
+        studentId: '7ytf3475dm',
+        class_: 'Primary 4',
+        school: 'Seaman International Nursery & Primary School',
+        feeStatus: 'Pending',
+        amountDue: 100000,
+      ),
     ];
   }
 

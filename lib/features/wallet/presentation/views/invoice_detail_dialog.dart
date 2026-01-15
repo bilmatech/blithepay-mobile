@@ -1,3 +1,5 @@
+import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
+import 'package:blithepay/shared/widgets/index.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
@@ -25,6 +27,7 @@ class InvoiceDetailDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -38,10 +41,7 @@ class InvoiceDetailDialog extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      feeType,
-                      style: AppTextStyles.heading2,
-                    ),
+                    Text(feeType, style: AppTextStyles.heading2),
                     Text(
                       'Invoice #$invoiceNumber',
                       style: AppTextStyles.bodySmall.copyWith(
@@ -66,10 +66,7 @@ class InvoiceDetailDialog extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      entry.key,
-                      style: AppTextStyles.bodyMedium,
-                    ),
+                    Text(entry.key, style: AppTextStyles.bodyMedium),
                     Text(
                       'N${entry.value.toStringAsFixed(2)}',
                       style: AppTextStyles.bodyMedium,
@@ -82,9 +79,7 @@ class InvoiceDetailDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: const BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: AppColors.borderColor),
-                ),
+                border: Border(top: BorderSide(color: AppColors.borderColor)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -102,7 +97,8 @@ class InvoiceDetailDialog extends StatelessWidget {
                   ),
                   Text(
                     'Total: N${totalAmount.toStringAsFixed(2)}',
-                    style: AppTextStyles.heading2,
+                    style: AppTextStyles.bodyLarge,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -111,36 +107,19 @@ class InvoiceDetailDialog extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
+                  child: SecondaryOutlinedButton(
                     onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: Text(
-                      'Close',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
+                    label: 'Close',
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
+                  child: PrimaryButton(
                     onPressed: () {
                       Navigator.pop(context);
                       onPayNow();
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: Text(
-                      'Pay Now',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.white,
-                      ),
-                    ),
+                    label: 'Pay Now',
                   ),
                 ),
               ],

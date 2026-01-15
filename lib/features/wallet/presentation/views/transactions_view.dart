@@ -70,7 +70,7 @@ class _TransactionsViewState extends State<TransactionsView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Today:', style: AppTextStyles.headline3),
+                        const Text('Today:', style: AppTextStyles.h3),
                         Row(
                           children: [
                             // Filter button with search

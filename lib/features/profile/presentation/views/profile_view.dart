@@ -70,7 +70,7 @@ class ProfileView extends StatelessWidget {
                     _ProfileItem(
                       icon: Icons.school_outlined,
                       label: 'Students',
-                      onTap: () => context.push('/link-students'),
+                      onTap: () => context.push('/linked-students'),
                     ),
                     _ProfileItem(
                       icon: Icons.payment_outlined,

@@ -1,19 +1,21 @@
+import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
 import '../../../../shared/widgets/inputs/dropdown_field.dart';
 
-class LinkStudentsView extends StatefulWidget {
-  const LinkStudentsView({super.key});
+class LinkChildSchoolView extends StatefulWidget {
+  const LinkChildSchoolView({super.key});
 
   @override
-  State<LinkStudentsView> createState() => _LinkStudentsViewState();
+  State<LinkChildSchoolView> createState() => _LinkChildSchoolViewState();
 }
 
-class _LinkStudentsViewState extends State<LinkStudentsView> {
+class _LinkChildSchoolViewState extends State<LinkChildSchoolView> {
   final _regNumberController = TextEditingController();
   final _admissionNumberController = TextEditingController();
 
@@ -66,6 +68,12 @@ class _LinkStudentsViewState extends State<LinkStudentsView> {
                 ],
               ),
               const SizedBox(height: 20),
+              Text(
+                _selectedSchool ?? 'Select school',
+                style: AppTextStyles.bodyLarge,
+              ),
+              const SizedBox(height: 8),
+
               GestureDetector(
                 onTap: () {
                   showItemSelectionSheet<String>(
@@ -97,7 +105,7 @@ class _LinkStudentsViewState extends State<LinkStudentsView> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        _selectedSchool ?? 'Select a school',
+                        _selectedSchool ?? 'Select option',
                         style: const TextStyle(fontSize: 14),
                       ),
                       const Icon(Icons.arrow_drop_down_outlined),
@@ -105,95 +113,11 @@ class _LinkStudentsViewState extends State<LinkStudentsView> {
                   ),
                 ),
               ),
-              // _buildSection(
-              //   label: '',
-              //   children: [
-              //     DropdownField(
-              //       label: 'Select school',
-              //       value: _selectedStudent,
-              //       itemLabel: (String? p1) {
-              //         return '';
-              //       },
-              //       items: const ['Student 1', 'Student 2', 'Student 3'],
-              //       onChanged: (value) {
-              //         setState(() {
-              //           _selectedStudent = value;
-              //           _studentError = null;
-              //         });
-              //       },
-              //     ),
-              //   ],
-              // ),
-              const SizedBox(height: 20),
-              // _buildSection(
-              //   label: 'Admission Number',
-              //   children: [
-              //     AppTextField(
-              //       controller: _admissionNumberController,
-              //       hint: '8yuy5e3e46',
-              //       label: '',
-              //     ),
-              //   ],
-              // ),
-              // const SizedBox(height: 20),
-              // _buildSection(
-              //   label: 'Student Name',
-              //   children: [
-              //     DropdownField(
-              //       label: 'Student Name',
-              //       //  hintText: 'Select student',
-              //       value: null,
-              //       items: const ['Student 1', 'Student 2', 'Student 3'],
-              //       onChanged: (value) {},
-              //       itemLabel: (String? p1) {
-              //         return '';
-              //       },
-              //     ),
-              //     if (_studentError != null) ...[
-              //       const SizedBox(height: 8),
-              //       Text(
-              //         _studentError!,
-              //         style: const TextStyle(
-              //           color: AppColors.error,
-              //           fontSize: 12,
-              //         ),
-              //       ),
-              //     ],
-              //   ],
-              // ),
 
-              // const SizedBox(height: 20),
-              // GestureDetector(
-              //   onTap: () {},
-              //   child: Row(
-              //     children: [
-              //       Container(
-              //         width: 20,
-              //         height: 20,
-              //         decoration: BoxDecoration(
-              //           border: Border.all(color: AppColors.primary),
-              //           borderRadius: BorderRadius.circular(4),
-              //         ),
-              //         child: const Icon(
-              //           Icons.add,
-              //           size: 16,
-              //           color: AppColors.primary,
-              //         ),
-              //       ),
-              //       const SizedBox(width: 8),
-              //       Text(
-              //         'Add Student',
-              //         style: AppTextStyles.bodyMedium.copyWith(
-              //           color: AppColors.primary,
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              // const SizedBox(height: 32),
+              const SizedBox(height: 20),
               PrimaryButton(
                 label: 'Verify',
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => context.push(AppRoutes.linkProfile),
               ),
             ],
           ),

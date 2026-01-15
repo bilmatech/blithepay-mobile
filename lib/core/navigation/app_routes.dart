@@ -12,6 +12,8 @@ abstract class AppRoutes {
   static const String confirmSchool = '/confirm-school';
   static const String dashboard = '/dashboard';
   static const String linkStudents = '/link-students';
+  static const String linkchildSchool = '/link-child-school';
+  static const String linkProfile = '/link-profile';
   static const String addSchool = '/add-school';
   static const String changePhoneNumber = '/change-phone';
   static const String guardianVerification = '/guardian-verification';
@@ -34,4 +36,8 @@ abstract class AppRoutes {
   static const String requestPending = '/request-pending';
   static const String requestFailed = '/request-failed';
   static const String success = '/success';
+  static const String studentLinkedSuccess = '/student-link-Success';
+  static const String feeSelection = '/fee-selection';
+  static const String feeConfirmation = '/fee-confirmation';
+  static const String feeSuccess = '/fee-success';
 }

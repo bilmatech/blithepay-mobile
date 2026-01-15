@@ -37,7 +37,7 @@ class QuickActionButtons extends StatelessWidget {
           icon: Icons.person_add_outlined,
           label: 'Link Child',
           onTap: () {
-            context.push(AppRoutes.linkedStudents);
+            context.push(AppRoutes.linkchildSchool);
           },
         ),
       ],

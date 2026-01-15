@@ -4,20 +4,15 @@ import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart'
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class TransactionDetailView extends StatelessWidget {
-  final String? transactionId;
-
-  const TransactionDetailView({super.key, this.transactionId});
+class PaymentSuccessView extends StatelessWidget {
+  const PaymentSuccessView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('Transactions'),
+        automaticallyImplyActions: false,
+        title: const Text('Pay Fees'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -25,19 +20,19 @@ class TransactionDetailView extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // Success Indicator
-              // Container(
-              //   width: 80,
-              //   height: 80,
-              //   decoration: const BoxDecoration(
-              //     color: AppColors.success,
-              //     shape: BoxShape.circle,
-              //   ),
-              //   child: const Icon(Icons.check, color: Colors.white, size: 40),
-              // ),
-              // const SizedBox(height: 16),
+              //   Success Indicator
+              Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: AppColors.success,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check, color: Colors.white, size: 20),
+              ),
+              const SizedBox(height: 16),
               const Text(
-                'Successful',
+                'Payment Successful',
                 style: TextStyle(
                   color: AppColors.success,
                   fontWeight: FontWeight.w600,
@@ -45,7 +40,7 @@ class TransactionDetailView extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                '+N200,000',
+                '-N1,000,000',
                 style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 32),
@@ -57,12 +52,13 @@ class TransactionDetailView extends StatelessWidget {
               // const SizedBox(height: 12),
               _buildDetailRow('Method:', 'Wallet Balance'),
               const SizedBox(height: 12),
+              _buildDetailRow('Total:', 'N1,000,000'),
+              const SizedBox(height: 12),
               _buildDetailRow('Date:', '11/12/25. 09:22'),
+
               const SizedBox(height: 12),
               _buildDetailRow('Reference:', '98yuy6434678gfe54'),
-              const SizedBox(height: 12),
-              _buildDetailRow('Note:', 'Tuition payment balance...'),
-              const SizedBox(height: 32),
+              const SizedBox(height: 40),
 
               // Action Buttons
               Row(
