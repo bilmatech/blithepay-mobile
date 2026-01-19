@@ -16,6 +16,7 @@ class AppTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final TextInputAction textInputAction;
   final Widget? suffixIcon;
+  final Widget? prefix;
 
   const AppTextField({
     super.key,
@@ -32,6 +33,7 @@ class AppTextField extends StatefulWidget {
     this.onChanged,
     this.textInputAction = TextInputAction.next,
     this.suffixIcon,
+    this.prefix,
   });
 
   @override
@@ -70,6 +72,13 @@ class _AppTextFieldState extends State<AppTextField> {
             hintStyle: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textTertiary,
             ),
+
+            prefixIcon: widget.prefix,
+            prefixIconConstraints: const BoxConstraints(
+              minWidth: 0,
+              minHeight: 0,
+            ),
+
             suffixIcon: widget.showPasswordToggle
                 ? GestureDetector(
                     onTap: () => setState(() => _obscureText = !_obscureText),
@@ -82,6 +91,23 @@ class _AppTextFieldState extends State<AppTextField> {
                   )
                 : widget.suffixIcon,
           ),
+          // InputDecoration(
+          //   hintText: widget.hint,
+          //   hintStyle: AppTextStyles.bodySmall.copyWith(
+          //     color: AppColors.textTertiary,
+          //   ),
+          //   suffixIcon: widget.showPasswordToggle
+          //       ? GestureDetector(
+          //           onTap: () => setState(() => _obscureText = !_obscureText),
+          //           child: Icon(
+          //             _obscureText
+          //                 ? Icons.visibility_off_outlined
+          //                 : Icons.visibility_outlined,
+          //             color: AppColors.textSecondary,
+          //           ),
+          //         )
+          //       : widget.suffixIcon,
+          // ),
         ),
       ],
     );

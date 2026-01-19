@@ -1,3 +1,6 @@
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:country_picker/country_picker.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -27,6 +30,19 @@ class _SignupViewState extends State<SignupView> {
   late TextEditingController _confirmPasswordController;
   final _formKey = GlobalKey<FormState>();
   bool _agreedToTerms = false;
+
+  Country _selectedCountry = Country(
+    phoneCode: '234',
+    countryCode: 'NG',
+    e164Sc: 0,
+    geographic: true,
+    level: 1,
+    name: 'Nigeria',
+    example: '08012345678',
+    displayName: 'Nigeria (NG)',
+    displayNameNoCountryCode: 'Nigeria',
+    e164Key: '234-NG',
+  );
 
   @override
   void initState() {
@@ -115,6 +131,39 @@ class _SignupViewState extends State<SignupView> {
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
                         validator: Validators.validatePhoneNumber,
+                        prefix: GestureDetector(
+                          onTap: () {
+                            showCountryPicker(
+                              context: context,
+                              showPhoneCode: true,
+                              onSelect: (Country country) {
+                                setState(() => _selectedCountry = country);
+                              },
+                            );
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(width: 12),
+                              Text(
+                                _selectedCountry.flagEmoji,
+                                style: const TextStyle(fontSize: 18),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '+${_selectedCountry.phoneCode}',
+                                style: AppTextStyles.bodyRegular,
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                height: 24,
+                                width: 1,
+                                color: AppColors.textTertiary,
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 16),
                       AppTextField(
@@ -145,10 +194,30 @@ class _SignupViewState extends State<SignupView> {
                             onChanged: (value) =>
                                 setState(() => _agreedToTerms = value ?? false),
                           ),
-                          const Expanded(
-                            child: Text(
-                              'By registering your school, you accept the Terms and Conditions',
-                              style: AppTextStyles.bodySmall,
+                          Expanded(
+                            child: Text.rich(
+                              TextSpan(
+                                text:
+                                    'By registering your school, you accept the ',
+                                style: AppTextStyles.bodySmall,
+                                children: [
+                                  TextSpan(
+                                    text: 'Terms and Conditions',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.primary,
+                                      // decoration: TextDecoration.underline,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () {
+                                        // Navigate or open link
+                                        // Example:
+                                        // Navigator.push(context, MaterialPageRoute(...));
+                                        // or launchUrl(...)
+                                      },
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -159,6 +228,29 @@ class _SignupViewState extends State<SignupView> {
                         onPressed: _handleSignup,
                         isLoading: state.status == AuthStatus.loading,
                         isEnabled: state.status != AuthStatus.loading,
+                      ),
+                      const SizedBox(height: 16),
+
+                      Center(
+                        child: Text.rich(
+                          TextSpan(
+                            text: AppStrings.alreadyhaveAnAccount,
+                            style: AppTextStyles.bodySmall,
+                            children: [
+                              TextSpan(
+                                text: AppStrings.signIn,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    context.go(AppRoutes.login);
+                                  },
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),

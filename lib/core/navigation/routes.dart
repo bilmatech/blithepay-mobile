@@ -1,3 +1,5 @@
+import 'package:blithepay/features/auth/presentation/views/setup_pin_view.dart';
+import 'package:blithepay/features/common/data/success_args_model.dart';
 import 'package:blithepay/features/fees/presentation/views/payment_confirmation_view.dart';
 import 'package:blithepay/features/fees/presentation/views/payment_success_view.dart';
 import 'package:blithepay/features/profile/presentation/views/profile_view.dart';
@@ -5,6 +7,7 @@ import 'package:blithepay/features/fees/presentation/views/fees_breakdown_view.d
 import 'package:blithepay/features/schools/presentation/views/link_child_school_view.dart';
 import 'package:blithepay/features/schools/presentation/views/link_profile.dart';
 import 'package:blithepay/features/schools/presentation/views/student_linked_success_view.dart';
+import 'package:blithepay/features/splash/presentation/views/splash_view.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/signup_view.dart';
@@ -39,8 +42,9 @@ import 'app_routes.dart';
 class AppRouterConfig {
   static GoRouter createRouter() {
     return GoRouter(
-      initialLocation: AppRoutes.onboarding,
+      initialLocation: AppRoutes.splash,
       routes: [
+        GoRoute(path: AppRoutes.splash, builder: (_, __) => const SplashView()),
         GoRoute(
           path: AppRoutes.onboarding,
           builder: (_, __) => const OnboardingView(),
@@ -59,7 +63,14 @@ class AppRouterConfig {
             return VerifyOtpView(email: args['email'], flow: args['flow']);
           },
         ),
+        GoRoute(
+          path: AppRoutes.setupOtp,
+          builder: (context, state) {
+            final args = state.extra as Map<String, dynamic>;
 
+            return SetupOtpView(email: args['email'], flow: args['flow']);
+          },
+        ),
         GoRoute(
           path: AppRoutes.resetPassword,
           builder: (context, state) {
@@ -209,14 +220,18 @@ class AppRouterConfig {
           path: AppRoutes.requestFailed,
           builder: (_, __) => const RequestFailedView(),
         ),
+
         GoRoute(
           path: AppRoutes.success,
           builder: (context, state) {
-            final extra = state.extra as Map<String, String>?;
+            final args = state.extra as SuccessArgs;
+
             return SuccessView(
-              title: extra?['title'] ?? 'Success',
-              message: extra?['message'] ?? 'Operation completed successfully',
-              buttonLabel: extra?['buttonLabel'] ?? 'My Dashboard',
+              title: args.title,
+              message: args.message,
+              buttonLabel: args.buttonLabel,
+              nextRoute: args.nextRoute,
+              nextExtra: args.nextExtra,
             );
           },
         ),

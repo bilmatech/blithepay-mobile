@@ -28,6 +28,7 @@ dependencies:
   shimmer: ^3.0.0
   flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.7
+  country_picker: ^2.0.27
 
 
 dev_dependencies:
@@ -53,14 +54,13 @@ flutter_launcher_icons:
   remove_alpha_ios: true
 
 flutter_native_splash:
-  color: "#EAF2FF"
-  image: assets/images/app_icon.png
-  color_dark: "#EAF2FF"
-  image_dark: assets/images/app_icon.png
+  color: "#1E3A8A"
+  image: assets/images/app_icon_white.png
+  color_dark: "#1E3A8A"
+  image_dark: assets/images/app_icon_white.png
   android_12:
-    image: assets/images/app_icon.png
-    icon_background_color: "#0A1628"
-    color: "#EAF2FF"
+    image: assets/images/app_icon_white.png
+    color: "#1E3A8A"
   android: true
   ios: true
   web: false

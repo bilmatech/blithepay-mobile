@@ -13,17 +13,17 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 
-class VerifyOtpView extends StatefulWidget {
+class SetupOtpView extends StatefulWidget {
   final String email;
   final OtpFlow flow;
 
-  const VerifyOtpView({super.key, required this.email, required this.flow});
+  const SetupOtpView({super.key, required this.email, required this.flow});
 
   @override
-  State<VerifyOtpView> createState() => _VerifyOtpViewState();
+  State<SetupOtpView> createState() => _SetupOtpViewState();
 }
 
-class _VerifyOtpViewState extends State<VerifyOtpView> {
+class _SetupOtpViewState extends State<SetupOtpView> {
   late List<TextEditingController> _otpControllers;
   late List<FocusNode> _focusNodes;
 
@@ -69,25 +69,15 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.otpVerified) {
-          switch (widget.flow) {
-            case OtpFlow.signup:
-              context.go(
-                AppRoutes.success,
-                extra: SuccessArgs(
-                  title: AppStrings.verificationSuccess,
-                  message: AppStrings.anAccounthasbeen,
-                  buttonLabel: AppStrings.setupPin,
-                  nextRoute: AppRoutes.setupOtp,
-                  nextExtra: {'email': widget.email, 'flow': OtpFlow.signup},
-                ),
-              );
-
-              break;
-
-            case OtpFlow.forgotPassword:
-              context.push(AppRoutes.resetPassword, extra: widget.email);
-              break;
-          }
+          context.go(
+            AppRoutes.success,
+            extra: const SuccessArgs(
+              title: AppStrings.successful,
+              message: AppStrings.anAccounthasbeen,
+              buttonLabel: AppStrings.gotToHome,
+              nextRoute: AppRoutes.home,
+            ),
+          );
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -108,25 +98,16 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                   children: [
                     const SizedBox(height: 40),
                     const Text(
-                      AppStrings.enterConfirmationCode,
+                      AppStrings.setupDigitPin,
                       style: AppTextStyles.h3,
                     ),
                     const SizedBox(height: 12),
-                    RichText(
+                    const Text(
+                      AppStrings.setup,
+                      style: AppTextStyles.bodyRegular,
                       textAlign: TextAlign.center,
-                      text: TextSpan(
-                        text: '${AppStrings.codeSentTo}\n',
-                        style: AppTextStyles.bodyRegular,
-                        children: [
-                          TextSpan(
-                            text: widget.email,
-                            style: AppTextStyles.bodyRegular.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
+
                     const SizedBox(height: 48),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -163,19 +144,10 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
-                    Center(
-                      child: GestureDetector(
-                        onTap: () {},
-                        child: const Text(
-                          AppStrings.resendCode,
-                          style: AppTextStyles.link,
-                        ),
-                      ),
-                    ),
+
                     const SizedBox(height: 48),
                     PrimaryButton(
-                      label: AppStrings.verify,
+                      label: AppStrings.continueS,
                       onPressed: _handleVerifyOtp,
                       isLoading: state.status == AuthStatus.loading,
                       isEnabled: state.status != AuthStatus.loading,

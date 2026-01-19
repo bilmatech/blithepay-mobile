@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   // Primary
   static const Color primary = Color(0xFF1E3A8A);
-  static const Color primaryLight = Color(0xFF3B5BDB);
+  static const Color primaryLight = Color(0xFFEAF2FF);
   static const Color primaryDark = Color(0xFF132968);
   
   // Neutral

@@ -48,8 +48,8 @@ class _OnboardingViewState extends State<OnboardingView> {
     super.dispose();
   }
 
-  void _goToLogin() {
-    context.go(AppRoutes.login);
+  void _goToCreateAccount() {
+    context.go(AppRoutes.signup);
   }
 
   @override
@@ -87,7 +87,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                         top: 40,
                         right: 40,
                         child: GestureDetector(
-                          onTap: _goToLogin,
+                          onTap: _goToCreateAccount,
                           child: Container(
                             width: 80,
                             height: 40,
@@ -134,11 +134,11 @@ class _OnboardingViewState extends State<OnboardingView> {
                   const SizedBox(height: 40),
                   PrimaryButton(
                     label: _currentIndex == _pages.length - 1
-                        ? AppStrings.next
+                        ? AppStrings.createAccount
                         : AppStrings.next,
                     onPressed: () {
                       if (_currentIndex == _pages.length - 1) {
-                        _goToLogin();
+                        _goToCreateAccount();
                       } else {
                         _pageController.nextPage(
                           duration: const Duration(milliseconds: 300),

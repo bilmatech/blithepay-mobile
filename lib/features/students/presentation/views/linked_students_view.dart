@@ -419,7 +419,6 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
                             headingRowColor: MaterialStateProperty.resolveWith(
                               (states) => Colors.grey.shade200,
                             ),
-                            dataRowHeight: 36,
                             headingRowHeight: 36,
                             columnSpacing: 12,
                             horizontalMargin: 12,

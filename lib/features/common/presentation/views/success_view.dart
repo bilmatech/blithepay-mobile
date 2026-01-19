@@ -1,5 +1,6 @@
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
@@ -8,14 +9,16 @@ class SuccessView extends StatelessWidget {
   final String title;
   final String message;
   final String buttonLabel;
-  final VoidCallback? onPressed;
+  final String nextRoute;
+  final Object? nextExtra;
 
   const SuccessView({
     super.key,
     required this.title,
     required this.message,
     this.buttonLabel = 'My Dashboard',
-    this.onPressed,
+    required this.nextRoute,
+    this.nextExtra,
   });
 
   @override
@@ -29,36 +32,35 @@ class SuccessView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 100,
-                  height: 100,
+                  width: 60,
+                  height: 60,
                   decoration: const BoxDecoration(
-                    color: AppColors.success,
+                    color: Colors.green,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.check,
                     color: AppColors.white,
-                    size: 50,
+                    size: 30,
                   ),
                 ),
                 const SizedBox(height: 24),
-                Text(
-                  title,
-                  style: AppTextStyles.headingLarge,
-                  textAlign: TextAlign.center,
-                ),
+                Text(title,
+                    style: AppTextStyles.headingLarge,
+                    textAlign: TextAlign.center),
                 const SizedBox(height: 12),
                 Text(
                   message,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.textSecondary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
                 PrimaryButton(
                   label: buttonLabel,
-                  onPressed: onPressed ?? () => Navigator.pop(context),
+                  onPressed: () {
+                    context.go(nextRoute, extra: nextExtra);
+                  },
                 ),
               ],
             ),

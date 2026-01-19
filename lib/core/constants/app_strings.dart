@@ -8,13 +8,18 @@ class AppStrings {
   static const String ok = 'OK';
   static const String error = 'Error';
   static const String success = 'Success';
+  static const String successful = 'Successful';
+  static const String gotToHome = 'Go to Home';
+
   static const String loading = 'Loading...';
 
   // Auth
   static const String logIn = 'Log In';
   static const String signUp = 'Sign Up';
+  static const String signIn = 'Sign In';
   static const String createAccount = 'Create Account';
   static const String forgotPassword = 'Forgot password?';
+  static const String alreadyhaveAnAccount = 'Already have an account? ';
   static const String resetPassword = 'Password Set-Up';
   static const String changePassword = 'Change Password';
   static const String returnToLogIn = 'Return To Log In';
@@ -51,6 +56,12 @@ class AppStrings {
   static const String resendCode = 'Resend Code';
   static const String verify = 'Verify';
 
+  //set up pin
+
+  static const String setupDigitPin = 'Set Up 4 Digit Pin';
+  static const String setup = 'Set up a 4 digit pin for carrying out transactions on BlithePay';
+  static const String continueS = 'Continue';
+
   // Onboarding
   static const String paySecurely = 'Pay School Fees Securely & Efficiently.';
   static const String paySecurelyDesc =
@@ -63,4 +74,8 @@ class AppStrings {
   static const String getRemindersDesc =
       'Never miss payments with automated reminders, instant receipts, and full financial visibility.';
   static const String welcomeBack = 'Welcome Back!';
+  static const String verificationSuccess = 'Verification Successful';
+  static const String anAccounthasbeen =
+      'An account has been successfully created, you will be automatically redirected if not click the “Go to Home” button';
+  static const String setupPin = 'Set Up Pin';
 }

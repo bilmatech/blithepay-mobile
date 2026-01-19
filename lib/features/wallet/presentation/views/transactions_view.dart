@@ -70,7 +70,12 @@ class _TransactionsViewState extends State<TransactionsView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Today:', style: AppTextStyles.h3),
+                        Text(
+                          'Today:',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         Row(
                           children: [
                             // Filter button with search
@@ -120,16 +125,15 @@ class _TransactionsViewState extends State<TransactionsView> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
 
                     // Transaction table
                     SizedBox(
                       width: double.infinity,
                       child: DataTable(
-                        headingRowColor: MaterialStateProperty.resolveWith(
+                        headingRowColor: WidgetStateProperty.resolveWith(
                           (states) => Colors.grey.shade200,
                         ),
-                        dataRowHeight: 36,
                         headingRowHeight: 36,
                         columnSpacing: 12,
                         horizontalMargin: 12,

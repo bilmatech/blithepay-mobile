@@ -157,62 +157,53 @@ class _WalletManagementViewState extends State<WalletManagementView> {
                   ),
                 )
               else
-                Container(
+                SizedBox(
                   width: double.infinity,
                   child: DataTable(
-                    headingRowColor: MaterialStateProperty.resolveWith(
+                    headingRowColor: WidgetStateProperty.resolveWith(
                       (states) => Colors.grey.shade200,
                     ),
-                    dataRowHeight: 36,
                     headingRowHeight: 36,
                     columnSpacing: 12,
                     horizontalMargin: 12,
                     columns: const [
                       DataColumn(
-                        label: Expanded(
-                          child: Text(
-                            'Date',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        label: Text(
+                          'Date',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                       DataColumn(
-                        label: Expanded(
-                          child: Text(
-                            'Amount',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        label: Text(
+                          'Amount',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                       DataColumn(
-                        label: Expanded(
-                          child: Text(
-                            'Method',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        label: Text(
+                          'Method',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                       DataColumn(
-                        label: Expanded(
-                          child: Text(
-                            'Type',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        label: Text(
+                          'Type',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -221,44 +212,36 @@ class _WalletManagementViewState extends State<WalletManagementView> {
                       DataRow(
                         cells: [
                           DataCell(
-                            const Expanded(
-                              child: Text(
-                                '11-09-25. 11:15',
-                                style: TextStyle(fontSize: 12),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            const Text(
+                              '11-09-25. 11:15',
+                              style: TextStyle(fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
                             ),
                             onTap: () {
                               // handle row click
                             },
                           ),
                           DataCell(
-                            const Expanded(
-                              child: Text(
-                                'N300,000.00',
-                                style: TextStyle(fontSize: 12),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            const Text(
+                              'N300,000.00',
+                              style: TextStyle(fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
                             ),
                             onTap: () {},
                           ),
                           DataCell(
-                            const Expanded(
-                              child: Text(
-                                'Wallet',
-                                style: TextStyle(fontSize: 12),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            const Text(
+                              'Wallet',
+                              style: TextStyle(fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
                             ),
                             onTap: () {},
                           ),
                           DataCell(
-                            const Expanded(
-                              child: Text(
-                                'Withdrawal',
-                                style: TextStyle(fontSize: 12),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            const Text(
+                              'Withdrawal',
+                              style: TextStyle(fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
                             ),
                             onTap: () {},
                           ),
@@ -267,42 +250,34 @@ class _WalletManagementViewState extends State<WalletManagementView> {
                       DataRow(
                         cells: [
                           DataCell(
-                            const Expanded(
-                              child: Text(
-                                '11-09-25. 11:15',
-                                style: TextStyle(fontSize: 12),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            const Text(
+                              '11-09-25. 11:15',
+                              style: TextStyle(fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
                             ),
                             onTap: () {},
                           ),
                           DataCell(
-                            const Expanded(
-                              child: Text(
-                                'N300,000.00',
-                                style: TextStyle(fontSize: 12),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            const Text(
+                              'N300,000.00',
+                              style: TextStyle(fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
                             ),
                             onTap: () {},
                           ),
                           DataCell(
-                            const Expanded(
-                              child: Text(
-                                'Wallet',
-                                style: TextStyle(fontSize: 12),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            const Text(
+                              'Wallet',
+                              style: TextStyle(fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
                             ),
                             onTap: () {},
                           ),
                           DataCell(
-                            const Expanded(
-                              child: Text(
-                                'Fee Payment',
-                                style: TextStyle(fontSize: 12),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            const Text(
+                              'Fee Payment',
+                              style: TextStyle(fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
                             ),
                             onTap: () {},
                           ),

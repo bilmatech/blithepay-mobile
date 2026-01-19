@@ -70,7 +70,12 @@ class _NotificationsViewState extends State<NotificationsView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Today:', style: AppTextStyles.h3),
+                        Text(
+                          'Today:',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         Row(
                           children: [
                             // Filter button with search
