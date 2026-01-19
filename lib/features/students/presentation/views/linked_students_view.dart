@@ -1,4 +1,6 @@
 import 'package:blithepay/core/navigation/app_routes.dart';
+import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
+import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
 import 'package:blithepay/features/wallet/presentation/views/invoice_detail_dialog.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/app_outlined_icon_button.dart';
@@ -21,7 +23,7 @@ class LinkedStudentsView extends StatefulWidget {
 }
 
 class _LinkedStudentsViewState extends State<LinkedStudentsView> {
-  String _searchQuery = '';
+  // String _searchQuery = '';
   String? currentFilter;
   String? currentSort;
   @override
@@ -46,10 +48,7 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => context.pop(),
-        ),
+        automaticallyImplyActions: false,
         title: const Text('Linked Students'),
         centerTitle: true,
         actions: [
@@ -63,7 +62,7 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.person_add_alt_1, size: 22),
+                  Icon(Icons.school_outlined, size: 22),
                   SizedBox(height: 2),
                   Text(
                     'Add Child',
@@ -413,136 +412,18 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
                         const SizedBox(height: 24),
 
                         // Transaction table
-                        SizedBox(
-                          width: double.infinity,
-                          child: DataTable(
-                            headingRowColor: MaterialStateProperty.resolveWith(
-                              (states) => Colors.grey.shade200,
-                            ),
-                            headingRowHeight: 36,
-                            columnSpacing: 12,
-                            horizontalMargin: 12,
-                            columns: const [
-                              DataColumn(
-                                label: Text(
-                                  'Date',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              DataColumn(
-                                label: Text(
-                                  'Amount',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              DataColumn(
-                                label: Text(
-                                  'Method',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              DataColumn(
-                                label: Text(
-                                  'Type',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                            rows: transactions
-                                .where(
-                                  (tx) =>
-                                      (tx['date']
-                                              ?.toString()
-                                              .toLowerCase()
-                                              .contains(
-                                                _searchQuery.toLowerCase(),
-                                              ) ??
-                                          false) ||
-                                      (tx['amount']
-                                              ?.toString()
-                                              .toLowerCase()
-                                              .contains(
-                                                _searchQuery.toLowerCase(),
-                                              ) ??
-                                          false),
-                                )
-                                .map(
-                                  (tx) => DataRow(
-                                    cells: [
-                                      DataCell(
-                                        Text(
-                                          tx['date'] ?? '',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                        onTap: () {
-                                          context.push(
-                                            AppRoutes.transactionDetail,
-                                            extra: '12345678',
-                                          );
-                                          // handle cell click
-                                        },
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          tx['amount'] ?? '',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                        onTap: () {
-                                          context.push(
-                                            AppRoutes.transactionDetail,
-                                            extra: '12345678',
-                                          );
-                                        },
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          tx['method'] ?? '',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                        onTap: () {
-                                          context.push(
-                                            AppRoutes.transactionDetail,
-                                            extra: '12345678',
-                                          );
-                                        },
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          tx['type'] ?? '',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                        onTap: () {
-                                          context.push(
-                                            AppRoutes.transactionDetail,
-                                            extra: '12345678',
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                )
-                                .toList(),
-                          ),
+                        ListView.separated(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: transactions.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final transaction = transactions[index];
+                            return TransactionContainer(
+                              transaction: transaction,
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -577,22 +458,18 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
 }
 
 final transactions = [
-  {
-    'date': '11-09-25. 11:15',
-    'amount': 'N300,000.00',
-    'method': 'Wallet',
-    'type': 'Withdrawal',
-  },
-  {
-    'date': '11-09-25. 11:15',
-    'amount': 'N300,000.00',
-    'method': 'Wallet',
-    'type': 'Fee Payment',
-  },
-  {
-    'date': '11-09-25. 11:15',
-    'amount': 'N300,000.00',
-    'method': 'Wallet',
-    'type': 'Deposit',
-  },
+  const TransactionItem(
+    title: 'Tuition fee',
+    amount: 'N300,000.00',
+    date: '11-09-25',
+    time: '11:15',
+    status: 'Successful',
+  ),
+  const TransactionItem(
+    title: 'Wallet Deposit',
+    amount: 'N200,000.00',
+    date: '11-09-25',
+    time: '11:15',
+    status: 'Successful',
+  ),
 ];

@@ -59,7 +59,8 @@ class AppStrings {
   //set up pin
 
   static const String setupDigitPin = 'Set Up 4 Digit Pin';
-  static const String setup = 'Set up a 4 digit pin for carrying out transactions on BlithePay';
+  static const String setup =
+      'Set up a 4 digit pin for carrying out transactions on BlithePay';
   static const String continueS = 'Continue';
 
   // Onboarding
@@ -78,4 +79,12 @@ class AppStrings {
   static const String anAccounthasbeen =
       'An account has been successfully created, you will be automatically redirected if not click the “Go to Home” button';
   static const String setupPin = 'Set Up Pin';
+
+  //fund wallet
+  static const String transferAccountDetails = 'Transfer Account Details';
+  static const String fundyouBilthePay =
+      'Fund your BlithePay account from any Nigerian bank by transferring into your personal BlithePay account details below.';
+  static const String transfertothisAccount =
+      'Transfer to this account and your wallet will be credited instantly';
+  static const String transferDone = 'transferDone';
 }

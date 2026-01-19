@@ -1,3 +1,4 @@
+import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
 import 'package:equatable/equatable.dart';
 import '../../data/models/wallet_model.dart';
 
@@ -26,7 +27,7 @@ class WalletLoaded extends WalletState {
 }
 
 class TransactionsLoaded extends WalletState {
-  final List<Map<String, String>> transactions;
+  final List<TransactionItem> transactions;
 
   const TransactionsLoaded({required this.transactions});
 

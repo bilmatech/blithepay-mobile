@@ -38,6 +38,12 @@ class AppTextStyles {
     color: AppColors.textPrimary,
     height: 1.5,
   );
+  static const TextStyle bodyRegularBlack = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textPrimary,
+    height: 1.5,
+  );
 
   static const TextStyle bodyRegular = TextStyle(
     fontSize: 14,

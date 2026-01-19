@@ -80,14 +80,24 @@ class ProfileView extends StatelessWidget {
                     _ProfileItem(
                       icon: Icons.account_balance_wallet_outlined,
                       label: 'Wallet',
-                      onTap: () => context.push('/wallet-management'),
+                      onTap: () => context.push(AppRoutes.fundWallet),
                     ),
                     _ProfileItem(
                       icon: Icons.notifications_none_outlined,
                       label: 'Notifications',
                       onTap: () => context.push('/notifications'),
                     ),
-
+                    _ProfileItem(
+                      icon: Icons.person,
+                      label: 'View Details',
+                      onTap: () => context.push(AppRoutes.profileDetail),
+                    ),
+                    _ProfileItem(
+                      icon: Icons.lock,
+                      label: 'Change Password',
+                      onTap: () => context.push(AppRoutes.changePassword),
+                    ),
+                    //                             icon: const Icon(Icons.lock),
                     _ProfileItem(
                       icon: Icons.help_outline,
                       label: 'Help & Support',

@@ -31,41 +31,42 @@ class _LinkProfileViewState extends State<LinkProfileView> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      appBar: AppBar(title: const Text('Link Child'), elevation: 0),
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text('Link Child'),
+        elevation: 0,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Student Verification',
-                style: AppTextStyles.headingLarge,
-              ),
-              const SizedBox(height: 12),
-
               Container(
-                width: 60,
-                height: 60,
+                width: 120,
+                height: 120,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.primary, width: 2),
-                  image: const DecorationImage(
-                    image: NetworkImage(
-                      'https://via.placeholder.com/150', // child image url
-                    ),
-                    fit: BoxFit.cover,
-                  ),
+                  border: Border.all(width: 1),
+                  // image: const DecorationImage(
+                  //   image: NetworkImage(
+                  //     'https://placehold.co', // child image url
+                  //   ),
+                  //   fit: BoxFit.cover,
+                  // ),
                 ),
+                child: Icon(Icons.person, size: 80),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 24),
 
-              _buildDetailBox('Adebowale Anthony Joshua'),
-              const SizedBox(height: 12),
-              _buildDetailBox('s98764hgt679'),
-              const SizedBox(height: 12),
-              _buildDetailBox('Primary 3'),
+              _buildDetailBox('Full Name', 'Adebowale Anthony Joshua'),
+              Divider(),
+              _buildDetailBox('School Name', 'Adebowale School'),
+              Divider(),
+
+              _buildDetailBox('Class', 'Primary 3'),
+              Divider(),
+
               const SizedBox(height: 40),
               PrimaryButton(
                 label: 'Link Profile',
@@ -78,18 +79,29 @@ class _LinkProfileViewState extends State<LinkProfileView> {
     );
   }
 
-  Widget _buildDetailBox(String text) {
+  Widget _buildDetailBox(String title, String text) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(8),
-        color: AppColors.surface,
-      ),
-      child: Text(
-        text,
-        style: AppTextStyles.bodyRegular.copyWith(color: AppColors.textPrimary),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              title,
+              style: AppTextStyles.bodyRegularBlack.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTextStyles.bodyRegular.copyWith(
+                color: AppColors.lightBack,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

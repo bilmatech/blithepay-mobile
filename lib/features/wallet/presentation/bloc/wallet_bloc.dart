@@ -1,3 +1,4 @@
+import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/wallet_model.dart';
 import 'wallet_event.dart';
@@ -46,24 +47,41 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       emit(const WalletLoading());
       await Future.delayed(const Duration(seconds: 1));
       final transactions = [
-        {
-          'date': '11-09-25. 11:15',
-          'amount': 'N300,000.00',
-          'method': 'Wallet',
-          'type': 'Withdrawal',
-        },
-        {
-          'date': '11-09-25. 11:15',
-          'amount': 'N300,000.00',
-          'method': 'Wallet',
-          'type': 'Fee Payment',
-        },
-        {
-          'date': '11-09-25. 11:15',
-          'amount': 'N300,000.00',
-          'method': 'Wallet',
-          'type': 'Deposit',
-        },
+        const TransactionItem(
+          title: 'Tuition fee',
+          amount: 'N300,000.00',
+          date: '11-09-25',
+          time: '11:15',
+          status: 'Successful',
+        ),
+        const TransactionItem(
+          title: 'Wallet Deposit',
+          amount: 'N200,000.00',
+          date: '11-09-25',
+          time: '11:15',
+          status: 'Successful',
+        ),
+        const TransactionItem(
+          title: 'Wallet Withdrawal',
+          amount: 'N100,000.00',
+          date: '11-09-25',
+          time: '11:15',
+          status: 'Successful',
+        ),
+        const TransactionItem(
+          title: 'Textbooks',
+          amount: 'N300,000.00',
+          date: '11-09-25',
+          time: '11:15',
+          status: 'Successful',
+        ),
+        const TransactionItem(
+          title: 'Tuition fee',
+          amount: 'N300,000.00',
+          date: '11-09-25',
+          time: '11:15',
+          status: 'Successful',
+        ),
       ];
       emit(TransactionsLoaded(transactions: transactions));
     } catch (e) {

@@ -1,13 +1,14 @@
 import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class TransactionDetailView extends StatelessWidget {
-  final String? transactionId;
+  final TransactionItem? transaction;
 
-  const TransactionDetailView({super.key, this.transactionId});
+  const TransactionDetailView({super.key, this.transaction});
 
   @override
   Widget build(BuildContext context) {
@@ -36,28 +37,28 @@ class TransactionDetailView extends StatelessWidget {
               //   child: const Icon(Icons.check, color: Colors.white, size: 40),
               // ),
               // const SizedBox(height: 16),
-              const Text(
-                'Successful',
-                style: TextStyle(
+              Text(
+                transaction?.status ?? 'Successful',
+                style: const TextStyle(
                   color: AppColors.success,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                '+N200,000',
+              Text(
+                transaction?.amount ?? '+N200,000',
                 style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 32),
 
               // Transaction Details
-              _buildDetailRow('Fee:', 'Tuition Fee'),
+              _buildDetailRow('Fee:', transaction?.title ?? 'Tuition Fee'),
               const SizedBox(height: 12),
               //  _buildDetailRow('Student:', 'Aishat Abdul Yusuf'),
               // const SizedBox(height: 12),
               _buildDetailRow('Method:', 'Wallet Balance'),
               const SizedBox(height: 12),
-              _buildDetailRow('Date:', '11/12/25. 09:22'),
+              _buildDetailRow('Date:', transaction?.date ?? '11/12/25. 09:22'),
               const SizedBox(height: 12),
               _buildDetailRow('Reference:', '98yuy6434678gfe54'),
               const SizedBox(height: 12),
