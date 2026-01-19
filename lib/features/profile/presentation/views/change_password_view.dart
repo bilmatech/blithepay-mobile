@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/constants/app_text_styles.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/layouts/app_scaffold.dart';
 
@@ -29,6 +28,7 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
     super.initState();
     _newPasswordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
+    _oldPasswordController = TextEditingController();
   }
 
   @override
@@ -65,51 +65,60 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
         // }
       },
       child: AppScaffold(
-        showBackButton: false,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text('Change Password'),
+          centerTitle: true,
+        ),
         body: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
-            return SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 40),
-                      const Text(
-                        AppStrings.resetPassword,
-                        style: AppTextStyles.h2,
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 24),
+                    AppTextField(
+                      label: AppStrings.oldPassword,
+                      hint: AppStrings.oldPassword,
+                      controller: _oldPasswordController,
+                      obscureText: true,
+                      showPasswordToggle: true,
+                      validator: Validators.validatePassword,
+                    ),
+                    const SizedBox(height: 16),
+                    AppTextField(
+                      label: AppStrings.newPassword,
+                      hint: AppStrings.enterPassword,
+                      controller: _newPasswordController,
+                      obscureText: true,
+                      showPasswordToggle: true,
+                      validator: Validators.validatePassword,
+                    ),
+                    const SizedBox(height: 16),
+                    AppTextField(
+                      label: AppStrings.confirmPassword,
+                      hint: AppStrings.enterPassword,
+                      controller: _confirmPasswordController,
+                      obscureText: true,
+                      showPasswordToggle: true,
+                      validator: (value) => Validators.validatePasswordMatch(
+                        _newPasswordController.text,
+                        value,
                       ),
-                      const SizedBox(height: 24),
-                      AppTextField(
-                        label: AppStrings.newPassword,
-                        hint: AppStrings.enterPassword,
-                        controller: _newPasswordController,
-                        obscureText: true,
-                        showPasswordToggle: true,
-                        validator: Validators.validatePassword,
-                      ),
-                      const SizedBox(height: 16),
-                      AppTextField(
-                        label: AppStrings.confirmPassword,
-                        hint: AppStrings.enterPassword,
-                        controller: _confirmPasswordController,
-                        obscureText: true,
-                        showPasswordToggle: true,
-                        validator: (value) => Validators.validatePasswordMatch(
-                          _newPasswordController.text,
-                          value,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      PrimaryButton(
-                        label: AppStrings.changePassword,
-                        onPressed: _handleResetPassword,
-                        // isLoading: state.status == AuthStatus.loading,
-                        // isEnabled: state.status != AuthStatus.loading,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 32),
+                    PrimaryButton(
+                      label: AppStrings.changePassword,
+                      onPressed: _handleResetPassword,
+                      // isLoading: state.status == AuthStatus.loading,
+                      // isEnabled: state.status != AuthStatus.loading,
+                    ),
+                  ],
                 ),
               ),
             );

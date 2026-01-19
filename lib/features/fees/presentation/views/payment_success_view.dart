@@ -1,4 +1,6 @@
 import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/features/fees/presentation/views/widgets/student_card_container_widget.dart';
+import 'package:blithepay/features/students/data/models/student_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:flutter/material.dart';
@@ -46,11 +48,26 @@ class PaymentSuccessView extends StatelessWidget {
               const SizedBox(height: 32),
 
               // Transaction Details
-              _buildDetailRow('Fee:', 'Tuition Fee'),
+              SizedBox(
+                height: 200,
+                child: StudentCardContainerWidget(
+                  margin: EdgeInsets.zero,
+                  student: StudentModel(
+                    id: '1',
+                    name: 'Adebayo Oluwaferanmi',
+                    studentId: '7ytf5675dm',
+                    class_: 'Primary 3',
+                    school: 'Seaman International Nursery & Primary School',
+                    feeStatus: 'Fee Pending',
+                    amountDue: 300000,
+                  ),
+                ),
+              ),
+              //  _buildDetailRow('Fee:', 'Tuition Fee'),
               const SizedBox(height: 12),
-              //  _buildDetailRow('Student:', 'Aishat Abdul Yusuf'),
+              _buildDetailRow('Student:', 'Aishat Abdul Yusuf'),
               // const SizedBox(height: 12),
-              _buildDetailRow('Method:', 'Wallet Balance'),
+              //  _buildDetailRow('Method:', 'Wallet Balance'),
               const SizedBox(height: 12),
               _buildDetailRow('Total:', 'N1,000,000'),
               const SizedBox(height: 12),
@@ -75,7 +92,7 @@ class PaymentSuccessView extends StatelessWidget {
                       onPressed: () {
                         context.go('/home');
                       },
-                      child: const Text('Repeat Transaction'),
+                      child: const Text('Done'),
                     ),
                   ),
                 ],

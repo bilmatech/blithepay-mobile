@@ -85,7 +85,7 @@ class AppRouterConfig {
           builder: (_, __) => const PasswordChangedView(),
         ),
         GoRoute(
-          path: AppRoutes.passwordChanged,
+          path: AppRoutes.changePassword,
           builder: (_, __) => const ChangePasswordView(),
         ),
         ShellRoute(

@@ -1,6 +1,8 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/features/fees/presentation/views/widgets/student_card_container_widget.dart';
+import 'package:blithepay/features/students/data/models/student_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
@@ -19,6 +21,21 @@ class _PayFeesViewState extends State<PayFeesView> {
   // String? _selectedStudent;
   // String? _selectedFee;
   String? _selectedSchool;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.95);
+  }
+
+  late final PageController _pageController;
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,71 +100,89 @@ class _PayFeesViewState extends State<PayFeesView> {
               ),
               const SizedBox(height: 28),
 
-              // Fee Information Section
-              Text(
-                'Enter Student Details:',
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-              const SizedBox(height: 24),
-              const AppTextField(
-                label: 'Student Name',
-                hint: 'Type here',
-                maxLines: 3,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                _selectedSchool ?? 'Select school',
-                style: AppTextStyles.bodyLarge,
-              ),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: () {
-                  showItemSelectionSheet<String>(
-                    context: context,
-                    title: 'Select School',
-                    items: [
-                      'Greenwood High',
-                      'Hillview Academy',
-                      'Sunrise School',
-                    ],
-                    selectedItem: _selectedSchool,
-                    onItemSelected: (school) {
-                      setState(() {
-                        _selectedSchool = school;
-                      });
-                    },
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _selectedSchool ?? 'Select school',
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      const Icon(Icons.arrow_drop_down_outlined),
-                    ],
-                  ),
+              SizedBox(
+                height: 200,
+                child: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() => _currentPage = index);
+                  },
+                  itemCount: students.length,
+                  itemBuilder: (context, index) {
+                    final student = students[index];
+                    return StudentCardContainerWidget(
+                      margin: const EdgeInsets.only(right: 16),
+                      student: student,
+                    );
+                  },
                 ),
               ),
 
-              const SizedBox(height: 24),
+              // Fee Information Section
+              // Text(
+              //   'Enter Student Details:',
+              //   style: Theme.of(context).textTheme.labelLarge,
+              // ),
+              // const SizedBox(height: 24),
+              // const AppTextField(
+              //   label: 'Student Name',
+              //   hint: 'Type here',
+              //   maxLines: 3,
+              // ),
+              // const SizedBox(height: 24),
+              // Text(
+              //   _selectedSchool ?? 'Select school',
+              //   style: AppTextStyles.bodyLarge,
+              // ),
+              // const SizedBox(height: 8),
+              // GestureDetector(
+              //   onTap: () {
+              //     showItemSelectionSheet<String>(
+              //       context: context,
+              //       title: 'Select School',
+              //       items: [
+              //         'Greenwood High',
+              //         'Hillview Academy',
+              //         'Sunrise School',
+              //       ],
+              //       selectedItem: _selectedSchool,
+              //       onItemSelected: (school) {
+              //         setState(() {
+              //           _selectedSchool = school;
+              //         });
+              //       },
+              //     );
+              //   },
+              //   child: Container(
+              //     padding: const EdgeInsets.symmetric(
+              //       horizontal: 16,
+              //       vertical: 14,
+              //     ),
+              //     decoration: BoxDecoration(
+              //       borderRadius: BorderRadius.circular(12),
+              //       border: Border.all(color: Colors.grey.shade300),
+              //     ),
+              //     child: Row(
+              //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //       children: [
+              //         Text(
+              //           _selectedSchool ?? 'Select school',
+              //           style: const TextStyle(fontSize: 14),
+              //         ),
+              //         const Icon(Icons.arrow_drop_down_outlined),
+              //       ],
+              //     ),
+              //   ),
+              // ),
 
-              const AppTextField(
-                label: 'Class',
-                hint: 'Type here',
-                maxLines: 3,
-              ),
-              const SizedBox(height: 12),
+              // const SizedBox(height: 24),
+
+              // const AppTextField(
+              //   label: 'Class',
+              //   hint: 'Type here',
+              //   maxLines: 3,
+              // ),
+              // const SizedBox(height: 12),
 
               // Due Date and Amount Info
               // Container(
@@ -205,3 +240,24 @@ class _PayFeesViewState extends State<PayFeesView> {
     );
   }
 }
+
+var students = [
+  StudentModel(
+    id: '1',
+    name: 'Adebayo Oluwaferanmi',
+    studentId: '7ytf5675dm',
+    class_: 'Primary 3',
+    school: 'Seaman International Nursery & Primary School',
+    feeStatus: 'Fee Pending',
+    amountDue: 300000,
+  ),
+  StudentModel(
+    id: '2',
+    name: 'Emma Oluwatayo',
+    studentId: '7ytf3475dm',
+    class_: 'Primary 4',
+    school: 'Seaman International Nursery & Primary School',
+    feeStatus: 'Fee Pending',
+    amountDue: 100000,
+  ),
+];
