@@ -1,11 +1,11 @@
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../bloc/profile_bloc.dart';
 import '../bloc/profile_event.dart';
 import '../bloc/profile_state.dart';
-import '../../../../shared/widgets/loaders/shimmer_profile_loader.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 
@@ -21,6 +21,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
   late TextEditingController nameController;
   late TextEditingController phoneController;
   late TextEditingController emailController;
+  late FocusNode nameFocusNode;
 
   @override
   void initState() {
@@ -29,6 +30,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
     nameController = TextEditingController();
     phoneController = TextEditingController();
     emailController = TextEditingController();
+    nameFocusNode = FocusNode();
   }
 
   @override
@@ -36,6 +38,8 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
     nameController.dispose();
     phoneController.dispose();
     emailController.dispose();
+    nameFocusNode.dispose();
+
     super.dispose();
   }
 
@@ -79,19 +83,28 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                             setState(() {
                               isEditing = !isEditing;
                             });
+
+                            if (isEditing) {
+                              Future.microtask(() {
+                                nameFocusNode.requestFocus();
+                              });
+                            }
                           },
                           child: Text(isEditing ? 'Save' : 'Edit Profile'),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    _buildProfileItem('Profile Image:', '👤'),
+
+                    _buildEditableItem(
+                      'Guardian Name',
+                      nameController,
+                      focusNode: nameFocusNode,
+                    ),
                     const SizedBox(height: 12),
-                    _buildEditableItem('Guardian Name:', nameController),
+                    _buildEditableItem('Phone', phoneController),
                     const SizedBox(height: 12),
-                    _buildEditableItem('Phone:', phoneController),
-                    const SizedBox(height: 12),
-                    _buildEditableItem('Email:', emailController),
+                    _buildEditableItem('Email', emailController),
                   ],
                 ),
               ),
@@ -105,215 +118,41 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
     );
   }
 
-  Widget _buildEditableItem(String label, TextEditingController controller) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(8),
-        color: Colors.white,
-      ),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: isEditing
-                ? TextFormField(
-                    controller: controller,
-                    textAlign: TextAlign.right,
-                    decoration: const InputDecoration(border: InputBorder.none),
-                  )
-                : Text(
-                    controller.text,
-                    textAlign: TextAlign.right,
-                    style: AppTextStyles.bodyRegular.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
+  Widget _buildEditableItem(
+    String label,
+    TextEditingController controller, {
+    FocusNode? focusNode,
+  }) {
+    return isEditing
+        ? AppTextField(
+            controller: controller,
+            label: label,
+            focusNode: focusNode,
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: AppTextStyles.bodyMedium),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.lightBackground,
+                ),
+                child: Text(
+                  controller.text,
+                  style: AppTextStyles.bodyRegular.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
                   ),
-          ),
-        ],
-      ),
-    );
+                ),
+              ),
+            ],
+          );
   }
 }
-
-Widget _buildProfileItem(String label, String value) {
-  return Container(
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      border: Border.all(color: AppColors.border),
-      borderRadius: BorderRadius.circular(8),
-      color: Colors.white,
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            textAlign: TextAlign.right,
-            style: AppTextStyles.bodyRegular.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-
-
-
-// class ProfileDetailView extends StatefulWidget {
-//   const ProfileDetailView({super.key});
-
-//   @override
-//   State<ProfileDetailView> createState() => _ProfileDetailViewState();
-// }
-
-// class _ProfileDetailViewState extends State<ProfileDetailView> {
-//   @override
-//   void initState() {
-//     super.initState();
-//     context.read<ProfileBloc>().add(const GetProfileEvent());
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return AppScaffold(
-//       appBar: AppBar(
-//         leading: IconButton(
-//           icon: const Icon(Icons.arrow_back_ios),
-//           onPressed: () => context.pop(),
-//         ),
-//         title: const Text('Profile'),
-//         centerTitle: true,
-//       ),
-//       body: BlocBuilder<ProfileBloc, ProfileState>(
-//         builder: (context, state) {
-//           if (state is ProfileLoading) {
-//             return const ShimmerProfileLoader();
-//           } else if (state is ProfileLoaded) {
-//             final profile = state.profile;
-//             return SingleChildScrollView(
-//               child: Padding(
-//                 padding: const EdgeInsets.all(16),
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     Row(
-//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                       children: [
-//                         Text('Information:'),
-//                         ElevatedButton(
-//                           onPressed: () => context.push('/edit-profile'),
-//                           child: const Text('Edit Profile'),
-//                         ),
-//                       ],
-//                     ),
-//                     const SizedBox(height: 16),
-//                     // Profile Info Items
-//                     _buildProfileItem('Profile Image:', '👤'),
-//                     const SizedBox(height: 12),
-//                     _buildProfileItem('Guardian Name:', profile['name'] ?? ''),
-//                     const SizedBox(height: 12),
-//                     _buildProfileItem('Phone:', profile['phone'] ?? ''),
-//                     const SizedBox(height: 12),
-//                     _buildProfileItem('Email:', profile['email'] ?? ''),
-//                     const SizedBox(height: 24),
-//                     // Action Buttons
-//                     Row(
-//                       children: [
-//                         Expanded(
-//                           child: OutlinedButton.icon(
-//                             style: OutlinedButton.styleFrom(
-//                               padding: const EdgeInsets.symmetric(vertical: 12),
-//                               minimumSize: const Size(0, 32),
-//                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-//                               side: const BorderSide(color: AppColors.border),
-//                               shape: RoundedRectangleBorder(
-//                                 borderRadius: BorderRadius.circular(8),
-//                               ),
-//                             ),
-//                             onPressed: () => context.push('/change-phone'),
-//                             icon: const Icon(Icons.lock),
-//                             label: const Text('Change Phone number'),
-//                           ),
-//                         ),
-//                         const SizedBox(width: 12),
-//                         Expanded(
-//                           child: OutlinedButton.icon(
-//                             style: OutlinedButton.styleFrom(
-//                               padding: const EdgeInsets.symmetric(vertical: 12),
-//                               minimumSize: const Size(0, 32),
-//                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-//                               side: const BorderSide(color: AppColors.border),
-//                               shape: RoundedRectangleBorder(
-//                                 borderRadius: BorderRadius.circular(8),
-//                               ),
-//                             ),
-//                             onPressed: () => context.push('/help-support'),
-//                             icon: const Icon(Icons.headset_mic),
-//                             label: const Text('Contact Support'),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                     const SizedBox(height: 24),
-//                     // Logout
-//                     Center(
-//                       child: SecondaryButton(
-//                         label: 'Log out',
-//                         onPressed: () {
-//                           showDialog(
-//                             context: context,
-//                             builder: (context) => AlertDialog(
-//                               title: const Text('Logout'),
-//                               content: const Text(
-//                                 'Are you sure you want to log out?',
-//                               ),
-//                               actions: [
-//                                 TextButton(
-//                                   onPressed: () => context.pop(),
-//                                   child: const Text('Cancel'),
-//                                 ),
-//                                 TextButton(
-//                                   onPressed: () =>
-//                                       context.pushReplacementNamed('/login'),
-//                                   child: const Text('Logout'),
-//                                 ),
-//                               ],
-//                             ),
-//                           );
-//                         },
-//                         textColor: Colors.red,
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             );
-//           } else if (state is ProfileError) {
-//             return Center(child: Text('Error: ${state.message}'));
-//           }
-//           return const SizedBox.shrink();
-//         },
-//       ),
-//     );
-//   }
-

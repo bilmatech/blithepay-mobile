@@ -121,17 +121,17 @@ class _PayFeesViewState extends State<PayFeesView> {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
                         margin: const EdgeInsets.only(right: 4),
-
+                        padding: EdgeInsets.all(
+                          isSelected ? 5 : 0,
+                        ), // outward animation
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isSelected
-                                ? AppColors.border
+                                ? AppColors.warning
                                 : Colors.transparent,
-                            width: isSelected ? 10 : 0,
+                            width: 2, // fixed width
                           ),
-
-                          color: Colors.white, // ensure background stands out
                         ),
                         child: StudentCardContainerWidget(
                           margin: EdgeInsets.zero,

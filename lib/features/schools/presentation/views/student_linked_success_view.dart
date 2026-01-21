@@ -74,6 +74,34 @@ class StudentLinkedSucessView extends StatelessWidget {
                 label: 'Go Home',
                 onPressed: onPressed ?? () => context.go('/home'),
               ),
+              const SizedBox(height: 16),
+
+              InkWell(
+                onTap: () {
+                  context.push('/pay-fees');
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.shimmerBase,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    child: Text(
+                      'Pay Fees',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

@@ -2,6 +2,7 @@ import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_event.dart';
+import 'package:blithepay/features/fees/presentation/views/widgets/nemeric_keyboard.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -37,6 +38,28 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
       _focusNodes[index + 1].requestFocus();
     } else if (value.isEmpty && index > 0) {
       _focusNodes[index - 1].requestFocus();
+    }
+  }
+
+  void _onKeyPressed(String value) {
+    for (int i = 0; i < _controllers.length; i++) {
+      if (_controllers[i].text.isEmpty) {
+        _controllers[i].text = value;
+        if (i < _focusNodes.length - 1) {
+          _focusNodes[i + 1].requestFocus();
+        }
+        break;
+      }
+    }
+  }
+
+  void _onDeletePressed() {
+    for (int i = _controllers.length - 1; i >= 0; i--) {
+      if (_controllers[i].text.isNotEmpty) {
+        _controllers[i].clear();
+        _focusNodes[i].requestFocus();
+        break;
+      }
     }
   }
 
@@ -80,15 +103,12 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
                 width: 60,
                 height: 60,
                 child: TextField(
-                  key: UniqueKey(), // avoids duplicate GlobalKey
                   controller: _controllers[index],
                   focusNode: _focusNodes[index],
+                  readOnly: true, // IMPORTANT
+                  showCursor: false,
                   textAlign: TextAlign.center,
                   maxLength: 1,
-                  obscureText: true,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onChanged: (v) => _onOtpChanged(index, v),
                   style: AppTextStyles.h3,
                   decoration: InputDecoration(
                     counter: const Offstage(),
@@ -131,6 +151,10 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
             ),
           ),
           const SizedBox(height: 16),
+
+          NumericKeypad(onKeyTap: _onKeyPressed, onDelete: _onDeletePressed),
+
+          const SizedBox(height: 24),
           Text(
             'BlithePay Secure Numeric Keypad',
             style: AppTextStyles.bodySmall.copyWith(

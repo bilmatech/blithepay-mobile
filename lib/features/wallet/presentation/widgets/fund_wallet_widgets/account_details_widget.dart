@@ -1,6 +1,7 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AccountDetailsWidget extends StatelessWidget {
   const AccountDetailsWidget({super.key});
@@ -31,7 +32,23 @@ class AccountDetailsWidget extends StatelessWidget {
                 ),
               ),
               GestureDetector(
-                onTap: () {}, // Add copy logic here
+                onTap: () async {
+                  const accountNumber = "6543567654";
+
+                  await Clipboard.setData(
+                    const ClipboardData(text: accountNumber),
+                  );
+
+                  final messenger = ScaffoldMessenger.of(context);
+                  messenger.clearSnackBars();
+                  messenger.showSnackBar(
+                    const SnackBar(
+                      content: Text("Account number copied"),
+                      duration: Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(

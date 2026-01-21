@@ -101,6 +101,8 @@ class _SignupViewState extends State<SignupView> {
         }
       },
       child: AppScaffold(
+        showBackButton: false,
+        centerTitle: true,
         title: AppStrings.createAccount,
         body: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {

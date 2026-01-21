@@ -191,7 +191,7 @@ class _FeeBreakDownViewState extends State<FeeBreakDownView> {
 
               // Pay Now Button
               PrimaryButton(
-                label: 'Pay Now',
+                label: 'Proceed',
                 onPressed: () {
                   // Here you can pass _selectedFees to your payment logic
                   print('Selected Fees: $_selectedFees');
