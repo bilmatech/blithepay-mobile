@@ -90,7 +90,9 @@ class StudentCardContainerWidget extends StatelessWidget {
               Text(
                 student.feeStatus,
                 style: AppTextStyles.bodyRegular.copyWith(
-                  color: AppColors.warning,
+                  color: student.feeStatus.toLowerCase().contains('paid')
+                      ? AppColors.success
+                      : AppColors.warning,
                   fontWeight: FontWeight.w600,
                 ),
               ),

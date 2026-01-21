@@ -58,7 +58,7 @@ class PaymentSuccessView extends StatelessWidget {
                     studentId: '7ytf5675dm',
                     class_: 'Primary 3',
                     school: 'Seaman International Nursery & Primary School',
-                    feeStatus: 'Fee Pending',
+                    feeStatus: 'Fee Paid',
                     amountDue: 300000,
                   ),
                 ),

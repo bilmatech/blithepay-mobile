@@ -1,12 +1,9 @@
 import 'package:blithepay/core/constants/app_colors.dart';
-import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/fees/presentation/views/widgets/student_card_container_widget.dart';
 import 'package:blithepay/features/students/data/models/student_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
-import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
-import 'package:blithepay/shared/widgets/inputs/dropdown_field.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,6 +18,7 @@ class _PayFeesViewState extends State<PayFeesView> {
   // String? _selectedStudent;
   // String? _selectedFee;
   String? _selectedSchool;
+  int? _selectedIndex;
 
   @override
   void initState() {
@@ -105,14 +103,41 @@ class _PayFeesViewState extends State<PayFeesView> {
                 child: PageView.builder(
                   controller: _pageController,
                   onPageChanged: (index) {
-                    setState(() => _currentPage = index);
+                    setState(() {
+                      _currentPage = index;
+                    });
                   },
                   itemCount: students.length,
                   itemBuilder: (context, index) {
                     final student = students[index];
-                    return StudentCardContainerWidget(
-                      margin: const EdgeInsets.only(right: 16),
-                      student: student,
+                    final isSelected = _selectedIndex == index;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedIndex = index;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        margin: const EdgeInsets.only(right: 4),
+
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.border
+                                : Colors.transparent,
+                            width: isSelected ? 10 : 0,
+                          ),
+
+                          color: Colors.white, // ensure background stands out
+                        ),
+                        child: StudentCardContainerWidget(
+                          margin: EdgeInsets.zero,
+                          student: student,
+                        ),
+                      ),
                     );
                   },
                 ),
@@ -227,11 +252,19 @@ class _PayFeesViewState extends State<PayFeesView> {
               //   ),
               // ),
               const SizedBox(height: 40),
+
               PrimaryButton(
                 label: 'Proceed',
-                onPressed: () {
-                  context.push(AppRoutes.feeSelection);
-                },
+                isEnabled: _selectedIndex != null,
+                onPressed: _selectedIndex == null
+                    ? () {}
+                    : () {
+                        final selectedStudent = students[_selectedIndex!];
+                        context.push(
+                          AppRoutes.feeSelection,
+                          extra: selectedStudent,
+                        );
+                      },
               ),
             ],
           ),

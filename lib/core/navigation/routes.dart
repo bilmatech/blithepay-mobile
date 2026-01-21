@@ -70,7 +70,11 @@ class AppRouterConfig {
           builder: (context, state) {
             final args = state.extra as Map<String, dynamic>;
 
-            return SetupOtpView(email: args['email'], flow: args['flow']);
+            return SetupOtpView(
+              email: args['email'],
+              flow: args['flow'],
+              popOnSuccess: args['pop'],
+            );
           },
         ),
         GoRoute(
