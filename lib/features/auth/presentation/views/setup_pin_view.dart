@@ -16,8 +16,14 @@ import '../bloc/auth_state.dart';
 class SetupOtpView extends StatefulWidget {
   final String email;
   final OtpFlow flow;
+  final bool popOnSuccess;
 
-  const SetupOtpView({super.key, required this.email, required this.flow});
+  const SetupOtpView({
+    super.key,
+    required this.email,
+    required this.flow,
+    this.popOnSuccess = false,
+  });
 
   @override
   State<SetupOtpView> createState() => _SetupOtpViewState();
@@ -68,16 +74,30 @@ class _SetupOtpViewState extends State<SetupOtpView> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
+        // if (state.status == AuthStatus.otpVerified) {
+        //   context.go(
+        //     AppRoutes.success,
+        //     extra: const SuccessArgs(
+        //       title: AppStrings.successful,
+        //       message: AppStrings.anAccounthasbeen,
+        //       buttonLabel: AppStrings.gotToHome,
+        //       nextRoute: AppRoutes.home,
+        //     ),
+        //   );
         if (state.status == AuthStatus.otpVerified) {
-          context.go(
-            AppRoutes.success,
-            extra: const SuccessArgs(
-              title: AppStrings.successful,
-              message: AppStrings.anAccounthasbeen,
-              buttonLabel: AppStrings.gotToHome,
-              nextRoute: AppRoutes.home,
-            ),
-          );
+          if (widget.popOnSuccess) {
+            Navigator.of(context).pop(true);
+          } else {
+            context.go(
+              AppRoutes.success,
+              extra: const SuccessArgs(
+                title: AppStrings.successful,
+                message: AppStrings.anAccounthasbeen,
+                buttonLabel: AppStrings.gotToHome,
+                nextRoute: AppRoutes.home,
+              ),
+            );
+          }
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

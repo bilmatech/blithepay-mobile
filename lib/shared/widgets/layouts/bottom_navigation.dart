@@ -21,9 +21,9 @@ class BottomNavigationWidget extends StatelessWidget {
       onTap: (index) => _navigate(context, index),
       items: [
         _buildItem(
-          icon: Icons.account_balance_wallet_outlined,
-          activeIcon: Icons.account_balance_wallet,
-          label: 'Wallet',
+          icon: Icons.school_outlined,
+          activeIcon: Icons.school_outlined,
+          label: 'Link Child',
           isActive: currentIndex == 0,
         ),
         _buildItem(
@@ -59,7 +59,10 @@ class BottomNavigationWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: isActive
-          ? const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)
+          ? const BoxDecoration(
+              color: AppColors.primary,
+              shape: BoxShape.circle,
+            )
           : null,
       child: Icon(
         icon,
@@ -69,16 +72,16 @@ class BottomNavigationWidget extends StatelessWidget {
   }
 
   int _getCurrentIndex() {
-    if (currentRoute.contains('wallet')) return 0;
-    if (currentRoute.contains('home')) return 1;
-    if (currentRoute.contains('profile')) return 2;
-    return 1;
+    if (currentRoute == AppRoutes.linkedStudents) return 0;
+    if (currentRoute == AppRoutes.home) return 1;
+    if (currentRoute == AppRoutes.profile) return 2;
+    return 1; // default to Home
   }
 
   void _navigate(BuildContext context, int index) {
     switch (index) {
       case 0:
-        context.go(AppRoutes.walletManagement);
+        context.go(AppRoutes.linkedStudents);
         break;
       case 1:
         context.go(AppRoutes.home);

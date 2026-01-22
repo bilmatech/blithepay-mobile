@@ -17,6 +17,7 @@ class AppTextField extends StatefulWidget {
   final TextInputAction textInputAction;
   final Widget? suffixIcon;
   final Widget? prefix;
+  final FocusNode? focusNode;
 
   const AppTextField({
     super.key,
@@ -34,6 +35,7 @@ class AppTextField extends StatefulWidget {
     this.textInputAction = TextInputAction.next,
     this.suffixIcon,
     this.prefix,
+    this.focusNode,
   });
 
   @override
@@ -57,6 +59,7 @@ class _AppTextFieldState extends State<AppTextField> {
         Text(widget.label, style: AppTextStyles.bodyLarge),
         const SizedBox(height: 8),
         TextFormField(
+          focusNode: widget.focusNode,
           controller: widget.controller,
           validator: widget.validator,
           keyboardType: widget.keyboardType,

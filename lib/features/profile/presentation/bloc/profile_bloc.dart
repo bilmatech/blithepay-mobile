@@ -6,6 +6,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ProfileBloc() : super(const ProfileInitial()) {
     on<GetProfileEvent>(_onGetProfile);
     on<UpdateProfileEvent>(_onUpdateProfile);
+    on<ChangePasswordRequested>(_onChangePasswordRequested);
   }
 
   Future<void> _onGetProfile(
@@ -37,6 +38,22 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     try {
       await Future.delayed(const Duration(seconds: 1));
       emit(const ProfileUpdated());
+    } catch (e) {
+      emit(ProfileError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onChangePasswordRequested(
+    ChangePasswordRequested event,
+    Emitter<ProfileState> emit,
+  ) async {
+    emit(const ProfileLoading());
+    try {
+      // await _authRepository.resetPassword(
+      //   event.oldPassword,
+      //   event.newPassword,
+      // );
+      //  emit(const AuthState.passwordReset());
     } catch (e) {
       emit(ProfileError(message: e.toString()));
     }

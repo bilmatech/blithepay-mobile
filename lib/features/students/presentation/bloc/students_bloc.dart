@@ -15,6 +15,7 @@ class StudentsBloc extends Bloc<StudentsEvent, StudentsState> {
     GetLinkedStudentsEvent event,
     Emitter<StudentsState> emit,
   ) async {
+    if (state is StudentsLoaded) return;
     emit(const StudentsLoading());
     try {
       final students = await repository.getLinkedStudents();

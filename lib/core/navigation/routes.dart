@@ -1,7 +1,9 @@
 import 'package:blithepay/features/auth/presentation/views/setup_pin_view.dart';
 import 'package:blithepay/features/common/data/success_args_model.dart';
+import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
 import 'package:blithepay/features/fees/presentation/views/payment_confirmation_view.dart';
 import 'package:blithepay/features/fees/presentation/views/payment_success_view.dart';
+import 'package:blithepay/features/profile/presentation/views/change_password_view.dart';
 import 'package:blithepay/features/profile/presentation/views/profile_view.dart';
 import 'package:blithepay/features/fees/presentation/views/fees_breakdown_view.dart';
 import 'package:blithepay/features/schools/presentation/views/link_child_school_view.dart';
@@ -68,7 +70,11 @@ class AppRouterConfig {
           builder: (context, state) {
             final args = state.extra as Map<String, dynamic>;
 
-            return SetupOtpView(email: args['email'], flow: args['flow']);
+            return SetupOtpView(
+              email: args['email'],
+              flow: args['flow'],
+              popOnSuccess: args['pop'],
+            );
           },
         ),
         GoRoute(
@@ -82,7 +88,10 @@ class AppRouterConfig {
           path: AppRoutes.passwordChanged,
           builder: (_, __) => const PasswordChangedView(),
         ),
-
+        GoRoute(
+          path: AppRoutes.changePassword,
+          builder: (_, __) => const ChangePasswordView(),
+        ),
         ShellRoute(
           builder: (context, state, child) {
             return DashboardView(child: child);
@@ -93,14 +102,18 @@ class AppRouterConfig {
               builder: (context, state) => const HomeView(),
             ),
             GoRoute(
-              path: AppRoutes.walletManagement,
-              builder: (context, state) => const WalletManagementView(),
+              path: AppRoutes.linkedStudents,
+              builder: (_, __) => const LinkedStudentsView(),
             ),
             GoRoute(
               path: AppRoutes.profile,
               builder: (context, state) => const ProfileView(),
             ),
           ],
+        ),
+        GoRoute(
+          path: AppRoutes.walletManagement,
+          builder: (context, state) => const WalletManagementView(),
         ),
         GoRoute(
           path: AppRoutes.profileDetail,
@@ -167,10 +180,7 @@ class AppRouterConfig {
           path: AppRoutes.linkStudents,
           builder: (_, __) => const LinkStudentsView(),
         ),
-        GoRoute(
-          path: AppRoutes.linkedStudents,
-          builder: (_, __) => const LinkedStudentsView(),
-        ),
+
         GoRoute(
           path: AppRoutes.guardianVerification,
           builder: (_, __) => const GuardianVerificationView(),
@@ -192,8 +202,8 @@ class AppRouterConfig {
         GoRoute(
           path: AppRoutes.transactionDetail,
           builder: (context, state) {
-            final transactionId = state.extra as String?;
-            return TransactionDetailView(transactionId: transactionId);
+            final transaction = state.extra as TransactionItem?;
+            return TransactionDetailView(transaction: transaction);
           },
         ),
 

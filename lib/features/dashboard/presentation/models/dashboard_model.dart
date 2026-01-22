@@ -68,14 +68,14 @@ class DashboardModel extends Equatable {
         ),
         TransactionItem(
           title: 'Wallet Deposit',
-          amount: 'N300,000.00',
+          amount: 'N200,000.00',
           date: '11-09-25',
           time: '11:15',
           status: 'Successful',
         ),
         TransactionItem(
           title: 'Wallet Withdrawal',
-          amount: 'N300,000.00',
+          amount: 'N100,000.00',
           date: '11-09-25',
           time: '11:15',
           status: 'Successful',
