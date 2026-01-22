@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +43,7 @@ class _FinancialSummaryCardState extends State<FinancialSummaryCard> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Spacer(),
+                  const Spacer(),
                   IconButton(
                     icon: Icon(
                       _balanceVisible ? Icons.visibility : Icons.visibility_off,

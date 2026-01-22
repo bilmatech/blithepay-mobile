@@ -48,7 +48,7 @@ class TransactionDetailView extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 transaction?.amount ?? '+N200,000',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 32),
 

@@ -73,7 +73,7 @@ class AppRouterConfig {
             return SetupOtpView(
               email: args['email'],
               flow: args['flow'],
-              popOnSuccess: args['pop'],
+              popOnSuccess: args['pop'] ?? false,
             );
           },
         ),

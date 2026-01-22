@@ -39,7 +39,7 @@ class _LinkChildSchoolViewState extends State<LinkChildSchoolView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Link Student(s)', style: AppTextStyles.headingLarge),
+              const Text('Link Child', style: AppTextStyles.headingLarge),
               const SizedBox(height: 24),
               _buildSection(
                 label: '',
