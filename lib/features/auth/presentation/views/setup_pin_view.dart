@@ -140,6 +140,7 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                             controller: _otpControllers[index],
                             focusNode: _focusNodes[index],
                             textAlign: TextAlign.center,
+                            keyboardType: TextInputType.number,
                             maxLength: 1,
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,

@@ -22,7 +22,7 @@ class DashboardHeader extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 24,
-          backgroundColor: AppColors.primary.withOpacity(0.15),
+          backgroundColor: AppColors.primary.withValues(alpha: .15),
           backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
               ? NetworkImage(avatarUrl!)
               : null,

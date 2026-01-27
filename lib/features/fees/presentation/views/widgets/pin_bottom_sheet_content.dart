@@ -109,6 +109,7 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
                   showCursor: false,
                   textAlign: TextAlign.center,
                   maxLength: 1,
+                  obscureText: true,
                   style: AppTextStyles.h3,
                   decoration: InputDecoration(
                     counter: const Offstage(),
@@ -169,6 +170,7 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
               if (pin.length == 4) Navigator.of(context).pop(true);
             },
           ),
+          const SizedBox(height: 40),
         ],
       ),
     );
