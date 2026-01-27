@@ -140,6 +140,7 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                             focusNode: _focusNodes[index],
                             textAlign: TextAlign.center,
                             maxLength: 1,
+                            keyboardType: TextInputType.number,
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
                             ],
