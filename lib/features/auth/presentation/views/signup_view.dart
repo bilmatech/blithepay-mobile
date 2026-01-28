@@ -89,14 +89,10 @@ class _SignupViewState extends State<SignupView> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state.status == AuthStatus.authenticated) {
+        if (state.status == AuthStatus.signupSuccess) {
           context.push(
             AppRoutes.verifyOtp,
             extra: {'email': _emailController.text, 'flow': OtpFlow.signup},
-          );
-        } else if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage ?? 'Signup failed')),
           );
         }
       },

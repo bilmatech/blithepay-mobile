@@ -14,13 +14,23 @@ class Validators {
     if (value == null || value.isEmpty) {
       return 'Password is required';
     }
-    if (value.length < 6) {
-      return 'Password must be at least 6 characters';
+
+    // Minimum 8 characters, at least one uppercase, one lowercase, one number, one special character
+    final regex = RegExp(
+      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#\$&*~^%()_\-+=])[A-Za-z\d!@#\$&*~^%()_\-+=]{8,}$',
+    );
+
+    if (!regex.hasMatch(value)) {
+      return 'Password must be at least 8 characters, include uppercase, lowercase, number, and special character';
     }
+
     return null;
   }
 
-  static String? validatePasswordMatch(String? password, String? confirmPassword) {
+  static String? validatePasswordMatch(
+    String? password,
+    String? confirmPassword,
+  ) {
     if (password == null || confirmPassword == null) {
       return 'Both passwords are required';
     }

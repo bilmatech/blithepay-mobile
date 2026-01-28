@@ -1,5 +1,7 @@
+import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
@@ -48,8 +50,14 @@ class _OnboardingViewState extends State<OnboardingView> {
     super.dispose();
   }
 
-  void _goToCreateAccount() {
-    context.go(AppRoutes.signup);
+  void _goToCreateAccount() async {
+    final appLocalDataSource = context.read<AppLocalDataSource>();
+
+    await appLocalDataSource.setOnboardingCompleted();
+
+    if (mounted) {
+      context.go(AppRoutes.signup);
+    }
   }
 
   @override

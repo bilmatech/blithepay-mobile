@@ -56,13 +56,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
               'flow': OtpFlow.forgotPassword,
             },
           );
-        } else if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? 'Failed to send reset code'),
-            ),
-          );
-        }
+        } 
       },
       child: AppScaffold(
         showBackButton: false,
