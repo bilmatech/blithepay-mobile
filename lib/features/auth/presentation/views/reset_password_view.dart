@@ -61,12 +61,6 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
       listener: (context, state) {
         if (state.status == AuthStatus.passwordReset) {
           context.go(AppRoutes.passwordChanged);
-        } else if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? 'Failed to reset password'),
-            ),
-          );
         }
       },
       child: AppScaffold(

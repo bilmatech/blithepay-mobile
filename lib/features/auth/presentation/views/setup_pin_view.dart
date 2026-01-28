@@ -102,13 +102,7 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                 context.read<DashboardBloc>().add(const FetchDashboardData());
 
           }
-        } else if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? 'Verification failed'),
-            ),
-          );
-        }
+        } 
       },
       child: AppScaffold(
         showBackButton: false,

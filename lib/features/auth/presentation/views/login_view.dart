@@ -65,10 +65,6 @@ class _LoginViewState extends State<LoginView> {
         if (state.status == AuthStatus.authenticated) {
           context.go(AppRoutes.home);
           context.read<DashboardBloc>().add(const FetchDashboardData());
-        } else if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage ?? 'Login failed')),
-          );
         }
       },
       child: AppScaffold(

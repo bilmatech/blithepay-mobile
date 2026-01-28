@@ -139,13 +139,7 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
               context.push(AppRoutes.resetPassword, extra: widget.email);
               break;
           }
-        } else if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? 'Verification failed'),
-            ),
-          );
-        }
+        } 
       },
       child: AppScaffold(
         showBackButton: false,
