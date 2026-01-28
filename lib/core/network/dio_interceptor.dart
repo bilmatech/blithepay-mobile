@@ -35,14 +35,41 @@ class DioInterceptor extends Interceptor {
       return _handle401(err, handler);
     }
 
-    handler.reject(err);
+    // Extract backend message
+    String message = "Unknown error";
+    try {
+      final data = err.response?.data;
+      if (data is Map<String, dynamic>) {
+        // If backend sends multiple errors, combine them
+        message =
+            data['message']?.toString() ??
+            data.values.map((e) => e.toString()).join(", ");
+      } else if (data is List) {
+        message = data.join(", ");
+      } else if (data is String) {
+        message = data;
+      }
+    } catch (_) {
+      message = err.message ?? "Unknown error";
+    }
+
+   // print("Backend Error: $message"); // Log in terminal
+
+    final newErr = DioException(
+      requestOptions: err.requestOptions,
+      response: err.response,
+      error: message, 
+      type: err.type,
+    );
+
+    handler.reject(newErr);
   }
 
   Future<void> _handle401(
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    final refreshToken = await _localDataSource.getAccessToken();
+    final refreshToken = await _localDataSource.getRefreshToken();
 
     if (refreshToken == null) {
       await _localDataSource.clearSession();
@@ -96,7 +123,12 @@ class DioInterceptor extends Interceptor {
       requestOptions.path,
       data: requestOptions.data,
       queryParameters: requestOptions.queryParameters,
-      options: Options(method: requestOptions.method, headers: headers),
+      options: Options(
+        method: requestOptions.method,
+        headers: headers,
+        validateStatus: (_) => true, // accept all responses
+      ),
     );
   }
 }
+

@@ -111,30 +111,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onResetPasswordRequested(
-    ResetPasswordRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(const AuthState.loading());
-    try {
-      await _authRepository.resetPassword(event.newPassword);
-      
-      emit(const AuthState.passwordReset());
-    } catch (e) {
-      emit(AuthState.error(e.toString()));
-    }
-  }
-
   Future<void> _onVerifyForgotPasswordOtpRequested(
     VerifyForgotPasswordOtpRequested event,
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthState.loading());
     try {
-      var result = await _authRepository.verifyOtp(event.code);
-      emit(const AuthState.otpVerified());
+      var result = await _authRepository.verifyForgotPasswordOtp(event.code);
+      emit(AuthState.otpVerified(token: result));
+    } catch (e) {
+      emit(AuthState.error(e.toString()));
+    }
+  }
 
-      await _authRepository.persistSession(result);
+  Future<void> _onResetPasswordRequested(
+    ResetPasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      await _authRepository.resetPassword(event.token, event.newPassword);
+
+      emit(const AuthState.passwordReset());
     } catch (e) {
       emit(AuthState.error(e.toString()));
     }

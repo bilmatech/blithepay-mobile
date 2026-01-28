@@ -41,9 +41,12 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
   }
 
   void _handleResetPassword() async {
+    final authState = context.read<AuthBloc>().state;
+    final token = authState.token;
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
         ResetPasswordRequested(
+          token: token ?? '',
           email: widget.email,
           newPassword: _newPasswordController.text,
           confirmPassword: _confirmPasswordController.text,

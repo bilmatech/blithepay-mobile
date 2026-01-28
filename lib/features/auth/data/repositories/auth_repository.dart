@@ -15,13 +15,13 @@ abstract class AuthRepositoryInterface {
   Future<AuthResponseModel> login(String email, String password);
   Future<void> forgotPassword(String email);
   Future<AuthResponseModel> verifyOtp(String code);
-  Future<AuthResponseModel> verifyForgotPasswordOtp(String code);
+  Future<String> verifyForgotPasswordOtp(String code);
 
   Future<AuthResponseModel> resendOtp(String email);
   Future<AuthResponseModel> resendForgotPasswordOtp(String email);
 
   Future<void> setupPin(String email, String code);
-  Future<void> resetPassword(String newPassword);
+  Future<void> resetPassword(String resetToken, String newPassword);
   Future<void> logout();
   Future<void> persistSession(AuthResponseModel session);
   Future<AuthTokensModel> refresh(String token);
@@ -56,7 +56,7 @@ class AuthRepository implements AuthRepositoryInterface {
         "fullName": fullName,
         "email": email,
         "phone": phoneNumber,
-        "lastSeen": DateTime.now().toIso8601String(),
+        "isTermsAndPrivacyAccepted": true,
         "password": password,
         //  "fcmToken": '',
       },
@@ -100,13 +100,13 @@ class AuthRepository implements AuthRepositoryInterface {
   }
 
   @override
-  Future<AuthResponseModel> verifyForgotPasswordOtp(String code) async {
+  Future<String> verifyForgotPasswordOtp(String code) async {
     var response = await _dioClient.post(
       ApiEndpoints.verifyForgotPasswordCode,
       data: {"code": code},
     );
 
-    return AuthResponseModel.fromJson(response.data['data']);
+    return response.data['data'];
   }
 
   @override
@@ -125,16 +125,14 @@ class AuthRepository implements AuthRepositoryInterface {
   }
 
   @override
-  Future<void> resetPassword(String newPassword) async {
-    final token = await _localDataSource.getAccessToken();
-
-    if (token == null || token.isEmpty) {
-      throw Exception('Reset token not found');
-    }
+  Future<void> resetPassword(String resetToken, String newPassword) async {
+    // if (resetToken.isEmpty) {
+    //   throw Exception('Reset token not found');
+    // }
 
     await _dioClient.post(
       ApiEndpoints.resetPassword,
-      data: {'token': token, 'newPassword': newPassword},
+      data: {'token': resetToken, 'newPassword': newPassword},
     );
   }
 

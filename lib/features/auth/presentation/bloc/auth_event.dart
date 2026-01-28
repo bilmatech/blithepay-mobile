@@ -88,11 +88,13 @@ class SetupPinRequested extends AuthEvent {
 
 class ResetPasswordRequested extends AuthEvent {
   final String email;
+  final String token;
   final String newPassword;
   final String confirmPassword;
 
   const ResetPasswordRequested({
     required this.email,
+    required this.token,
     required this.newPassword,
     required this.confirmPassword,
   });

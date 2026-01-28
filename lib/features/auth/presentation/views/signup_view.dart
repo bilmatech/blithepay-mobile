@@ -94,10 +94,6 @@ class _SignupViewState extends State<SignupView> {
             AppRoutes.verifyOtp,
             extra: {'email': _emailController.text, 'flow': OtpFlow.signup},
           );
-        } else if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage ?? 'Signup failed')),
-          );
         }
       },
       child: AppScaffold(
