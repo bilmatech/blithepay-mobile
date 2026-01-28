@@ -1,4 +1,6 @@
 import 'package:blithepay/features/common/data/success_args_model.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -56,7 +58,7 @@ class _SetupOtpViewState extends State<SetupOtpView> {
 
     if (code.length == 4) {
       context.read<AuthBloc>().add(
-        VerifyOtpRequested(email: widget.email, code: code, flow: widget.flow),
+        SetupPinRequested(email: widget.email, code: code, flow: widget.flow),
       );
     }
   }
@@ -84,7 +86,7 @@ class _SetupOtpViewState extends State<SetupOtpView> {
         //       nextRoute: AppRoutes.home,
         //     ),
         //   );
-        if (state.status == AuthStatus.otpVerified) {
+        if (state.status == AuthStatus.pinSetup) {
           if (widget.popOnSuccess) {
             Navigator.of(context).pop(true);
           } else {
@@ -97,6 +99,8 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                 nextRoute: AppRoutes.home,
               ),
             );
+                context.read<DashboardBloc>().add(const FetchDashboardData());
+
           }
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(

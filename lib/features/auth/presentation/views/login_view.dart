@@ -1,3 +1,5 @@
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,8 +35,8 @@ class _LoginViewState extends State<LoginView> {
     _passwordController = TextEditingController();
 
     if (kDebugMode) {
-      _emailController.text = 'test@example.com';
-      _passwordController.text = 'Password123';
+      _emailController.text = 'toyabdul345@gmail.com';
+      _passwordController.text = '1Password@';
     }
   }
 
@@ -62,6 +64,7 @@ class _LoginViewState extends State<LoginView> {
       listener: (context, state) {
         if (state.status == AuthStatus.authenticated) {
           context.go(AppRoutes.home);
+          context.read<DashboardBloc>().add(const FetchDashboardData());
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.errorMessage ?? 'Login failed')),

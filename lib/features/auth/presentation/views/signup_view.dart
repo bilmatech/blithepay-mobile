@@ -89,7 +89,7 @@ class _SignupViewState extends State<SignupView> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state.status == AuthStatus.authenticated) {
+        if (state.status == AuthStatus.signupSuccess) {
           context.push(
             AppRoutes.verifyOtp,
             extra: {'email': _emailController.text, 'flow': OtpFlow.signup},

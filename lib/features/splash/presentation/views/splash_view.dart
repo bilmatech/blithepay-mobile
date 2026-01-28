@@ -1,5 +1,7 @@
 import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/features/splash/presentation/bloc/splash_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/navigation/app_routes.dart';
 
@@ -19,7 +21,9 @@ class _SplashViewState extends State<SplashView>
   void initState() {
     super.initState();
     _setupAnimation();
-    _navigateToNextScreen();
+
+    // Trigger Bloc to check session/onboarding
+    context.read<SplashBloc>().add(CheckSplashStatus());
   }
 
   void _setupAnimation() {
@@ -28,19 +32,11 @@ class _SplashViewState extends State<SplashView>
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
 
     _animationController.forward();
-  }
-
-  void _navigateToNextScreen() {
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        context.go(AppRoutes.onboarding);
-      }
-    });
   }
 
   @override
@@ -51,16 +47,27 @@ class _SplashViewState extends State<SplashView>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.primaryLight,
-      body: Center(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Image.asset(
-            'assets/images/app_icon.png',
-            height: 196,
-            width: 196,
-            fit: BoxFit.cover,
+    return BlocListener<SplashBloc, SplashState>(
+      listener: (context, state) {
+        if (state is SplashNavigateOnboarding) {
+          context.go(AppRoutes.onboarding);
+        } else if (state is SplashNavigateDashboard) {
+          context.go(AppRoutes.home);
+        } else if (state is SplashNavigateLogin) {
+          context.go(AppRoutes.login);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.primaryLight,
+        body: Center(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Image.asset(
+              'assets/images/app_icon.png',
+              height: 196,
+              width: 196,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),

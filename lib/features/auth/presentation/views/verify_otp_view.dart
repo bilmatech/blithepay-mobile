@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:blithepay/features/common/data/success_args_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,16 +28,21 @@ class VerifyOtpView extends StatefulWidget {
 class _VerifyOtpViewState extends State<VerifyOtpView> {
   late List<TextEditingController> _otpControllers;
   late List<FocusNode> _focusNodes;
+  late Timer _timer;
+  int _secondsRemaining = 30;
+  bool _canResend = false;
 
   @override
   void initState() {
     super.initState();
-    _otpControllers = List.generate(4, (_) => TextEditingController());
-    _focusNodes = List.generate(4, (_) => FocusNode());
+    _otpControllers = List.generate(6, (_) => TextEditingController());
+    _focusNodes = List.generate(6, (_) => FocusNode());
+    _startCountdown();
   }
 
   @override
   void dispose() {
+    _timer.cancel();
     for (var controller in _otpControllers) {
       controller.dispose();
     }
@@ -48,7 +55,17 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
   void _handleVerifyOtp() {
     final code = _otpControllers.map((c) => c.text).join();
 
-    if (code.length == 4) {
+    if (code.length == 6) {
+      if (widget.flow == OtpFlow.forgotPassword) {
+        context.read<AuthBloc>().add(
+          VerifyForgotPasswordOtpRequested(
+            email: widget.email,
+            code: code,
+            flow: widget.flow,
+          ),
+        );
+        return;
+      }
       context.read<AuthBloc>().add(
         VerifyOtpRequested(email: widget.email, code: code, flow: widget.flow),
       );
@@ -56,12 +73,46 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
   }
 
   void _onOtpFieldChanged(int index, String value) {
-    if (value.isNotEmpty && index < 3) {
+    if (value.isNotEmpty && index < 5) {
       _focusNodes[index + 1].requestFocus();
     }
     if (value.isEmpty && index > 0) {
       _focusNodes[index - 1].requestFocus();
     }
+  }
+
+  void _startCountdown() {
+    _secondsRemaining = 30;
+    _canResend = false;
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsRemaining == 0) {
+        timer.cancel();
+        setState(() {
+          _canResend = true;
+        });
+      } else {
+        setState(() {
+          _secondsRemaining--;
+        });
+      }
+    });
+  }
+
+  void _handleResendOtp() {
+    if (!_canResend) return;
+    final bloc = context.read<AuthBloc>();
+    if (widget.flow == OtpFlow.forgotPassword) {
+      bloc.add(
+        ResendForgotPasswordOtpRequested(
+          email: widget.email,
+          flow: widget.flow,
+        ),
+      );
+    } else {
+      bloc.add(ResendOtpRequested(email: widget.email, flow: widget.flow));
+    }
+    _startCountdown();
   }
 
   @override
@@ -131,7 +182,7 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: List.generate(
-                        4,
+                        6,
                         (index) => SizedBox(
                           width: 60,
                           height: 60,
@@ -167,10 +218,16 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                     const SizedBox(height: 32),
                     Center(
                       child: GestureDetector(
-                        onTap: () {},
-                        child: const Text(
-                          AppStrings.resendCode,
-                          style: AppTextStyles.link,
+                        onTap: _canResend ? _handleResendOtp : null,
+                        child: Text(
+                          _canResend
+                              ? AppStrings.resendCode
+                              : '${AppStrings.resendCode} (${_secondsRemaining}s)',
+                          style: AppTextStyles.link.copyWith(
+                            color: _canResend
+                                ? AppColors.primary
+                                : AppColors.textSecondary,
+                          ),
                         ),
                       ),
                     ),
