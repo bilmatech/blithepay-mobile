@@ -50,6 +50,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthState.loading());
     try {
       final result = await _authRepository.login(event.email, event.password);
+
+      final userType = result.user?.type?.toLowerCase();
+      if (userType != 'guardian') {
+        emit(
+          const AuthState.error(
+            'a guardian account with this email address not found',
+          ),
+        );
+        return;
+      }
       await _authRepository.persistSession(result);
       emit(AuthState.authenticated(result));
     } catch (e) {
