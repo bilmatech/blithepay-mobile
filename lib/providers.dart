@@ -14,6 +14,7 @@ import 'package:blithepay/features/splash/presentation/bloc/splash_bloc.dart';
 import 'package:blithepay/features/students/data/repositories/students_repository.dart';
 import 'package:blithepay/features/students/presentation/bloc/students_bloc.dart';
 import 'package:blithepay/features/support/presentation/bloc/support_bloc.dart';
+import 'package:blithepay/features/wallet/data/repositories/wallet_repository.dart';
 import 'package:blithepay/features/wallet/presentation/bloc/wallet_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -34,8 +35,23 @@ class AppProviders {
       RepositoryProvider<AppLocalDataSource>(
         create: (_) => authLocalDataSource,
       ),
-      RepositoryProvider<DioClient>(create: (_) => dioClient),
+      RepositoryProvider<FlutterSecureStorage>(
+        create: (_) => const FlutterSecureStorage(),
+      ),
+
+      RepositoryProvider<AppLocalDataSourceImpl>(
+        create: (context) =>
+            AppLocalDataSourceImpl(context.read<FlutterSecureStorage>()),
+      ),
+
+      RepositoryProvider<DioClient>(
+        create: (context) => DioClient(context.read<AppLocalDataSourceImpl>()),
+      ),
       RepositoryProvider<AuthRepository>(create: (_) => authRepository),
+      RepositoryProvider<WalletRepositoryInterface>(
+        create: (context) =>
+            WalletRepository(dioClient: context.read<DioClient>()),
+      ),
       // Add other repositories here
       RepositoryProvider<StudentsRepository>(
         create: (_) => StudentsRepositoryImpl(),
@@ -62,11 +78,18 @@ class AppProviders {
             AuthBloc(authRepository: context.read<AuthRepository>()),
       ),
       BlocProvider<DashboardBloc>(
-        create: (_) =>
-            DashboardBloc(AppLocalDataSourceImpl(const FlutterSecureStorage())),
+        create: (context) => DashboardBloc(
+          localDataSource: context.read<AppLocalDataSourceImpl>(),
+          walletRepository: context.read<WalletRepositoryInterface>(),
+        ),
+      ),
+      BlocProvider<WalletBloc>(
+        create: (context) => WalletBloc(
+          walletRepository: context.read<WalletRepositoryInterface>(),
+        ),
       ),
       BlocProvider<FeesBloc>(create: (_) => FeesBloc()),
-      BlocProvider<WalletBloc>(create: (_) => WalletBloc()),
+
       BlocProvider<SupportBloc>(create: (_) => SupportBloc()),
       BlocProvider<StudentsBloc>(
         create: (context) =>

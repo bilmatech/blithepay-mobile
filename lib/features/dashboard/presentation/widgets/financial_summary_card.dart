@@ -1,4 +1,3 @@
-
 import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -60,7 +59,7 @@ class _FinancialSummaryCardState extends State<FinancialSummaryCard> {
               const SizedBox(height: 16),
 
               Text(
-                _balanceVisible ? 'N200,000.32' : '•••••••••',
+                _balanceVisible ? widget.walletBalance : '•••••••••',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 32,

@@ -1,11 +1,13 @@
 import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
+import 'package:blithepay/features/wallet/data/repositories/wallet_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/models/wallet_model.dart';
 import 'wallet_event.dart';
 import 'wallet_state.dart';
 
 class WalletBloc extends Bloc<WalletEvent, WalletState> {
-  WalletBloc() : super(const WalletInitial()) {
+  final WalletRepositoryInterface walletRepository;
+
+  WalletBloc({required this.walletRepository}) : super(const WalletInitial()) {
     on<FetchWalletDataEvent>(_onFetchWalletData);
     on<GetTransactionsEvent>(_onGetTransactions);
     on<FundWalletEvent>(_onFundWallet);
@@ -17,22 +19,9 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
   ) async {
     try {
       emit(const WalletLoading());
-      await Future.delayed(const Duration(seconds: 2));
-      final wallet = WalletModel(
-        balance: 'N200,000.32',
-        accountNumber: '0123456789',
-        lastUpdated: 'Tuesday, 11 July, 2026',
-        transactions: [
-          TransactionModel(
-            id: '1',
-            amount: 'N300,000.00',
-            type: 'Withdrawal',
-            method: 'Wallet',
-            date: '11-09-25. 11:15',
-            status: 'Completed',
-          ),
-        ],
-      );
+
+      final wallet = await walletRepository.getWallet();
+
       emit(WalletLoaded(wallet));
     } catch (e) {
       emit(WalletError(e.toString()));

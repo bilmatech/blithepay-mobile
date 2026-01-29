@@ -2,14 +2,22 @@ import 'package:blithepay/core/network/dio_client.dart';
 import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 class DioInterceptor extends Interceptor {
   final AppLocalDataSource _localDataSource;
+  final GlobalKey<NavigatorState> _navigatorKey;
 
+  // Internal flags
   bool _isRefreshing = false;
   final List<void Function()> _retryQueue = [];
+  final int _maxRetries = 3; // Max number of refresh attempts
 
-  DioInterceptor(this._localDataSource);
+  DioInterceptor({
+    required AppLocalDataSource localDataSource,
+    required GlobalKey<NavigatorState> navigatorKey,
+  }) : _localDataSource = localDataSource,
+       _navigatorKey = navigatorKey;
 
   @override
   Future<void> onRequest(
@@ -72,42 +80,54 @@ class DioInterceptor extends Interceptor {
     final refreshToken = await _localDataSource.getRefreshToken();
 
     if (refreshToken == null) {
-      await _localDataSource.clearSession();
+      // No refresh token → force logout
+      await _logoutUser();
       return handler.reject(err);
     }
 
     if (_isRefreshing) {
       _retryQueue.add(() async {
-        final clonedRequest = await _retryRequest(err.requestOptions);
-        handler.resolve(clonedRequest);
+        final clonedResponse = await _retryRequest(err.requestOptions);
+        handler.resolve(clonedResponse);
       });
       return;
     }
 
     _isRefreshing = true;
+    int retryCount = 0;
 
-    try {
-      final response = await AuthRepository(
-        dioClient: DioClient(_localDataSource),
-        localDataSource: _localDataSource,
-      ).refresh(refreshToken);
+    while (retryCount < _maxRetries) {
+      try {
+        final response = await AuthRepository(
+          dioClient: DioClient(_localDataSource),
+          localDataSource: _localDataSource,
+        ).refresh(refreshToken);
+        await _localDataSource.saveTokens(response);
 
-      await _localDataSource.saveTokens(response);
+        // Retry queued requests
+        for (final retry in _retryQueue) {
+          retry();
+        }
+        _retryQueue.clear();
 
-      _isRefreshing = false;
+        final newResponse = await _retryRequest(err.requestOptions);
+        handler.resolve(newResponse);
 
-      for (final retry in _retryQueue) {
-        retry();
+        _isRefreshing = false;
+        return;
+      } catch (_) {
+        retryCount++;
+        if (retryCount >= _maxRetries) {
+          // Max retries reached → logout
+          await _logoutUser();
+          _retryQueue.clear();
+          handler.reject(err);
+          _isRefreshing = false;
+          return;
+        }
+        // Optional: small delay before retrying
+        await Future.delayed(const Duration(milliseconds: 500));
       }
-      _retryQueue.clear();
-
-      final newResponse = await _retryRequest(err.requestOptions);
-      handler.resolve(newResponse);
-    } catch (_) {
-      _isRefreshing = false;
-      _retryQueue.clear();
-      await _localDataSource.clearSession();
-      handler.reject(err);
     }
   }
 
@@ -130,5 +150,14 @@ class DioInterceptor extends Interceptor {
       ),
     );
   }
-}
 
+  Future<void> _logoutUser() async {
+    await _localDataSource.clearSession();
+
+    // Navigate to login safely
+    _navigatorKey.currentState?.pushNamedAndRemoveUntil(
+      '/login',
+      (route) => false,
+    );
+  }
+}

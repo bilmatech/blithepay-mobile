@@ -21,6 +21,10 @@ class ApiEndpoints {
 
   //
   static const String setupPin = '/accounts/set_app_pin';
+
+  //wallet
+  static const String wallet = '/wallet';
+
   // Students
   static const String students = '/students';
   static String studentDetail(String id) => '$students/$id';

@@ -1,17 +1,22 @@
+import 'package:blithepay/features/wallet/data/models/wallet_model.dart';
 import 'package:equatable/equatable.dart';
 
 class AuthResponseModel extends Equatable {
   final UserModel? user;
   final AuthTokensModel? tokens;
+  final WalletModel? wallet;
   final String? message;
 
-  const AuthResponseModel({this.user, this.tokens, this.message});
+  const AuthResponseModel({this.user, this.tokens, this.wallet, this.message});
 
   factory AuthResponseModel.fromJson(Map<String, dynamic> json) {
     return AuthResponseModel(
       user: json['user'] != null ? UserModel.fromJson(json['user']) : null,
       tokens: json['tokens'] != null
           ? AuthTokensModel.fromJson(json['tokens'])
+          : null,
+      wallet: json['wallet'] != null
+          ? WalletModel.fromJson(json['wallet'])
           : null,
       message: json['message'] as String?,
     );

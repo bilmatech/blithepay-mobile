@@ -4,7 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class AccountDetailsWidget extends StatelessWidget {
-  const AccountDetailsWidget({super.key});
+  final String accountName;
+  final String acctNo;
+  const AccountDetailsWidget({
+    super.key,
+    required this.accountName,
+    required this.acctNo,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,23 +27,19 @@ class AccountDetailsWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("Account Number", style: AppTextStyles.bodySmall),
                     SizedBox(height: 6),
-                    Text("6543567654", style: AppTextStyles.bodyLarge),
+                    Text(acctNo, style: AppTextStyles.bodyLarge),
                   ],
                 ),
               ),
               GestureDetector(
                 onTap: () async {
-                  const accountNumber = "6543567654";
-
-                  await Clipboard.setData(
-                    const ClipboardData(text: accountNumber),
-                  );
+                  await Clipboard.setData(ClipboardData(text: acctNo));
 
                   final messenger = ScaffoldMessenger.of(context);
                   messenger.clearSnackBars();
@@ -63,12 +65,12 @@ class AccountDetailsWidget extends StatelessWidget {
           const SizedBox(height: 16),
           const Divider(),
           // Account Name
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("Account Name", style: AppTextStyles.bodySmall),
               SizedBox(height: 6),
-              Text("Yunas- BlithePay", style: AppTextStyles.bodyLarge),
+              Text(accountName, style: AppTextStyles.bodyLarge),
             ],
           ),
         ],
