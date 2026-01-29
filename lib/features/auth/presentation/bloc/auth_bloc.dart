@@ -51,13 +51,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final result = await _authRepository.login(event.email, event.password);
 
-      final userType = result.user?.type?.toLowerCase();
-      if (userType != 'guardian') {
-        emit(
-          const AuthState.error(
-            'a guardian account with this email address not found',
-          ),
-        );
+      if (result.user?.verifiedAt == null) {
+        emit(AuthState.error(result.message ?? 'Your account is not verified'));
+
         return;
       }
       await _authRepository.persistSession(result);

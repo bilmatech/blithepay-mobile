@@ -151,8 +151,24 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
             case OtpFlow.forgotPassword:
               context.push(AppRoutes.resetPassword, extra: widget.email);
               break;
+
+            case OtpFlow.verifyEmail:
+              context.go(
+                AppRoutes.success,
+                extra: SuccessArgs(
+                  title: AppStrings.verificationSuccess,
+                  message: AppStrings.anAccounthasbeen,
+                  buttonLabel: AppStrings.logIn,
+                  nextRoute: AppRoutes.login,
+                  nextExtra: {
+                    'email': widget.email,
+                    'flow': OtpFlow.verifyEmail,
+                  },
+                ),
+              );
+              break;
           }
-        } 
+        }
       },
       child: AppScaffold(
         showBackButton: false,

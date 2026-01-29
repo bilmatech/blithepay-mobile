@@ -69,7 +69,7 @@ class AuthRepository implements AuthRepositoryInterface {
     return AuthResponseModel.fromJson(
       (await _dioClient.post(
         ApiEndpoints.login,
-        data: {"email": email, "password": password},
+        data: {"email": email, "password": password, "source": 'mobile'},
       )).data['data'],
     );
   }

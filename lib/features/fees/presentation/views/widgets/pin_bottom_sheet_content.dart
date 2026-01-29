@@ -1,11 +1,12 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/navigation/app_routes.dart';
+import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_event.dart';
 import 'package:blithepay/features/fees/presentation/views/widgets/nemeric_keyboard.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 
 class PinBottomSheetContent extends StatefulWidget {
@@ -130,13 +131,17 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
           ),
           const SizedBox(height: 12),
           GestureDetector(
-            onTap: () {
+            onTap: () async {
+              final userSession = await AppLocalDataSourceImpl(
+                const FlutterSecureStorage(),
+              ).getSession();
+
               Navigator.pop(context); // close bottom sheet
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 context.push(
                   AppRoutes.setupOtp,
                   extra: {
-                    'email': 'fghgh@gmail.com',
+                    'email': userSession?.user?.email ?? '',
                     'flow': OtpFlow.forgotPassword,
                     'pop': true,
                   },

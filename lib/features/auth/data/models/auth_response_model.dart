@@ -3,7 +3,9 @@ import 'package:equatable/equatable.dart';
 class AuthResponseModel extends Equatable {
   final UserModel? user;
   final AuthTokensModel? tokens;
-  const AuthResponseModel({this.user, this.tokens});
+  final String? message;
+
+  const AuthResponseModel({this.user, this.tokens, this.message});
 
   factory AuthResponseModel.fromJson(Map<String, dynamic> json) {
     return AuthResponseModel(
@@ -11,6 +13,7 @@ class AuthResponseModel extends Equatable {
       tokens: json['tokens'] != null
           ? AuthTokensModel.fromJson(json['tokens'])
           : null,
+      message: json['message'] as String?,
     );
   }
 
@@ -56,6 +59,7 @@ class UserModel {
   final String? type;
   final String? accountStatus;
   final String? profileImage;
+  final DateTime? verifiedAt;
 
   const UserModel({
     this.id,
@@ -66,6 +70,7 @@ class UserModel {
     this.type,
     this.accountStatus,
     this.profileImage,
+    this.verifiedAt,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -78,6 +83,9 @@ class UserModel {
       type: json['type'],
       accountStatus: json['accountStatus'],
       profileImage: json['profileImage'],
+      verifiedAt: json['verifiedAt'] != null
+          ? DateTime.parse(json['verifiedAt'])
+          : null,
     );
   }
 
