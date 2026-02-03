@@ -73,19 +73,20 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
   }
 
   void _onOtpFieldChanged(int index, String value) {
-    if (index == 0 && value.length > 1) {
+    //  HANDLE PASTE (6-digit or more)
+    if (value.length > 1) {
       final chars = value.split('');
 
       for (int i = 0; i < _otpControllers.length; i++) {
         _otpControllers[i].text = i < chars.length ? chars[i] : '';
       }
 
-      _otpControllers[0].text = chars.isNotEmpty ? chars[0] : '';
-
       _focusNodes.last.requestFocus();
       _handleVerifyOtp();
       return;
     }
+
+    // NORMAL typing behavior
     if (value.isNotEmpty && index < 5) {
       _focusNodes[index + 1].requestFocus();
     }
@@ -130,6 +131,9 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final fieldWidth = ((screenWidth - 80) / 6).clamp(44.0, 56.0);
+
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.otpVerified) {
@@ -206,67 +210,43 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                     ),
                     const SizedBox(height: 48),
                     Row(
-                      children: List.generate(
-                        6,
-                        (index) => Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
-                            child: SizedBox(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(6, (index) {
+                        return Row(
+                          children: [
+                            SizedBox(
+                              width: fieldWidth,
                               height: 56,
                               child: TextField(
                                 controller: _otpControllers[index],
                                 focusNode: _focusNodes[index],
                                 textAlign: TextAlign.center,
                                 keyboardType: TextInputType.number,
-                                style: AppTextStyles.h3,
-
+                                maxLength: 1,
+                                maxLengthEnforcement: MaxLengthEnforcement.none,
                                 inputFormatters: [
-                                  TextInputFormatter.withFunction((
-                                    oldValue,
-                                    newValue,
-                                  ) {
-                                    final text = newValue.text.replaceAll(
-                                      RegExp(r'\D'),
-                                      '',
-                                    );
-
-                                    if (index != 0 && text.length > 1) {
-                                      return oldValue;
-                                    }
-
-                                    if (text.length > 6) {
-                                      return oldValue;
-                                    }
-
-                                    return TextEditingValue(
-                                      text: text,
-                                      selection: TextSelection.collapsed(
-                                        offset: text.length,
-                                      ),
-                                    );
-                                  }),
+                                  FilteringTextInputFormatter.digitsOnly,
                                 ],
-
                                 onChanged: (value) =>
                                     _onOtpFieldChanged(index, value),
-
                                 decoration: InputDecoration(
+                                  counterText: '',
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: AppColors.primary,
-                                      width: 2,
-                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                      ),
+
+                            // 👇 spacing BETWEEN fields
+                            if (index != 5) const SizedBox(width: 12),
+                          ],
+                        );
+                      }),
                     ),
                     const SizedBox(height: 32),
                     Center(

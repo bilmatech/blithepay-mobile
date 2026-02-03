@@ -5,6 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 class DioInterceptor extends Interceptor {
+  final Dio _dio;
+
   final AppLocalDataSource _localDataSource;
   final GlobalKey<NavigatorState> _navigatorKey;
 
@@ -14,9 +16,12 @@ class DioInterceptor extends Interceptor {
   final int _maxRetries = 3; // Max number of refresh attempts
 
   DioInterceptor({
+    required Dio dio,
+
     required AppLocalDataSource localDataSource,
     required GlobalKey<NavigatorState> navigatorKey,
-  }) : _localDataSource = localDataSource,
+  }) : _dio = dio,
+       _localDataSource = localDataSource,
        _navigatorKey = navigatorKey;
 
   @override
@@ -43,34 +48,24 @@ class DioInterceptor extends Interceptor {
       return _handle401(err, handler);
     }
 
-    // Extract backend message
-    String message = "Unknown error";
-    try {
+    String message;
+
+    if (err.response == null) {
+      // Network / timeout / socket
+      message = 'No internet connection';
+    } else {
       final data = err.response?.data;
+      message = 'Something went wrong';
+
       if (data is Map<String, dynamic>) {
-        // If backend sends multiple errors, combine them
         message =
-            data['message']?.toString() ??
-            data.values.map((e) => e.toString()).join(", ");
-      } else if (data is List) {
-        message = data.join(", ");
+            data['message']?.toString() ?? data['error']?.toString() ?? message;
       } else if (data is String) {
         message = data;
       }
-    } catch (_) {
-      message = err.message ?? "Unknown error";
     }
 
-   // print("Backend Error: $message"); // Log in terminal
-
-    final newErr = DioException(
-      requestOptions: err.requestOptions,
-      response: err.response,
-      error: message, 
-      type: err.type,
-    );
-
-    handler.reject(newErr);
+    handler.reject(err.copyWith(error: message));
   }
 
   Future<void> _handle401(
@@ -132,14 +127,13 @@ class DioInterceptor extends Interceptor {
   }
 
   Future<Response> _retryRequest(RequestOptions requestOptions) async {
-    final dio = Dio(); // or reuse base Dio instance safely
 
     final accessToken = await _localDataSource.getAccessToken();
 
     final headers = Map<String, dynamic>.from(requestOptions.headers);
     headers['Authorization'] = 'Bearer $accessToken';
 
-    return dio.request(
+    return _dio.request(
       requestOptions.path,
       data: requestOptions.data,
       queryParameters: requestOptions.queryParameters,

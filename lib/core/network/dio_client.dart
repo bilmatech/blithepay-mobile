@@ -22,14 +22,8 @@ class DioClient {
       ),
     );
 
-    final navigatorKey = GlobalKey<NavigatorState>();
-
-    _dio.interceptors.add(
-      DioInterceptor(
-        localDataSource: localDataSource,
-        navigatorKey: navigatorKey,
-      ),
-    );
+    final GlobalKey<NavigatorState> appNavigatorKey =
+        GlobalKey<NavigatorState>();
 
     if (AppConfig.enableDebugLogging) {
       _dio.interceptors.add(
@@ -44,6 +38,14 @@ class DioClient {
         ),
       );
     }
+
+    _dio.interceptors.add(
+      DioInterceptor(
+        dio: _dio,
+        localDataSource: localDataSource,
+        navigatorKey: appNavigatorKey,
+      ),
+    );
   }
 
   factory DioClient(AppLocalDataSource localDataSource) {

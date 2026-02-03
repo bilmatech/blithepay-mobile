@@ -1,3 +1,4 @@
+import 'package:blithepay/core/network/dio_error_mapper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'auth_event.dart';
@@ -39,7 +40,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         ),
       );
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
     }
   }
 
@@ -59,7 +60,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _authRepository.persistSession(result);
       emit(AuthState.authenticated(result));
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
     }
   }
 
@@ -72,7 +73,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _authRepository.forgotPassword(event.email);
       emit(const AuthState.otpSent());
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
     }
   }
 
@@ -87,7 +88,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       await _authRepository.persistSession(result);
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
     }
   }
 
@@ -100,7 +101,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _authRepository.resendOtp(event.email);
       emit(const AuthState.otpSent());
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
     }
   }
 
@@ -113,7 +114,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _authRepository.setupPin(event.email, event.code);
       emit(const AuthState.pinSetup());
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
     }
   }
 
@@ -126,7 +127,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       var result = await _authRepository.verifyForgotPasswordOtp(event.code);
       emit(AuthState.otpVerified(token: result));
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
     }
   }
 
@@ -140,7 +141,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       emit(const AuthState.passwordReset());
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
     }
   }
 
@@ -153,7 +154,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _authRepository.resendOtp(event.email);
       emit(const AuthState.otpSent());
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
     }
   }
 }
