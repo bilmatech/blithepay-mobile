@@ -31,8 +31,8 @@ class AccountDetailsWidget extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Account Number", style: AppTextStyles.bodySmall),
-                    SizedBox(height: 6),
+                    const Text("Account Number", style: AppTextStyles.bodySmall),
+                    const SizedBox(height: 6),
                     Text(acctNo, style: AppTextStyles.bodyLarge),
                   ],
                 ),
@@ -68,8 +68,8 @@ class AccountDetailsWidget extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Account Name", style: AppTextStyles.bodySmall),
-              SizedBox(height: 6),
+              const Text("Account Name", style: AppTextStyles.bodySmall),
+              const SizedBox(height: 6),
               Text(accountName, style: AppTextStyles.bodyLarge),
             ],
           ),

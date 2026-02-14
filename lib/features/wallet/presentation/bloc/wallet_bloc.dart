@@ -13,20 +13,43 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     on<FundWalletEvent>(_onFundWallet);
   }
 
+  bool _hasFetchedOnce = false;
+
   Future<void> _onFetchWalletData(
     FetchWalletDataEvent event,
     Emitter<WalletState> emit,
   ) async {
+    final isForcedRefresh = event.forceRefresh;
+
+    if (_hasFetchedOnce && !isForcedRefresh) return;
+
+    final showShimmer = !_hasFetchedOnce && !isForcedRefresh;
+
+    if (showShimmer) emit(const WalletLoading());
+
     try {
-      emit(const WalletLoading());
-
       final wallet = await walletRepository.getWallet();
-
+      _hasFetchedOnce = true;
       emit(WalletLoaded(wallet));
     } catch (e) {
       emit(WalletError(e.toString()));
     }
   }
+
+  // Future<void> _onFetchWalletData(
+  //   FetchWalletDataEvent event,
+  //   Emitter<WalletState> emit,
+  // ) async {
+  //   try {
+  //     emit(const WalletLoading());
+
+  //     final wallet = await walletRepository.getWallet();
+
+  //     emit(WalletLoaded(wallet));
+  //   } catch (e) {
+  //     emit(WalletError(e.toString()));
+  //   }
+  // }
 
   Future<void> _onGetTransactions(
     GetTransactionsEvent event,

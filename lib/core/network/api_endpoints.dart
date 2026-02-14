@@ -25,18 +25,31 @@ class ApiEndpoints {
   //wallet
   static const String wallet = '/wallet';
 
+  //Portal
+  static const String getportals = '/portals/live';
+  static String getportalById(String id) => '/portals/$id';
+  static String updateportal(String id) => '/portals/$id';
+  static String deleteportal(String id) => '/portals/$id';
+
+  // linked Profile
+  static const String postLinkedProfile = '/linked_profiles';
+  static const String getLinkedProfile = '/linked_profiles';
+  static const String verifyLinkedProfile = '/linked_profiles/verify';
+  static String getLinkedProfileById(String id) => '/linked_profiles/$id';
+  static String deleteLinkedProfile(String id) => '/linked_profiles/$id';
+
   // Students
   static const String students = '/students';
   static String studentDetail(String id) => '$students/$id';
-  
+
   // Fees
   static const String fees = '/fees';
   static const String feeBalance = '$fees/balance';
-  
+
   // Payments
   static const String payments = '/payments';
   static const String createPayment = '$payments/create';
-  
+
   // Receipts
   static const String receipts = '/receipts';
 }

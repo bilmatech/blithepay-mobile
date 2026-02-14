@@ -38,8 +38,8 @@ class BankCardWidget extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Bank Name", style: AppTextStyles.bodySmall),
-                        SizedBox(height: 2),
+                        const Text("Bank Name", style: AppTextStyles.bodySmall),
+                        const SizedBox(height: 2),
                         Text(
                           (state is WalletLoaded)
                               ? state.wallet.tag

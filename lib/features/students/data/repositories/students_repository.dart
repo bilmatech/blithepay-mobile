@@ -1,56 +1,163 @@
+import 'package:blithepay/core/network/api_endpoints.dart';
+import 'package:blithepay/core/network/dio_client.dart';
+import 'package:blithepay/core/storage/auth_local_storage.dart';
+import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
+import 'package:blithepay/features/students/data/models/verify_student_model.dart';
+import 'package:dio/dio.dart';
+
 import '../models/student_model.dart';
 
 abstract class StudentsRepository {
-  Future<List<StudentModel>> getLinkedStudents();
-  Future<StudentModel> getStudentDetails(String studentId);
-  Future<void> linkStudent(String studentId);
+  // Future<PaginatedLivePortal> getLivePortal({int page, int limit});
+  Future<PaginatedStudents> getLinkedStudents({
+    int page,
+    int limit,
+    String studentCode,
+  });
+
+  Future<VerifiedStudentModel> getStudentDetails(String studentId);
+  Future<VerifiedStudentModel> verifyStudent(
+    String schoolId,
+    String regNum,
+    String studentCode,
+  );
+  Future<LinkedStudentModel> linkStudent(String studentId, String studentCode);
+  Future<void> unlinkStudent(String studentId, String studentCode);
   Future<void> verifyGuardian(String phoneNumber, String otp);
 }
 
 class StudentsRepositoryImpl implements StudentsRepository {
-  @override
-  Future<List<StudentModel>> getLinkedStudents() async {
-    // Mock implementation
-    await Future.delayed(const Duration(seconds: 1));
-    return [
-      StudentModel(
-        id: '1',
-        name: 'Adebayo Oluwaferanmi',
-        studentId: '7ytf5675dm',
-        class_: 'Primary 3',
-        school: 'Seaman International Nursery & Primary School',
-        feeStatus: 'Pending',
-        amountDue: 300000,
-      ),
-      StudentModel(
-        id: '2',
-        name: 'Emma Oluwatayo',
-        studentId: '7ytf3475dm',
-        class_: 'Primary 4',
-        school: 'Seaman International Nursery & Primary School',
-        feeStatus: 'Pending',
-        amountDue: 100000,
-      ),
-    ];
-  }
+  final DioClient _dioClient;
+
+  StudentsRepositoryImpl({required DioClient dioClient})
+    : _dioClient = dioClient;
+  // @override
+  // Future<List<StudentModel>> getLinkedStudents() async {
+  //   // Mock implementation
+  //   await Future.delayed(const Duration(seconds: 1));
+  //   return [
+  //     StudentModel(
+  //       id: '1',
+  //       name: 'Adebayo Oluwaferanmi',
+  //       studentId: '7ytf5675dm',
+  //       class_: 'Primary 3',
+  //       school: 'Seaman International Nursery & Primary School',
+  //       feeStatus: 'Pending',
+  //       amountDue: 300000,
+  //     ),
+  //     StudentModel(
+  //       id: '2',
+  //       name: 'Emma Oluwatayo',
+  //       studentId: '7ytf3475dm',
+  //       class_: 'Primary 4',
+  //       school: 'Seaman International Nursery & Primary School',
+  //       feeStatus: 'Pending',
+  //       amountDue: 100000,
+  //     ),
+  //   ];
+  // }
+
+  // @override
+  // Future<PaginatedLivePortal> getLivePortal({
+  //   int page = 1,
+  //   int limit = 20,
+  // }) async {
+  //   var response = await _dioClient.get(
+  //     '${ApiEndpoints.getportals}?page=$page&limit=$limit',
+  //   );
+  //   final mainData = response.data['data'];
+  //   final List<dynamic> portalJson = mainData['data'];
+  //   final metadata = mainData['metadata'];
+
+  //   final livePortal = portalJson
+  //       .map((json) => LivePortalSchoolModel.fromJson(json))
+  //       .toList();
+
+  //   return PaginatedLivePortal(
+  //     livePortal: livePortal,
+  //     currentPage: metadata['page'],
+  //     totalPages: metadata['totalPages'],
+  //     nextPage: metadata['nextPage'],
+  //   );
+  // }
 
   @override
-  Future<StudentModel> getStudentDetails(String studentId) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return StudentModel(
-      id: studentId,
-      name: 'Adebayo Oluwaferanmi',
-      studentId: '7ytf5675dm',
-      class_: 'Primary 3',
-      school: 'Seaman International Nursery & Primary School',
-      feeStatus: 'Pending',
-      amountDue: 300000,
+  Future<PaginatedStudents> getLinkedStudents({
+    int page = 1,
+    int limit = 20,
+    String studentCode = '',
+  }) async {
+    var response = await _dioClient.get(
+      '${ApiEndpoints.getLinkedProfile}?page=$page&limit=$limit',
+      options: Options(headers: {'X-App-Id': studentCode}),
+    );
+    final mainData = response.data['data'];
+    final List<dynamic> studentJson = mainData['data'];
+    final metadata = mainData['metadata'];
+
+    final students = studentJson
+        .map((json) => VerifiedStudentModel.fromJson(json))
+        .toList();
+
+    return PaginatedStudents(
+      students: students,
+      currentPage: metadata['page'],
+      totalPages: metadata['totalPages'],
+      nextPage: metadata['nextPage'],
     );
   }
 
   @override
-  Future<void> linkStudent(String studentId) async {
-    await Future.delayed(const Duration(seconds: 1));
+  Future<VerifiedStudentModel> getStudentDetails(String studentId) async {
+    var response = await _dioClient.get(ApiEndpoints.getportalById(studentId));
+    final data = response.data['data'];
+    return VerifiedStudentModel.fromJson(data);
+
+    // await Future.delayed(const Duration(seconds: 1));
+    // return StudentModel(
+    //   id: studentId,
+    //   name: 'Adebayo Oluwaferanmi',
+    //   studentId: '7ytf5675dm',
+    //   class_: 'Primary 3',
+    //   school: 'Seaman International Nursery & Primary School',
+    //   feeStatus: 'Pending',
+    //   amountDue: 300000,
+    // );
+  }
+
+  @override
+  Future<VerifiedStudentModel> verifyStudent(
+    String schoolId,
+    String regNumber,
+    String studentCode,
+  ) async {
+    var response = await _dioClient.get(
+      ApiEndpoints.verifyLinkedProfile,
+      queryParameters: {"regNumber": regNumber, 'schoolId': schoolId},
+      options: Options(headers: {'X-App-Id': studentCode}),
+    );
+    return VerifiedStudentModel.fromJson(response.data['data']);
+  }
+
+  @override
+  Future<LinkedStudentModel> linkStudent(
+    String studentId,
+    String studentCode,
+  ) async {
+    var response = await _dioClient.post(
+      ApiEndpoints.postLinkedProfile,
+      data: {'studentId': studentId},
+      options: Options(headers: {'X-App-Id': studentCode}),
+    );
+    return LinkedStudentModel.fromJson(response.data['data']);
+  }
+
+  @override
+  Future<void> unlinkStudent(String studentId, String studentCode) async {
+    await _dioClient.delete(
+      ApiEndpoints.deleteLinkedProfile(studentId),
+      options: Options(headers: {'X-App-Id': studentCode}),
+    );
   }
 
   @override

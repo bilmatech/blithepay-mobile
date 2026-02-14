@@ -173,6 +173,16 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
               break;
           }
         }
+        if (state.status == AuthStatus.error) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage ?? ''),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+        }
       },
       child: AppScaffold(
         showBackButton: false,

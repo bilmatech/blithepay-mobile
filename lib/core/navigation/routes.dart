@@ -6,10 +6,12 @@ import 'package:blithepay/features/fees/presentation/views/payment_success_view.
 import 'package:blithepay/features/profile/presentation/views/change_password_view.dart';
 import 'package:blithepay/features/profile/presentation/views/profile_view.dart';
 import 'package:blithepay/features/fees/presentation/views/fees_breakdown_view.dart';
+import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
 import 'package:blithepay/features/schools/presentation/views/link_child_school_view.dart';
 import 'package:blithepay/features/schools/presentation/views/link_profile.dart';
 import 'package:blithepay/features/schools/presentation/views/student_linked_success_view.dart';
 import 'package:blithepay/features/splash/presentation/views/splash_view.dart';
+import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/signup_view.dart';
@@ -137,11 +139,20 @@ class AppRouterConfig {
         ),
         GoRoute(
           path: AppRoutes.linkProfile,
-          builder: (_, __) => const LinkProfileView(),
+          builder: (context, state){
+            final student = state.extra as VerifiedStudentModel;
+
+            return LinkProfileView(student: student);
+          },
         ),
         GoRoute(
           path: AppRoutes.studentLinkedSuccess,
-          builder: (_, __) => const StudentLinkedSucessView(),
+            builder: (context, state){
+            final student = state.extra as LinkedStudentModel;
+
+            return StudentLinkedSucessView(student: student);
+          },
+       //   builder: (_, __) => const StudentLinkedSucessView(),
         ),
         GoRoute(
           path: AppRoutes.feeSelection,

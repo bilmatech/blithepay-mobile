@@ -54,10 +54,12 @@ class AppProviders {
       ),
       // Add other repositories here
       RepositoryProvider<StudentsRepository>(
-        create: (_) => StudentsRepositoryImpl(),
+        create: (context) =>
+            StudentsRepositoryImpl(dioClient: context.read<DioClient>()),
       ),
       RepositoryProvider<SchoolsRepository>(
-        create: (_) => SchoolsRepositoryImpl(),
+        create: (context) =>
+            SchoolsRepositoryImpl(dioClient: context.read<DioClient>()),
       ),
       RepositoryProvider<NotificationsRepository>(
         create: (_) => NotificationsRepositoryImpl(),

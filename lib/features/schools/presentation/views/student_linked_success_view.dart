@@ -1,3 +1,5 @@
+import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
+import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -9,7 +11,14 @@ class StudentLinkedSucessView extends StatelessWidget {
   final String? message;
   final VoidCallback? onPressed;
 
-  const StudentLinkedSucessView({super.key, this.message, this.onPressed});
+  final LinkedStudentModel? student;
+
+  const StudentLinkedSucessView({
+    super.key,
+    this.message,
+    this.onPressed,
+    this.student,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +48,11 @@ class StudentLinkedSucessView extends StatelessWidget {
                   //   fit: BoxFit.cover,
                   // ),
                 ),
-                child: Icon(Icons.person, size: 40),
+                child: const Icon(Icons.person, size: 40),
               ),
               const SizedBox(height: 16),
               Text(
-                'Adebowale Anthony Joshua',
+                student?.fullName ?? '',
                 style: AppTextStyles.bodyRegular.copyWith(
                   color: AppColors.textPrimary,
                 ),

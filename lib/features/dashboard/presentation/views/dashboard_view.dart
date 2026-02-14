@@ -8,6 +8,7 @@ import 'package:blithepay/features/dashboard/presentation/widgets/quick_action_b
 import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
 import 'package:blithepay/features/wallet/presentation/bloc/wallet_bloc.dart';
 import 'package:blithepay/features/wallet/presentation/bloc/wallet_event.dart';
+import 'package:blithepay/features/wallet/presentation/bloc/wallet_state.dart';
 import 'package:blithepay/shared/widgets/layouts/bottom_navigation.dart';
 import 'package:blithepay/shared/widgets/loaders/shimmer_dashboard_loader.dart';
 import 'package:flutter/material.dart';
@@ -42,8 +43,10 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
-    context.read<DashboardBloc>().add(const FetchDashboardData());
-    context.read<WalletBloc>().add(const FetchWalletDataEvent());
+    Future.microtask(() {
+      context.read<DashboardBloc>().add(const FetchDashboardData());
+      context.read<WalletBloc>().add(const FetchWalletDataEvent());
+    });
   }
 
   @override

@@ -93,8 +93,9 @@ class PaymentConfirmationView extends StatelessWidget {
       ),
       child: Column(
         children: List.generate(feeItems.length * 2 - 1, (index) {
-          if (index.isOdd)
+          if (index.isOdd) {
             return const Divider(height: 1, color: AppColors.border);
+          }
           final item = feeItems[index ~/ 2];
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

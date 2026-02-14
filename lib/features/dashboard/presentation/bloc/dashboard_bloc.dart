@@ -18,26 +18,77 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     on<SelectChild>(_onSelectChild);
   }
 
+  // Future<void> _onFetchDashboardData(
+  //   FetchDashboardData event,
+  //   Emitter<DashboardState> emit,
+  // ) async {
+  //   final bool shouldShowLoader = state is! DashboardLoaded;
+
+  //   if (shouldShowLoader) {
+  //     emit(const DashboardLoading());
+  //   }
+
+  //   try {
+  //     // 1. Fetch user session
+  //     final userSession = await _localDataSource.getSession();
+  //     final firstName =
+  //         '${userSession?.user?.firstName ?? ''} ${userSession?.user?.lastName ?? ''}';
+
+  //     // 2. Greeting logic
+  //     final hour = DateTime.now().hour;
+  //     final greeting = hour < 12
+  //         ? 'Good Morning'
+  //         : hour < 17
+  //         ? 'Good Afternoon'
+  //         : hour < 21
+  //         ? 'Good Evening'
+  //         : 'Good Night';
+
+  //     // 3. Fetch wallet from API
+  //     final wallet = await walletRepository.getWallet();
+
+  //     // 4. Build dashboard model
+  //     final dashboardData = DashboardModel(
+  //       greeting: greeting,
+  //       userName: firstName.trim(),
+  //       avatarUrl: userSession?.user?.profileImage ?? '',
+  //       totalOutstanding: '',
+  //       nextDueDate: '',
+  //       walletBalance: wallet.ngnBalance,
+  //       selectedChildId: '',
+  //       selectedChildName: '',
+  //       transactions: DashboardModel.mock().transactions,
+  //     );
+
+  //     emit(DashboardLoaded(dashboardData));
+  //   } catch (e) {
+  //     // If we already have data, keep it instead of replacing with error
+  //     if (state is DashboardLoaded) return;
+
+  //     emit(DashboardError(e.toString()));
+  //   }
+  // }
+
   bool _hasFetchedOnce = false;
 
   Future<void> _onFetchDashboardData(
     FetchDashboardData event,
     Emitter<DashboardState> emit,
   ) async {
-    final bool isFirstLoad = !_hasFetchedOnce;
     final bool isForcedRefresh = event.forceRefresh;
 
-    // First load → show loader
-    if (isFirstLoad) {
-      emit(const DashboardLoading());
-    }
+    // Only fetch if not already fetched OR forced refresh
+    if (_hasFetchedOnce && !isForcedRefresh) return;
+
+    final showShimmer = !_hasFetchedOnce && !isForcedRefresh;
+
+    if (showShimmer) emit(const DashboardLoading());
+
     try {
-      // 1. Fetch user session
       final userSession = await _localDataSource.getSession();
       final firstName =
           '${userSession?.user?.firstName ?? ''} ${userSession?.user?.lastName ?? ''}';
 
-      // 2. Greeting logic
       final hour = DateTime.now().hour;
       final greeting = hour < 12
           ? 'Good Morning'
@@ -47,32 +98,26 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           ? 'Good Evening'
           : 'Good Night';
 
-      // 3. Fetch wallet from API
       final wallet = await walletRepository.getWallet();
 
-      // 4. Build dashboard model
       final dashboardData = DashboardModel(
         greeting: greeting,
         userName: firstName.trim(),
         avatarUrl: userSession?.user?.profileImage ?? '',
-        totalOutstanding: '', // hook up later if needed
+        totalOutstanding: '',
         nextDueDate: '',
         walletBalance: wallet.ngnBalance,
         selectedChildId: '',
         selectedChildName: '',
         transactions: DashboardModel.mock().transactions,
       );
-      _hasFetchedOnce = true;
 
+      _hasFetchedOnce = true;
       emit(DashboardLoaded(dashboardData));
     } catch (e) {
-      if (!isFirstLoad && state is DashboardLoaded) {
-        return;
-      }
       emit(DashboardError(e.toString()));
     }
   }
-
 
   Future<void> _onSelectChild(
     SelectChild event,
