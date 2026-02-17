@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "313986921733",
+    "project_id": "blithepay",
+    "storage_bucket": "blithepay.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:313986921733:android:14bbc1a46ffc09f627336c",
+        "android_client_info": {
+          "package_name": "com.bilmatech.blithepay"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrQ29dYllBl_Wzk3QzlhNcH3i2E_SGYw0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

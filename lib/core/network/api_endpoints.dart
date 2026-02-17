@@ -42,6 +42,8 @@ class ApiEndpoints {
   static const String students = '/students';
   static String studentDetail(String id) => '$students/$id';
 
+  static const String synToken = '/notification/sync_token';
+
   // Fees
   static const String fees = '/fees';
   static const String feeBalance = '$fees/balance';
