@@ -162,7 +162,7 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Student ID: ${student.id}',
+                                              'Student ID: ${student.regNumber}',
                                               style: AppTextStyles.bodySmall
                                                   .copyWith(
                                                     color: Colors.white,
