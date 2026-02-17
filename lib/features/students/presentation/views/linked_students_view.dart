@@ -1,7 +1,6 @@
 import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
 import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
-import 'package:blithepay/features/students/data/models/student_model.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student/components/empty_state.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student/components/unlink_button.dart';
 import 'package:blithepay/features/wallet/presentation/views/invoice_detail_dialog.dart';
