@@ -1,11 +1,13 @@
 import 'package:blithepay/core/constants/app_colors.dart';
-import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
+import 'package:blithepay/features/fees/presentation/views/widgets/student_card_container_widget.dart';
+import 'package:blithepay/features/students/data/models/student_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
-import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
-import 'package:blithepay/shared/widgets/inputs/dropdown_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class PayFeesView extends StatefulWidget {
@@ -19,6 +21,22 @@ class _PayFeesViewState extends State<PayFeesView> {
   // String? _selectedStudent;
   // String? _selectedFee;
   String? _selectedSchool;
+  int? _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.95);
+  }
+
+  late final PageController _pageController;
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,22 +70,36 @@ class _PayFeesViewState extends State<PayFeesView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Wallet Balance:',
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
                           ),
                         ),
-                        Text(
-                          'N200,000.00',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        BlocBuilder<DashboardBloc, DashboardState>(
+                          builder: (context, state) {
+                            if (state is DashboardLoaded) {
+                              return Text(
+                                state.dashboard.walletBalance,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            }
+
+                            return const Text(
+                              '--',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -83,71 +115,116 @@ class _PayFeesViewState extends State<PayFeesView> {
               ),
               const SizedBox(height: 28),
 
-              // Fee Information Section
-              Text(
-                'Enter Student Details:',
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-              const SizedBox(height: 24),
-              const AppTextField(
-                label: 'Student Name',
-                hint: 'Type here',
-                maxLines: 3,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                _selectedSchool ?? 'Select school',
-                style: AppTextStyles.bodyLarge,
-              ),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: () {
-                  showItemSelectionSheet<String>(
-                    context: context,
-                    title: 'Select School',
-                    items: [
-                      'Greenwood High',
-                      'Hillview Academy',
-                      'Sunrise School',
-                    ],
-                    selectedItem: _selectedSchool,
-                    onItemSelected: (school) {
-                      setState(() {
-                        _selectedSchool = school;
-                      });
-                    },
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _selectedSchool ?? 'Select school',
-                        style: const TextStyle(fontSize: 14),
+              SizedBox(
+                height: 200,
+                child: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPage = index;
+                    });
+                  },
+                  itemCount: students.length,
+                  itemBuilder: (context, index) {
+                    final student = students[index];
+                    final isSelected = _selectedIndex == index;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedIndex = index;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        margin: const EdgeInsets.only(right: 4),
+                        padding: EdgeInsets.all(
+                          isSelected ? 5 : 0,
+                        ), // outward animation
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.warning
+                                : Colors.transparent,
+                            width: 2, // fixed width
+                          ),
+                        ),
+                        child: StudentCardContainerWidget(
+                          margin: EdgeInsets.zero,
+                          student: student,
+                        ),
                       ),
-                      const Icon(Icons.arrow_drop_down_outlined),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
 
-              const SizedBox(height: 24),
+              // Fee Information Section
+              // Text(
+              //   'Enter Student Details:',
+              //   style: Theme.of(context).textTheme.labelLarge,
+              // ),
+              // const SizedBox(height: 24),
+              // const AppTextField(
+              //   label: 'Student Name',
+              //   hint: 'Type here',
+              //   maxLines: 3,
+              // ),
+              // const SizedBox(height: 24),
+              // Text(
+              //   _selectedSchool ?? 'Select school',
+              //   style: AppTextStyles.bodyLarge,
+              // ),
+              // const SizedBox(height: 8),
+              // GestureDetector(
+              //   onTap: () {
+              //     showItemSelectionSheet<String>(
+              //       context: context,
+              //       title: 'Select School',
+              //       items: [
+              //         'Greenwood High',
+              //         'Hillview Academy',
+              //         'Sunrise School',
+              //       ],
+              //       selectedItem: _selectedSchool,
+              //       onItemSelected: (school) {
+              //         setState(() {
+              //           _selectedSchool = school;
+              //         });
+              //       },
+              //     );
+              //   },
+              //   child: Container(
+              //     padding: const EdgeInsets.symmetric(
+              //       horizontal: 16,
+              //       vertical: 14,
+              //     ),
+              //     decoration: BoxDecoration(
+              //       borderRadius: BorderRadius.circular(12),
+              //       border: Border.all(color: Colors.grey.shade300),
+              //     ),
+              //     child: Row(
+              //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //       children: [
+              //         Text(
+              //           _selectedSchool ?? 'Select school',
+              //           style: const TextStyle(fontSize: 14),
+              //         ),
+              //         const Icon(Icons.arrow_drop_down_outlined),
+              //       ],
+              //     ),
+              //   ),
+              // ),
 
-              const AppTextField(
-                label: 'Class',
-                hint: 'Type here',
-                maxLines: 3,
-              ),
-              const SizedBox(height: 12),
+              // const SizedBox(height: 24),
+
+              // const AppTextField(
+              //   label: 'Class',
+              //   hint: 'Type here',
+              //   maxLines: 3,
+              // ),
+              // const SizedBox(height: 12),
 
               // Due Date and Amount Info
               // Container(
@@ -192,11 +269,19 @@ class _PayFeesViewState extends State<PayFeesView> {
               //   ),
               // ),
               const SizedBox(height: 40),
+
               PrimaryButton(
                 label: 'Proceed',
-                onPressed: () {
-                  context.push(AppRoutes.feeSelection);
-                },
+                isEnabled: _selectedIndex != null,
+                onPressed: _selectedIndex == null
+                    ? () {}
+                    : () {
+                        final selectedStudent = students[_selectedIndex!];
+                        context.push(
+                          AppRoutes.feeSelection,
+                          extra: selectedStudent,
+                        );
+                      },
               ),
             ],
           ),
@@ -205,3 +290,24 @@ class _PayFeesViewState extends State<PayFeesView> {
     );
   }
 }
+
+var students = [
+  StudentModel(
+    id: '1',
+    name: 'Adebayo Oluwaferanmi',
+    studentId: '7ytf5675dm',
+    class_: 'Primary 3',
+    school: 'Seaman International Nursery & Primary School',
+    feeStatus: 'Fee Pending',
+    amountDue: 300000,
+  ),
+  StudentModel(
+    id: '2',
+    name: 'Emma Oluwatayo',
+    studentId: '7ytf3475dm',
+    class_: 'Primary 4',
+    school: 'Seaman International Nursery & Primary School',
+    feeStatus: 'Fee Pending',
+    amountDue: 100000,
+  ),
+];

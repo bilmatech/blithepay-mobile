@@ -1,8 +1,11 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/core/storage/auth_local_storage.dart';
+import 'package:blithepay/features/auth/data/models/auth_response_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class ProfileView extends StatelessWidget {
@@ -10,99 +13,107 @@ class ProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localDataSource = context.read<AppLocalDataSource>();
+
     return AppScaffold(
       appBar: AppBar(title: const Text('Profile'), centerTitle: true),
-
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              // Header
-              Row(
+          child: FutureBuilder<AuthResponseModel?>(
+            future: localDataSource.getSession(),
+            builder: (context, snapshot) {
+              final user = snapshot.data?.user;
+              final firstName = user?.firstName ?? '';
+              final lastName = user?.lastName ?? '';
+
+              return Column(
                 children: [
-                  CircleAvatar(
-                    radius: 36,
-                    // backgroundImage:
-                    //     //profileImageUrl != null
-                    //     NetworkImage(''),
-                    //: null,
-                    child:
-                        // profileImageUrl == null
-                        //     ?
-                        const Icon(Icons.person, size: 36),
-                    //  : null,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Emmanuel Seaman", style: AppTextStyles.h4),
-                        const SizedBox(height: 4),
-                        GestureDetector(
-                          onTap: () {
-                            // Navigate to detailed profile
-                            context.push(AppRoutes.profileDetail);
-                          },
-                          child: Text(
-                            'View Details',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              decoration: TextDecoration.underline,
+                  Row(
+                    children: [
+                      const CircleAvatar(
+                        radius: 36,
+                        child: Icon(Icons.person, size: 36),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$firstName $lastName',
+                              style: AppTextStyles.h4,
                             ),
-                          ),
+                            const SizedBox(height: 4),
+                            GestureDetector(
+                              onTap: () {
+                                context.push(AppRoutes.profileDetail);
+                              },
+                              child: Text(
+                                'View Details',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(height: 1, thickness: 1),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        _ProfileItem(
+                          icon: Icons.school_outlined,
+                          label: 'Students',
+                          onTap: () => context.push('/linked-students'),
+                        ),
+                        _ProfileItem(
+                          icon: Icons.payment_outlined,
+                          label: 'Pay Fees',
+                          onTap: () => context.push('/pay-fees'),
+                        ),
+                        _ProfileItem(
+                          icon: Icons.account_balance_wallet_outlined,
+                          label: 'Wallet',
+                          onTap: () => context.push(AppRoutes.fundWallet),
+                        ),
+                        _ProfileItem(
+                          icon: Icons.notifications_none_outlined,
+                          label: 'Notifications',
+                          onTap: () => context.push('/notifications'),
+                        ),
+                        _ProfileItem(
+                          icon: Icons.person,
+                          label: 'View Details',
+                          onTap: () => context.push(AppRoutes.profileDetail),
+                        ),
+                        _ProfileItem(
+                          icon: Icons.lock,
+                          label: 'Change Password',
+                          onTap: () => context.push(AppRoutes.changePassword),
+                        ),
+                        _ProfileItem(
+                          icon: Icons.help_outline,
+                          label: 'Help & Support',
+                          onTap: () => context.push('/help-support'),
+                        ),
+                        _ProfileItem(
+                          icon: Icons.logout_outlined,
+                          label: 'Log Out',
+                          isLogout: true,
+                          onTap: () => _showLogoutDialog(context),
                         ),
                       ],
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 16),
-
-              // Divider
-              const Divider(height: 1, thickness: 1),
-              const SizedBox(height: 16),
-
-              // List of profile actions
-              Expanded(
-                child: ListView(
-                  children: [
-                    _ProfileItem(
-                      icon: Icons.school_outlined,
-                      label: 'Students',
-                      onTap: () => context.push('/linked-students'),
-                    ),
-                    _ProfileItem(
-                      icon: Icons.payment_outlined,
-                      label: 'Pay Fees',
-                      onTap: () => context.push('/pay-fees'),
-                    ),
-                    _ProfileItem(
-                      icon: Icons.account_balance_wallet_outlined,
-                      label: 'Wallet',
-                      onTap: () => context.push('/wallet-management'),
-                    ),
-                    _ProfileItem(
-                      icon: Icons.notifications_none_outlined,
-                      label: 'Notifications',
-                      onTap: () => context.push('/notifications'),
-                    ),
-
-                    _ProfileItem(
-                      icon: Icons.help_outline,
-                      label: 'Help & Support',
-                      onTap: () => context.push('/help-support'),
-                    ),
-                    _ProfileItem(
-                      icon: Icons.logout_outlined,
-                      label: 'Log Out',
-                      isLogout: true,
-                      onTap: () => _showLogoutDialog(context),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -129,7 +140,9 @@ class ProfileView extends StatelessWidget {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            onPressed: () {
+            onPressed: () async {
+              final localDataSource = context.read<AppLocalDataSource>();
+              await localDataSource.clearSession();
               context.pop();
               context.go('/login');
             },

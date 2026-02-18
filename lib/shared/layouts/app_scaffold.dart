@@ -9,7 +9,7 @@ class AppScaffold extends StatelessWidget {
   final VoidCallback? onBackPressed;
   final Widget? floatingActionButton;
   final FloatingActionButtonLocation? floatingActionButtonLocation;
-
+  final bool? centerTitle;
   const AppScaffold({
     super.key,
     this.title,
@@ -19,6 +19,7 @@ class AppScaffold extends StatelessWidget {
     this.onBackPressed,
     this.floatingActionButton,
     this.floatingActionButtonLocation,
+    this.centerTitle,
   });
 
   @override
@@ -30,7 +31,7 @@ class AppScaffold extends StatelessWidget {
           (title != null
               ? AppBar(
                   title: Text(title!),
-                  centerTitle: false,
+                  centerTitle: centerTitle ?? false,
                   elevation: 0,
                   backgroundColor: AppColors.white,
                   leading: showBackButton

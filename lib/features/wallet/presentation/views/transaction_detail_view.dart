@@ -1,13 +1,15 @@
 import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class TransactionDetailView extends StatelessWidget {
-  final String? transactionId;
+  final TransactionItem? transaction;
 
-  const TransactionDetailView({super.key, this.transactionId});
+  const TransactionDetailView({super.key, this.transaction});
 
   @override
   Widget build(BuildContext context) {
@@ -36,32 +38,22 @@ class TransactionDetailView extends StatelessWidget {
               //   child: const Icon(Icons.check, color: Colors.white, size: 40),
               // ),
               // const SizedBox(height: 16),
-              const Text(
-                'Successful',
-                style: TextStyle(
+              Text(
+                transaction?.status ?? 'Successful',
+                style: const TextStyle(
                   color: AppColors.success,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                '+N200,000',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              Text(
+                transaction?.amount ?? '+N200,000',
+                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 32),
 
               // Transaction Details
-              _buildDetailRow('Fee:', 'Tuition Fee'),
-              const SizedBox(height: 12),
-              //  _buildDetailRow('Student:', 'Aishat Abdul Yusuf'),
-              // const SizedBox(height: 12),
-              _buildDetailRow('Method:', 'Wallet Balance'),
-              const SizedBox(height: 12),
-              _buildDetailRow('Date:', '11/12/25. 09:22'),
-              const SizedBox(height: 12),
-              _buildDetailRow('Reference:', '98yuy6434678gfe54'),
-              const SizedBox(height: 12),
-              _buildDetailRow('Note:', 'Tuition payment balance...'),
+              _buildFeeDetails(),
               const SizedBox(height: 32),
 
               // Action Buttons
@@ -87,6 +79,42 @@ class TransactionDetailView extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFeeDetails() {
+    final feeItems = [
+      {'label': 'Tuition Fee:', 'value': 'N300000'},
+      {'label': 'Method', 'value': 'Wallet Balance'},
+      {'label': 'Date', 'value': '11-09-25'},
+      {'label': 'Reference', 'value': '98yuy6434678gfe54'},
+      {'label': 'Note', 'value': 'Tuition payment balance...'},
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(8),
+        color: AppColors.surface,
+      ),
+      child: Column(
+        children: List.generate(feeItems.length * 2 - 1, (index) {
+          if (index.isOdd) {
+            return const Divider(height: 1, color: AppColors.border);
+          }
+          final item = feeItems[index ~/ 2];
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(item['label']!, style: AppTextStyles.bodyRegular),
+                Text(item['value']!, style: AppTextStyles.bodyRegular),
+              ],
+            ),
+          );
+        }),
       ),
     );
   }

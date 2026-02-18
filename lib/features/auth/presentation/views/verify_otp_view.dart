@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:blithepay/features/common/data/success_args_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,16 +28,21 @@ class VerifyOtpView extends StatefulWidget {
 class _VerifyOtpViewState extends State<VerifyOtpView> {
   late List<TextEditingController> _otpControllers;
   late List<FocusNode> _focusNodes;
+  late Timer _timer;
+  int _secondsRemaining = 30;
+  bool _canResend = false;
 
   @override
   void initState() {
     super.initState();
-    _otpControllers = List.generate(4, (_) => TextEditingController());
-    _focusNodes = List.generate(4, (_) => FocusNode());
+    _otpControllers = List.generate(6, (_) => TextEditingController());
+    _focusNodes = List.generate(6, (_) => FocusNode());
+    _startCountdown();
   }
 
   @override
   void dispose() {
+    _timer.cancel();
     for (var controller in _otpControllers) {
       controller.dispose();
     }
@@ -48,7 +55,17 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
   void _handleVerifyOtp() {
     final code = _otpControllers.map((c) => c.text).join();
 
-    if (code.length == 4) {
+    if (code.length == 6) {
+      if (widget.flow == OtpFlow.forgotPassword) {
+        context.read<AuthBloc>().add(
+          VerifyForgotPasswordOtpRequested(
+            email: widget.email,
+            code: code,
+            flow: widget.flow,
+          ),
+        );
+        return;
+      }
       context.read<AuthBloc>().add(
         VerifyOtpRequested(email: widget.email, code: code, flow: widget.flow),
       );
@@ -56,7 +73,21 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
   }
 
   void _onOtpFieldChanged(int index, String value) {
-    if (value.isNotEmpty && index < 3) {
+    //  HANDLE PASTE (6-digit or more)
+    if (value.length > 1) {
+      final chars = value.split('');
+
+      for (int i = 0; i < _otpControllers.length; i++) {
+        _otpControllers[i].text = i < chars.length ? chars[i] : '';
+      }
+
+      _focusNodes.last.requestFocus();
+      _handleVerifyOtp();
+      return;
+    }
+
+    // NORMAL typing behavior
+    if (value.isNotEmpty && index < 5) {
       _focusNodes[index + 1].requestFocus();
     }
     if (value.isEmpty && index > 0) {
@@ -64,8 +95,45 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
     }
   }
 
+  void _startCountdown() {
+    _secondsRemaining = 30;
+    _canResend = false;
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsRemaining == 0) {
+        timer.cancel();
+        setState(() {
+          _canResend = true;
+        });
+      } else {
+        setState(() {
+          _secondsRemaining--;
+        });
+      }
+    });
+  }
+
+  void _handleResendOtp() {
+    if (!_canResend) return;
+    final bloc = context.read<AuthBloc>();
+    if (widget.flow == OtpFlow.forgotPassword) {
+      bloc.add(
+        ResendForgotPasswordOtpRequested(
+          email: widget.email,
+          flow: widget.flow,
+        ),
+      );
+    } else {
+      bloc.add(ResendOtpRequested(email: widget.email, flow: widget.flow));
+    }
+    _startCountdown();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final fieldWidth = ((screenWidth - 80) / 6).clamp(44.0, 56.0);
+
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.otpVerified) {
@@ -87,13 +155,33 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
             case OtpFlow.forgotPassword:
               context.push(AppRoutes.resetPassword, extra: widget.email);
               break;
+
+            case OtpFlow.verifyEmail:
+              context.go(
+                AppRoutes.success,
+                extra: SuccessArgs(
+                  title: AppStrings.verificationSuccess,
+                  message: AppStrings.anAccounthasbeen,
+                  buttonLabel: AppStrings.logIn,
+                  nextRoute: AppRoutes.login,
+                  nextExtra: {
+                    'email': widget.email,
+                    'flow': OtpFlow.verifyEmail,
+                  },
+                ),
+              );
+              break;
           }
-        } else if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? 'Verification failed'),
-            ),
-          );
+        }
+        if (state.status == AuthStatus.error) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage ?? ''),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
         }
       },
       child: AppScaffold(
@@ -102,13 +190,16 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
           builder: (context, state) {
             return SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 24,
+                  horizontal: 8,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const SizedBox(height: 40),
                     const Text(
-                      AppStrings.enterConfirmationCode,
+                      AppStrings.enterVerificationCode,
                       style: AppTextStyles.h3,
                     ),
                     const SizedBox(height: 12),
@@ -129,56 +220,69 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                     ),
                     const SizedBox(height: 48),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(
-                        4,
-                        (index) => SizedBox(
-                          width: 60,
-                          height: 60,
-                          child: TextField(
-                            controller: _otpControllers[index],
-                            focusNode: _focusNodes[index],
-                            textAlign: TextAlign.center,
-                            maxLength: 1,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            onChanged: (value) =>
-                                _onOtpFieldChanged(index, value),
-                            style: AppTextStyles.h3,
-                            decoration: InputDecoration(
-                              counter: const Offstage(),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: AppColors.primary,
-                                  width: 2,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(6, (index) {
+                        return Row(
+                          children: [
+                            SizedBox(
+                              width: fieldWidth,
+                              height: 56,
+                              child: TextField(
+                                controller: _otpControllers[index],
+                                focusNode: _focusNodes[index],
+                                textAlign: TextAlign.center,
+                                keyboardType: TextInputType.number,
+                                maxLength: 1,
+                                maxLengthEnforcement: MaxLengthEnforcement.none,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                onChanged: (value) =>
+                                    _onOtpFieldChanged(index, value),
+                                decoration: InputDecoration(
+                                  counterText: '',
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                      ),
+
+                            // 👇 spacing BETWEEN fields
+                            if (index != 5) const SizedBox(width: 12),
+                          ],
+                        );
+                      }),
                     ),
                     const SizedBox(height: 32),
                     Center(
                       child: GestureDetector(
-                        onTap: () {},
-                        child: const Text(
-                          AppStrings.resendCode,
-                          style: AppTextStyles.link,
+                        onTap: _canResend ? _handleResendOtp : null,
+                        child: Text(
+                          _canResend
+                              ? AppStrings.resendCode
+                              : '${AppStrings.resendCode} (${_secondsRemaining}s)',
+                          style: AppTextStyles.link.copyWith(
+                            color: _canResend
+                                ? AppColors.primary
+                                : AppColors.textSecondary,
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 48),
-                    PrimaryButton(
-                      label: AppStrings.verify,
-                      onPressed: _handleVerifyOtp,
-                      isLoading: state.status == AuthStatus.loading,
-                      isEnabled: state.status != AuthStatus.loading,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: PrimaryButton(
+                        label: AppStrings.verify,
+                        onPressed: _handleVerifyOtp,
+                        isLoading: state.status == AuthStatus.loading,
+                        isEnabled: state.status != AuthStatus.loading,
+                      ),
                     ),
                   ],
                 ),

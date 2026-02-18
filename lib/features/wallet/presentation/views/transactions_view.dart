@@ -1,4 +1,4 @@
-import 'package:blithepay/core/navigation/app_routes.dart';
+import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/app_outlined_icon_button.dart';
 import 'package:blithepay/shared/widgets/inputs/dropdown_field.dart';
@@ -19,7 +19,7 @@ class TransactionsView extends StatefulWidget {
 }
 
 class _TransactionsViewState extends State<TransactionsView> {
-  String _searchQuery = '';
+  // String _searchQuery = '';
   String? currentFilter;
   String? currentSort;
 
@@ -53,18 +53,18 @@ class _TransactionsViewState extends State<TransactionsView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Search
-                    TextField(
-                      onChanged: (value) =>
-                          setState(() => _searchQuery = value),
-                      decoration: InputDecoration(
-                        hintText: 'Search transactions...',
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+                    // TextField(
+                    //   onChanged: (value) =>
+                    //       setState(() => _searchQuery = value),
+                    //   decoration: InputDecoration(
+                    //     hintText: 'Search transactions...',
+                    //     prefixIcon: const Icon(Icons.search),
+                    //     border: OutlineInputBorder(
+                    //       borderRadius: BorderRadius.circular(12),
+                    //     ),
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 16),
 
                     // Filter & Sort buttons
                     Row(
@@ -93,8 +93,7 @@ class _TransactionsViewState extends State<TransactionsView> {
                                 selectedValue: currentFilter,
                                 onItemSelected: (value) =>
                                     setState(() => currentFilter = value),
-                                enableSearch:
-                                    true, // only filter popup has search
+                                enableSearch: false,
                               ),
                               label: 'Filter',
                               icon: Icons.tune,
@@ -126,139 +125,17 @@ class _TransactionsViewState extends State<TransactionsView> {
                       ],
                     ),
                     const SizedBox(height: 12),
-
-                    // Transaction table
-                    SizedBox(
-                      width: double.infinity,
-                      child: DataTable(
-                        headingRowColor: WidgetStateProperty.resolveWith(
-                          (states) => Colors.grey.shade200,
-                        ),
-                        headingRowHeight: 36,
-                        columnSpacing: 12,
-                        horizontalMargin: 12,
-                        columns: const [
-                          DataColumn(
-                            label: Text(
-                              'Date',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          DataColumn(
-                            label: Text(
-                              'Amount',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          DataColumn(
-                            label: Text(
-                              'Method',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          DataColumn(
-                            label: Text(
-                              'Type',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                        rows: transactions
-                            .where(
-                              (tx) =>
-                                  (tx['date']
-                                          ?.toString()
-                                          .toLowerCase()
-                                          .contains(
-                                            _searchQuery.toLowerCase(),
-                                          ) ??
-                                      false) ||
-                                  (tx['amount']
-                                          ?.toString()
-                                          .toLowerCase()
-                                          .contains(
-                                            _searchQuery.toLowerCase(),
-                                          ) ??
-                                      false),
-                            )
-                            .map(
-                              (tx) => DataRow(
-                                cells: [
-                                  DataCell(
-                                    Text(
-                                      tx['date'] ?? '',
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    onTap: () {
-                                      context.push(
-                                        AppRoutes.transactionDetail,
-                                        extra: '12345678',
-                                      );
-                                      // handle cell click
-                                    },
-                                  ),
-                                  DataCell(
-                                    Text(
-                                      tx['amount'] ?? '',
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    onTap: () {
-                                      context.push(
-                                        AppRoutes.transactionDetail,
-                                        extra: '12345678',
-                                      );
-                                    },
-                                  ),
-                                  DataCell(
-                                    Text(
-                                      tx['method'] ?? '',
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    onTap: () {
-                                      context.push(
-                                        AppRoutes.transactionDetail,
-                                        extra: '12345678',
-                                      );
-                                    },
-                                  ),
-                                  DataCell(
-                                    Text(
-                                      tx['type'] ?? '',
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    onTap: () {
-                                      context.push(
-                                        AppRoutes.transactionDetail,
-                                        extra: '12345678',
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            )
-                            .toList(),
-                      ),
+                    ListView.separated(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: transactions.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final transaction = transactions[index];
+                        return TransactionContainer(transaction: transaction);
+                      },
                     ),
+                    // Transaction table
                   ],
                 ),
               ),

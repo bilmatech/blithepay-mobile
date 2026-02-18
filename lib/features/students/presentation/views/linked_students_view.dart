@@ -1,4 +1,8 @@
 import 'package:blithepay/core/navigation/app_routes.dart';
+import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
+import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
+import 'package:blithepay/features/students/presentation/views/linked_student/components/empty_state.dart';
+import 'package:blithepay/features/students/presentation/views/linked_student/components/unlink_button.dart';
 import 'package:blithepay/features/wallet/presentation/views/invoice_detail_dialog.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/app_outlined_icon_button.dart';
@@ -21,7 +25,7 @@ class LinkedStudentsView extends StatefulWidget {
 }
 
 class _LinkedStudentsViewState extends State<LinkedStudentsView> {
-  String _searchQuery = '';
+  // String _searchQuery = '';
   String? currentFilter;
   String? currentSort;
   @override
@@ -29,8 +33,11 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
     super.initState();
     _pageController = PageController(viewportFraction: 0.95);
 
-    // Trigger students bloc to load linked students
-    context.read<StudentsBloc>().add(const GetLinkedStudentsEvent());
+    final studentsState = context.read<StudentsBloc>().state;
+    if (studentsState is! StudentsLoaded) {
+      // Only fetch if no data yet
+      context.read<StudentsBloc>().add(const GetLinkedStudentsEvent(page: 1));
+    }
   }
 
   late final PageController _pageController;
@@ -46,10 +53,7 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => context.pop(),
-        ),
+        automaticallyImplyActions: false,
         title: const Text('Linked Students'),
         centerTitle: true,
         actions: [
@@ -63,7 +67,7 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.person_add_alt_1, size: 22),
+                  Icon(Icons.school_outlined, size: 22),
                   SizedBox(height: 2),
                   Text(
                     'Add Child',
@@ -82,476 +86,401 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
             return const ShimmerListLoader();
           } else if (state is StudentsLoaded) {
             final students = state.students;
+
+            if (students.isEmpty) {
+              _currentPage = 0; // reset page
+              return buildEmptyState(context);
+            }
+
+            // Clamp _currentPage between 0 and students.length - 1
+            _currentPage = _currentPage.clamp(0, students.length - 1);
+
             final student = students[_currentPage];
 
-            return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    // Student Carousel
-                    SizedBox(
-                      height: 200,
-                      child: PageView.builder(
-                        controller: _pageController,
-                        onPageChanged: (index) {
-                          setState(() => _currentPage = index);
-                        },
-                        itemCount: students.length,
-                        itemBuilder: (context, index) {
-                          final student = students[index];
-                          return Container(
-                            margin: const EdgeInsets.only(right: 16),
-                            padding: const EdgeInsets.all(16),
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<StudentsBloc>().add(
+                  const GetLinkedStudentsEvent(page: 1, refresh: true),
+                );
+              },
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Student Carousel
+                      SizedBox(
+                        height: 200,
+                        child: PageView.builder(
+                          controller: _pageController,
+                          // onPageChanged: (index) {
+                          //   setState(() => _currentPage = index);
+                          // },
+                          onPageChanged: (index) {
+                            setState(() => _currentPage = index);
+
+                            final students =
+                                (context.read<StudentsBloc>().state
+                                        as StudentsLoaded)
+                                    .students;
+
+                            // Load next page when user scrolls to last 5 students
+                            if (index >= students.length - 5) {
+                              final nextPage = (students.length ~/ 20) + 1;
+                              context.read<StudentsBloc>().add(
+                                GetLinkedStudentsEvent(
+                                  page: nextPage,
+                                  limit: 20,
+                                ),
+                              );
+                            }
+                          },
+                          itemCount: students.length,
+                          itemBuilder: (context, index) {
+                            final student = students[index];
+                            return Container(
+                              margin: const EdgeInsets.only(right: 16),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 24,
+                                        child: Text(student.fullName[0]),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Student ID: ${student.regNumber}',
+                                              style: AppTextStyles.bodySmall
+                                                  .copyWith(
+                                                    color: Colors.white,
+                                                  ),
+                                            ),
+                                            Text(
+                                              student.fullName,
+                                              style: AppTextStyles.bodyLarge
+                                                  .copyWith(
+                                                    color: Colors.white,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.copy,
+                                          color: Colors.white,
+                                        ),
+                                        onPressed: () {},
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.school,
+                                        color: Colors.white70,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        student.classModel.name,
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: Colors.white70,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.location_on,
+                                        color: Colors.white70,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          student.school.name,
+                                          style: AppTextStyles.bodySmall
+                                              .copyWith(color: Colors.white70),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Fee Pending',
+                                        //  student.feeStatus,
+                                        style: AppTextStyles.bodyRegular
+                                            .copyWith(
+                                              color: AppColors.warning,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () => context.push('/pay-fees'),
+                                        child: Text(
+                                          'Pay Fee',
+                                          style: AppTextStyles.bodyRegular
+                                              .copyWith(color: Colors.white),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          students.length,
+                          (index) => Container(
+                            width: 8,
+                            height: 8,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
                             decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(12),
+                              shape: BoxShape.circle,
+                              color: index == 0
+                                  ? AppColors.primary
+                                  : AppColors.border,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Student Details
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildDetailBox(student.fullName),
+                          const SizedBox(height: 12),
+                          _buildDetailBox(student.classModel.name),
+                          const SizedBox(height: 12),
+                          _buildDetailBox(student.school.name),
+                          const SizedBox(height: 32),
+
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.lightBackground,
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 24,
-                                      child: Text(student.name[0]),
+                                Text(
+                                  'OutStanding Fees: ',
+                                  style: AppTextStyles.h4.copyWith(
+                                    color: AppColors.warning.withValues(
+                                      alpha: 0.3,
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Student ID: ${student.studentId}',
-                                            style: AppTextStyles.bodySmall
-                                                .copyWith(color: Colors.white),
-                                          ),
-                                          Text(
-                                            student.name,
-                                            style: AppTextStyles.bodyLarge
-                                                .copyWith(color: Colors.white),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.copy,
-                                        color: Colors.white,
-                                      ),
-                                      onPressed: () {},
-                                    ),
-                                  ],
+                                  ),
                                 ),
                                 const SizedBox(height: 12),
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.school,
-                                      color: Colors.white70,
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      student.class_,
-                                      style: AppTextStyles.bodySmall.copyWith(
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                                  ],
+                                Text(
+                                  'Amount Due: N1000',
+                                  //   'Amount Due: N${student.amountDue.toStringAsFixed(2)}',
+                                  style: AppTextStyles.bodyRegular.copyWith(
+                                    color: AppColors.textPrimary,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.location_on,
-                                      color: Colors.white70,
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Expanded(
-                                      child: Text(
-                                        student.school,
-                                        style: AppTextStyles.bodySmall.copyWith(
-                                          color: Colors.white70,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
+
+                                Text(
+                                  'School Uniform: N60,000',
+                                  style: AppTextStyles.bodyRegular.copyWith(
+                                    color: AppColors.textPrimary,
+                                  ),
                                 ),
-                                const Spacer(),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      student.feeStatus,
-                                      style: AppTextStyles.bodyRegular.copyWith(
-                                        color: AppColors.warning,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () => context.push('/pay-fees'),
-                                      child: Text(
-                                        'Pay Fee',
-                                        style: AppTextStyles.bodyRegular
-                                            .copyWith(color: Colors.white),
-                                      ),
-                                    ),
-                                  ],
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  'Text Books: N100,000',
+                                  style: AppTextStyles.bodyRegular.copyWith(
+                                    color: AppColors.textPrimary,
+                                  ),
                                 ),
                               ],
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        students.length,
-                        (index) => Container(
-                          width: 8,
-                          height: 8,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: index == 0
-                                ? AppColors.primary
-                                : AppColors.border,
                           ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Student Details
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildDetailBox(student.name),
-                        const SizedBox(height: 12),
-                        _buildDetailBox(student.class_),
-                        const SizedBox(height: 12),
-                        _buildDetailBox(student.school),
-                        const SizedBox(height: 32),
-
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.lightBackground,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          const SizedBox(height: 16),
+                          Row(
                             children: [
-                              Text(
-                                'OutStanding Fees: ',
-                                style: AppTextStyles.h4.copyWith(
-                                  color: AppColors.warning.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Amount Due: N${student.amountDue.toStringAsFixed(2)}',
-                                style: AppTextStyles.bodyRegular.copyWith(
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-
-                              Text(
-                                'School Uniform: N60,000',
-                                style: AppTextStyles.bodyRegular.copyWith(
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-
-                              Text(
-                                'Text Books: N100,000',
-                                style: AppTextStyles.bodyRegular.copyWith(
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                icon: const Icon(Icons.receipt),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  minimumSize: const Size(0, 32),
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  side: const BorderSide(
-                                    color: AppColors.border,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => InvoiceDetailDialog(
-                                      feeType: 'Tuition Fee',
-                                      invoiceNumber: 'Invoice #34765432',
-                                      publishedDate: "21-10-25",
-                                      dueDate: '21-10-25',
-                                      totalAmount: 200000.00,
-                                      feeBreakdown: const {
-                                        'Core Tuition': 10000,
-                                        'TextBooks & Materials': 25000,
-                                        'School Uniform & ID': 35000,
-                                        'Extracirricular': 30000,
-                                      },
-                                      onPayNow: () =>
-                                          context.push(AppRoutes.addSchool),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  icon: const Icon(Icons.receipt),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
                                     ),
-                                  );
-                                },
-                                label: const Text('View Invoice'),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
+                                    minimumSize: const Size(0, 32),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    side: const BorderSide(
+                                      color: AppColors.border,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
-                                  minimumSize: const Size(0, 32),
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  side: const BorderSide(
-                                    color: AppColors.border,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                onPressed: () => context.push('/pay-fees'),
-                                icon: const Icon(Icons.payment),
-                                label: const Text('Pay Fees'),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 40),
-
-                        // Filter & Sort buttons
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Payment History:',
-                              style: AppTextStyles.bodyLarge,
-                            ),
-                            Row(
-                              children: [
-                                // Filter button with search
-                                AppOutlinedIconButton(
-                                  onPressed: () => showFilterPopup<String>(
-                                    context: context,
-                                    items: [
-                                      'Successful',
-                                      'Failed',
-                                      'Pending',
-                                      'Withdrawal',
-                                      'Fee Payment',
-                                      'Deposit',
-                                    ],
-                                    selectedValue: currentFilter,
-                                    onItemSelected: (value) =>
-                                        setState(() => currentFilter = value),
-                                    enableSearch: false,
-                                  ),
-                                  label: 'Filter',
-                                  icon: Icons.tune,
-                                ),
-                                const SizedBox(width: 8),
-
-                                // Sort button without search
-                                AppOutlinedIconButton(
-                                  onPressed: () => showFilterPopup<String>(
-                                    context: context,
-                                    items: [
-                                      'A-Z',
-                                      'Z-A',
-                                      'Highest - Lowest',
-                                      'Lowest - Highest',
-                                      'Most Recent',
-                                      'Oldest',
-                                    ],
-                                    selectedValue: currentSort,
-                                    onItemSelected: (value) =>
-                                        setState(() => currentSort = value),
-                                    enableSearch: false, // no search for sort
-                                  ),
-                                  label: 'Sort by',
-                                  icon: Icons.sort,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Transaction table
-                        SizedBox(
-                          width: double.infinity,
-                          child: DataTable(
-                            headingRowColor: MaterialStateProperty.resolveWith(
-                              (states) => Colors.grey.shade200,
-                            ),
-                            headingRowHeight: 36,
-                            columnSpacing: 12,
-                            horizontalMargin: 12,
-                            columns: const [
-                              DataColumn(
-                                label: Text(
-                                  'Date',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => InvoiceDetailDialog(
+                                        feeType: 'Tuition Fee',
+                                        invoiceNumber: 'Invoice #34765432',
+                                        publishedDate: "21-10-25",
+                                        dueDate: '21-10-25',
+                                        totalAmount: 200000.00,
+                                        feeBreakdown: const {
+                                          'Core Tuition': 10000,
+                                          'TextBooks & Materials': 25000,
+                                          'School Uniform & ID': 35000,
+                                          'Extracirricular': 30000,
+                                        },
+                                        onPayNow: () =>
+                                            context.push(AppRoutes.addSchool),
+                                      ),
+                                    );
+                                  },
+                                  label: const Text('View Invoice'),
                                 ),
                               ),
-                              DataColumn(
-                                label: Text(
-                                  'Amount',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    minimumSize: const Size(0, 32),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    side: const BorderSide(
+                                      color: AppColors.border,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              DataColumn(
-                                label: Text(
-                                  'Method',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              DataColumn(
-                                label: Text(
-                                  'Type',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                                  onPressed: () => context.push('/pay-fees'),
+                                  icon: const Icon(Icons.payment),
+                                  label: const Text('Pay Fees'),
                                 ),
                               ),
                             ],
-                            rows: transactions
-                                .where(
-                                  (tx) =>
-                                      (tx['date']
-                                              ?.toString()
-                                              .toLowerCase()
-                                              .contains(
-                                                _searchQuery.toLowerCase(),
-                                              ) ??
-                                          false) ||
-                                      (tx['amount']
-                                              ?.toString()
-                                              .toLowerCase()
-                                              .contains(
-                                                _searchQuery.toLowerCase(),
-                                              ) ??
-                                          false),
-                                )
-                                .map(
-                                  (tx) => DataRow(
-                                    cells: [
-                                      DataCell(
-                                        Text(
-                                          tx['date'] ?? '',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                        onTap: () {
-                                          context.push(
-                                            AppRoutes.transactionDetail,
-                                            extra: '12345678',
-                                          );
-                                          // handle cell click
-                                        },
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          tx['amount'] ?? '',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                        onTap: () {
-                                          context.push(
-                                            AppRoutes.transactionDetail,
-                                            extra: '12345678',
-                                          );
-                                        },
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          tx['method'] ?? '',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                        onTap: () {
-                                          context.push(
-                                            AppRoutes.transactionDetail,
-                                            extra: '12345678',
-                                          );
-                                        },
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          tx['type'] ?? '',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                        onTap: () {
-                                          context.push(
-                                            AppRoutes.transactionDetail,
-                                            extra: '12345678',
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                )
-                                .toList(),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(height: 10),
+
+                          UnlinkButton(context, student),
+
+                          const SizedBox(height: 20),
+
+                          // Filter & Sort buttons
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Payment History:',
+                                style: AppTextStyles.bodyLarge,
+                              ),
+                              Row(
+                                children: [
+                                  // Filter button with search
+                                  AppOutlinedIconButton(
+                                    onPressed: () => showFilterPopup<String>(
+                                      context: context,
+                                      items: [
+                                        'Successful',
+                                        'Failed',
+                                        'Pending',
+                                        'Withdrawal',
+                                        'Fee Payment',
+                                        'Deposit',
+                                      ],
+                                      selectedValue: currentFilter,
+                                      onItemSelected: (value) =>
+                                          setState(() => currentFilter = value),
+                                      enableSearch: false,
+                                    ),
+                                    label: 'Filter',
+                                    icon: Icons.tune,
+                                  ),
+                                  const SizedBox(width: 8),
+
+                                  // Sort button without search
+                                  AppOutlinedIconButton(
+                                    onPressed: () => showFilterPopup<String>(
+                                      context: context,
+                                      items: [
+                                        'A-Z',
+                                        'Z-A',
+                                        'Highest - Lowest',
+                                        'Lowest - Highest',
+                                        'Most Recent',
+                                        'Oldest',
+                                      ],
+                                      selectedValue: currentSort,
+                                      onItemSelected: (value) =>
+                                          setState(() => currentSort = value),
+                                      enableSearch: false, // no search for sort
+                                    ),
+                                    label: 'Sort by',
+                                    icon: Icons.sort,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Transaction table
+                          ListView.separated(
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: transactions.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              final transaction = transactions[index];
+                              return TransactionContainer(
+                                transaction: transaction,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
-          } else if (state is StudentsError) {
-            return Center(child: Text('Error: ${state.message}'));
           }
           return const SizedBox.shrink();
         },
@@ -577,22 +506,18 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
 }
 
 final transactions = [
-  {
-    'date': '11-09-25. 11:15',
-    'amount': 'N300,000.00',
-    'method': 'Wallet',
-    'type': 'Withdrawal',
-  },
-  {
-    'date': '11-09-25. 11:15',
-    'amount': 'N300,000.00',
-    'method': 'Wallet',
-    'type': 'Fee Payment',
-  },
-  {
-    'date': '11-09-25. 11:15',
-    'amount': 'N300,000.00',
-    'method': 'Wallet',
-    'type': 'Deposit',
-  },
+  const TransactionItem(
+    title: 'Tuition fee',
+    amount: 'N300,000.00',
+    date: '11-09-25',
+    time: '11:15',
+    status: 'Successful',
+  ),
+  const TransactionItem(
+    title: 'Wallet Deposit',
+    amount: 'N200,000.00',
+    date: '11-09-25',
+    time: '11:15',
+    status: 'Successful',
+  ),
 ];

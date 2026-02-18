@@ -12,14 +12,13 @@ class QuickActionButtons extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildActionButton(
-          backgroundColor: const Color(0xFFDEF8F1).withValues(alpha: 0.7),
-          icon: Icons.account_balance_wallet_outlined,
-          label: 'Fund Wallet',
-          onTap: () {},
-        ),
-        const SizedBox(width: 8),
-
+        // _buildActionButton(
+        //   backgroundColor: const Color(0xFFDEF8F1).withValues(alpha: 0.7),
+        //   icon: Icons.account_balance_wallet_outlined,
+        //   label: 'Fund Wallet',
+        //   onTap: () {},
+        // ),
+        // const SizedBox(width: 8),
         _buildActionButton(
           backgroundColor: const Color(0xFFEADDFF).withValues(alpha: 0.7),
           icon: Icons.payment_outlined,
@@ -30,7 +29,7 @@ class QuickActionButtons extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         _buildActionButton(
-          backgroundColor: const Color(0xFFD8E4).withValues(alpha: 0.7),
+          backgroundColor: const Color(0x00ffd8e4).withValues(alpha: 0.7),
           icon: Icons.card_travel,
           label: 'Withdraw',
           onTap: () {},

@@ -1,4 +1,6 @@
 import 'package:blithepay/features/common/data/success_args_model.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,8 +18,14 @@ import '../bloc/auth_state.dart';
 class SetupOtpView extends StatefulWidget {
   final String email;
   final OtpFlow flow;
+  final bool popOnSuccess;
 
-  const SetupOtpView({super.key, required this.email, required this.flow});
+  const SetupOtpView({
+    super.key,
+    required this.email,
+    required this.flow,
+    this.popOnSuccess = false,
+  });
 
   @override
   State<SetupOtpView> createState() => _SetupOtpViewState();
@@ -50,7 +58,7 @@ class _SetupOtpViewState extends State<SetupOtpView> {
 
     if (code.length == 4) {
       context.read<AuthBloc>().add(
-        VerifyOtpRequested(email: widget.email, code: code, flow: widget.flow),
+        SetupPinRequested(email: widget.email, code: code, flow: widget.flow),
       );
     }
   }
@@ -68,23 +76,33 @@ class _SetupOtpViewState extends State<SetupOtpView> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state.status == AuthStatus.otpVerified) {
-          context.go(
-            AppRoutes.success,
-            extra: const SuccessArgs(
-              title: AppStrings.successful,
-              message: AppStrings.anAccounthasbeen,
-              buttonLabel: AppStrings.gotToHome,
-              nextRoute: AppRoutes.home,
-            ),
-          );
-        } else if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? 'Verification failed'),
-            ),
-          );
-        }
+        // if (state.status == AuthStatus.otpVerified) {
+        //   context.go(
+        //     AppRoutes.success,
+        //     extra: const SuccessArgs(
+        //       title: AppStrings.successful,
+        //       message: AppStrings.anAccounthasbeen,
+        //       buttonLabel: AppStrings.gotToHome,
+        //       nextRoute: AppRoutes.home,
+        //     ),
+        //   );
+        if (state.status == AuthStatus.pinSetup) {
+          if (widget.popOnSuccess) {
+            Navigator.of(context).pop(true);
+          } else {
+            context.go(
+              AppRoutes.success,
+              extra: const SuccessArgs(
+                title: AppStrings.successful,
+                message: AppStrings.anAccounthasbeen,
+                buttonLabel: AppStrings.gotToHome,
+                nextRoute: AppRoutes.home,
+              ),
+            );
+                context.read<DashboardBloc>().add(const FetchDashboardData());
+
+          }
+        } 
       },
       child: AppScaffold(
         showBackButton: false,
@@ -120,6 +138,7 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                             controller: _otpControllers[index],
                             focusNode: _focusNodes[index],
                             textAlign: TextAlign.center,
+                            keyboardType: TextInputType.number,
                             maxLength: 1,
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,

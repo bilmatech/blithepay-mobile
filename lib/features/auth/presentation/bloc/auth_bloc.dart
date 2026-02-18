@@ -1,4 +1,6 @@
-import 'package:blithepay/features/auth/data/models/auth_response_model.dart';
+import 'package:blithepay/core/network/dio_error_mapper.dart';
+import 'package:blithepay/services/firebase_notifications.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'auth_event.dart';
@@ -14,8 +16,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoginRequested>(_onLoginRequested);
     on<ForgotPasswordRequested>(_onForgotPasswordRequested);
     on<VerifyOtpRequested>(_onVerifyOtpRequested);
+    on<ResendOtpRequested>(_onResendOtpRequested);
+    on<VerifyForgotPasswordOtpRequested>(_onVerifyForgotPasswordOtpRequested);
+    on<ResendForgotPasswordOtpRequested>(_onResendForgotPasswordOtpRequested);
+    on<SetupPinRequested>(_onSetupPinRequested);
     on<ResetPasswordRequested>(_onResetPasswordRequested);
-    on<LogoutRequested>(_onLogoutRequested);
   }
 
   Future<void> _onSignupRequested(
@@ -23,16 +28,44 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthState.loading());
+
     try {
-      // final result = await _authRepository.signup(
-      //   event.email,
-      //   event.password,
-      //   event.fullName,
-      //   event.phoneNumber,
-      // );
-      emit(const AuthState.authenticated(AuthResponseModel()));
+      final fcmToken = await getFcmToken();
+
+      final result = await _authRepository.signup(
+        event.email,
+        event.password,
+        event.fullName,
+        event.phoneNumber,
+        fcmToken,
+      );
+
+      // Also sync token explicitly after signup
+      if (fcmToken.isNotEmpty) {
+        await _authRepository.syncFcmToken(fcmToken);
+      }
+
+      emit(
+        AuthState.signupSuccess(
+          SignupPayload(userId: result.id ?? '', email: result.email ?? ''),
+        ),
+      );
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
+    }
+  }
+
+  Future<String> getFcmToken() async {
+    try {
+      final firebaseNotifications = FirebaseNotifications();
+      final fcmToken = await firebaseNotifications.getFcmToken();
+      await _authRepository.syncFcmToken(fcmToken);
+
+      print('FCM Token: $fcmToken');
+      return fcmToken;
+    } catch (e) {
+      print('Error fetching FCM token: $e');
+      return '';
     }
   }
 
@@ -41,11 +74,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthState.loading());
+
     try {
       final result = await _authRepository.login(event.email, event.password);
+
+      if (result.user?.verifiedAt == null) {
+        emit(AuthState.error(result.message ?? 'Your account is not verified'));
+        return;
+      }
+
+      // Persist session
+      await _authRepository.persistSession(result);
+
+      // Get FCM token and sync it
+      final fcmToken = await getFcmToken();
+      if (fcmToken.isNotEmpty) {
+        await _authRepository.syncFcmToken(fcmToken);
+      }
+
       emit(AuthState.authenticated(result));
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
     }
   }
 
@@ -55,10 +104,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthState.loading());
     try {
-      // await _authRepository.forgotPassword(event.email);
+      await _authRepository.forgotPassword(event.email);
       emit(const AuthState.otpSent());
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
     }
   }
 
@@ -68,10 +117,51 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthState.loading());
     try {
-      // await _authRepository.verifyOtp(event.email, event.code);
+      var result = await _authRepository.verifyOtp(event.code);
       emit(const AuthState.otpVerified());
+
+      await _authRepository.persistSession(result);
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
+    }
+  }
+
+  Future<void> _onResendOtpRequested(
+    ResendOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      await _authRepository.resendOtp(event.email);
+      emit(const AuthState.otpSent());
+    } catch (e) {
+      emit(AuthState.error(extractError(e)));
+    }
+  }
+
+  Future<void> _onSetupPinRequested(
+    SetupPinRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      await _authRepository.setupPin(event.email, event.code);
+      emit(const AuthState.pinSetup());
+    } catch (e) {
+      emit(AuthState.error(extractError(e)));
+    }
+  }
+
+  Future<void> _onVerifyForgotPasswordOtpRequested(
+    VerifyForgotPasswordOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      var result = await _authRepository.verifyForgotPasswordOtp(event.code);
+      emit(AuthState.otpVerified(token: result));
+    } catch (e) {
+      emit(AuthState.error(extractError(e)));
     }
   }
 
@@ -81,26 +171,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthState.loading());
     try {
-      // await _authRepository.resetPassword(
-      //   event.email,
-      //   event.newPassword,
-      //   event.confirmPassword,
-      // );
+      await _authRepository.resetPassword(event.token, event.newPassword);
+
       emit(const AuthState.passwordReset());
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
     }
   }
 
-  Future<void> _onLogoutRequested(
-    LogoutRequested event,
+  Future<void> _onResendForgotPasswordOtpRequested(
+    ResendForgotPasswordOtpRequested event,
     Emitter<AuthState> emit,
   ) async {
+    emit(const AuthState.loading());
     try {
-     // await _authRepository.logout();
-      emit(const AuthState.initial());
+      await _authRepository.resendOtp(event.email);
+      emit(const AuthState.otpSent());
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthState.error(extractError(e)));
     }
   }
 }

@@ -40,10 +40,13 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
     super.dispose();
   }
 
-  void _handleResetPassword() {
+  void _handleResetPassword() async {
+    final authState = context.read<AuthBloc>().state;
+    final token = authState.token;
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
         ResetPasswordRequested(
+          token: token ?? '',
           email: widget.email,
           newPassword: _newPasswordController.text,
           confirmPassword: _confirmPasswordController.text,
@@ -58,12 +61,6 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
       listener: (context, state) {
         if (state.status == AuthStatus.passwordReset) {
           context.go(AppRoutes.passwordChanged);
-        } else if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? 'Failed to reset password'),
-            ),
-          );
         }
       },
       child: AppScaffold(

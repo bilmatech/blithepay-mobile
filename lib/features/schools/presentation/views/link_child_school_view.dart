@@ -1,6 +1,14 @@
 import 'package:blithepay/core/navigation/app_routes.dart';
+import 'package:blithepay/features/schools/data/models/school_model.dart';
+import 'package:blithepay/features/schools/presentation/bloc/schools_bloc.dart';
+import 'package:blithepay/features/schools/presentation/bloc/schools_event.dart';
+import 'package:blithepay/features/schools/presentation/bloc/schools_state.dart';
+import 'package:blithepay/features/students/presentation/bloc/students_bloc.dart';
+import 'package:blithepay/features/students/presentation/bloc/students_event.dart';
+import 'package:blithepay/features/students/presentation/bloc/students_state.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
@@ -19,8 +27,17 @@ class _LinkChildSchoolViewState extends State<LinkChildSchoolView> {
   final _regNumberController = TextEditingController();
   final _admissionNumberController = TextEditingController();
 
-  String? _selectedSchool;
+  SchoolModel? _selectedSchool;
   String? _registrationError;
+
+  @override
+  void initState() {
+    super.initState();
+
+    context.read<SchoolsBloc>().add(
+      const GetSchoolPortalEvent(page: 1, limit: 20),
+    );
+  }
 
   @override
   void dispose() {
@@ -39,7 +56,7 @@ class _LinkChildSchoolViewState extends State<LinkChildSchoolView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Link Student(s)', style: AppTextStyles.headingLarge),
+              const Text('Link Child', style: AppTextStyles.headingLarge),
               const SizedBox(height: 24),
               _buildSection(
                 label: '',
@@ -68,28 +85,55 @@ class _LinkChildSchoolViewState extends State<LinkChildSchoolView> {
               ),
               const SizedBox(height: 20),
               Text(
-                _selectedSchool ?? 'Select school',
+                _selectedSchool?.name ?? 'Select school',
                 style: AppTextStyles.bodyLarge,
               ),
               const SizedBox(height: 8),
 
               GestureDetector(
                 onTap: () {
-                  showItemSelectionSheet<String>(
-                    context: context,
-                    title: 'Select School',
-                    items: [
-                      'Greenwood High',
-                      'Hillview Academy',
-                      'Sunrise School',
-                    ],
-                    selectedItem: _selectedSchool,
-                    onItemSelected: (school) {
-                      setState(() {
-                        _selectedSchool = school;
-                      });
-                    },
-                  );
+                  final bloc = context.read<SchoolsBloc>();
+                  final state = bloc.state;
+
+                  if (state is SchoolsLoading) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Loading schools...')),
+                    );
+                    return;
+                  }
+
+                  if (state is SchoolsLoaded) {
+                    if (state.schools.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No schools available')),
+                      );
+                      return;
+                    }
+
+                    showItemSelectionSheet<SchoolModel>(
+                      context: context,
+                      title: 'Select School',
+                      items: state.schools,
+                      selectedItem: _selectedSchool,
+                      itemLabel: (school) => school.name,
+                      onItemSelected: (school) {
+                        setState(() {
+                          _selectedSchool = school;
+                        });
+                      },
+                      onReachedBottom: () {
+                        if (state.nextPage != null && !state.isFetchingMore) {
+                          bloc.add(const GetSchoolPortalEvent());
+                        }
+                      },
+                    );
+                  }
+
+                  if (state is SchoolsError) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(state.message)));
+                  }
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -104,7 +148,7 @@ class _LinkChildSchoolViewState extends State<LinkChildSchoolView> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        _selectedSchool ?? 'Select option',
+                        _selectedSchool?.displayName ?? 'Select School',
                         style: const TextStyle(fontSize: 14),
                       ),
                       const Icon(Icons.arrow_drop_down_outlined),
@@ -113,14 +157,101 @@ class _LinkChildSchoolViewState extends State<LinkChildSchoolView> {
                 ),
               ),
 
+              // GestureDetector(
+              //   onTap: () {
+              //     showItemSelectionSheet<String>(
+              //       context: context,
+              //       title: 'Select School',
+              //       items: [
+              //         'Greenwood High',
+              //         'Hillview Academy',
+              //         'Sunrise School',
+              //       ],
+              //       selectedItem: _selectedSchool?.name,
+              //       onItemSelected: (school) {
+              //         setState(() {
+              //           _selectedSchool = school;
+              //         });
+              //       },
+              //     );
+              //   },
+              //   child: Container(
+              //     padding: const EdgeInsets.symmetric(
+              //       horizontal: 16,
+              //       vertical: 14,
+              //     ),
+              //     decoration: BoxDecoration(
+              //       borderRadius: BorderRadius.circular(12),
+              //       border: Border.all(color: Colors.grey.shade300),
+              //     ),
+              //     child: Row(
+              //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //       children: [
+              //         Text(
+              //           _selectedSchool?.name ?? 'Select option',
+              //           style: const TextStyle(fontSize: 14),
+              //         ),
+              //         const Icon(Icons.arrow_drop_down_outlined),
+              //       ],
+              //     ),
+              //   ),
+              // ),
               const SizedBox(height: 20),
-              PrimaryButton(
-                label: 'Verify',
-                onPressed: () => context.push(AppRoutes.linkProfile),
+              BlocListener<StudentsBloc, StudentsState>(
+                listener: (context, state) {
+                  if (state is StudentsError) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(state.message)));
+                  }
+                  if (state is VerifyStudentSuccess) {
+                    print(state.model?.fullName);
+                    final student = state.model;
+                    GoRouter.of(
+                      context,
+                    ).push(AppRoutes.linkProfile, extra: student);
+                  }
+                },
+                child: BlocBuilder<StudentsBloc, StudentsState>(
+                  builder: (context, state) {
+                    final isLoading = state is VerifyStudentS;
+                    return PrimaryButton(
+                      label: 'Verify',
+                      onPressed: _verifyAndLinkChild,
+                      isLoading: isLoading,
+                    );
+                  },
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _verifyAndLinkChild() {
+    final regNum = _regNumberController.text.trim();
+
+    if (regNum.isEmpty) {
+      setState(() {
+        _registrationError = 'Student ID is required';
+      });
+      return;
+    }
+
+    if (_selectedSchool == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select a school')));
+      return;
+    }
+
+    context.read<StudentsBloc>().add(
+      VerifyChildEvent(
+        schoolId: _selectedSchool?.id ?? '',
+        regNum: regNum,
+        studentCode: _selectedSchool!.schoolCode,
       ),
     );
   }

@@ -19,8 +19,8 @@ class NotificationsView extends StatefulWidget {
 }
 
 class _NotificationsViewState extends State<NotificationsView> {
-  String _selectedNotification = '';
-  String _searchQuery = '';
+  final String _selectedNotification = '';
+  final String _searchQuery = '';
   String? currentFilter;
   String? currentSort;
 
@@ -53,18 +53,18 @@ class _NotificationsViewState extends State<NotificationsView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextField(
-                      onChanged: (value) =>
-                          setState(() => _searchQuery = value),
-                      decoration: InputDecoration(
-                        hintText: 'Search Notifications',
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                    // TextField(
+                    //   onChanged: (value) =>
+                    //       setState(() => _searchQuery = value),
+                    //   decoration: InputDecoration(
+                    //     hintText: 'Search Notifications',
+                    //     prefixIcon: const Icon(Icons.search),
+                    //     border: OutlineInputBorder(
+                    //       borderRadius: BorderRadius.circular(12),
+                    //     ),
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 20),
 
                     // Filter and sort
                     Row(
@@ -86,8 +86,7 @@ class _NotificationsViewState extends State<NotificationsView> {
                                 selectedValue: currentFilter,
                                 onItemSelected: (value) =>
                                     setState(() => currentFilter = value),
-                                enableSearch:
-                                    true, // only filter popup has search
+                                enableSearch: false,
                               ),
                               label: 'Filter',
                               icon: Icons.tune,

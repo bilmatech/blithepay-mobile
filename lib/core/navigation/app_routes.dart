@@ -10,6 +10,7 @@ abstract class AppRoutes {
   static const String setupOtp = '/setup-otp';
   static const String resetPassword = '/reset-password';
   static const String passwordChanged = '/password-changed';
+  static const String changePassword = '/change-password';
   static const String confirmSchool = '/confirm-school';
   static const String dashboard = '/dashboard';
   static const String linkStudents = '/link-students';

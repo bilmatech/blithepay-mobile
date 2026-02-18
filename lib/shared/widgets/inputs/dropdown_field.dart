@@ -192,8 +192,9 @@ Future<void> showItemSelectionSheet<T>({
   T? selectedItem,
   required ValueChanged<T> onItemSelected,
   bool enableSearch = true,
-  String Function(T)? itemLabel, // optional custom label
-}) {
+  String Function(T)? itemLabel,
+  VoidCallback? onReachedBottom, // new
+}) async {
   TextEditingController searchController = TextEditingController();
   List<T> filteredItems = List.from(items);
 
@@ -222,6 +223,14 @@ Future<void> showItemSelectionSheet<T>({
             maxChildSize: 0.8,
             expand: false,
             builder: (_, controller) {
+              controller.addListener(() {
+                if (controller.position.pixels >=
+                        controller.position.maxScrollExtent - 50 &&
+                    onReachedBottom != null) {
+                  onReachedBottom();
+                }
+              });
+
               return Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
@@ -233,7 +242,6 @@ Future<void> showItemSelectionSheet<T>({
                 ),
                 child: Column(
                   children: [
-                    // Drag indicator
                     Container(
                       width: 40,
                       height: 4,
@@ -243,8 +251,6 @@ Future<void> showItemSelectionSheet<T>({
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-
-                    // Title
                     Text(
                       title,
                       style: const TextStyle(
@@ -252,29 +258,7 @@ Future<void> showItemSelectionSheet<T>({
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 12),
-
-                    // Search field
-                    // if (enableSearch)
-                    //   TextField(
-                    //     controller: searchController,
-                    //     onChanged: (_) => setState(() {}),
-                    //     decoration: InputDecoration(
-                    //       hintText: 'Search...',
-                    //       prefixIcon: const Icon(Icons.search),
-                    //       border: OutlineInputBorder(
-                    //         borderRadius: BorderRadius.circular(12),
-                    //       ),
-                    //       contentPadding: const EdgeInsets.symmetric(
-                    //         horizontal: 16,
-                    //         vertical: 12,
-                    //       ),
-                    //     ),
-                    //   ),
-                    const SizedBox(height: 12),
-
-                    // Items list
                     Expanded(
                       child: filteredItems.isEmpty
                           ? const Center(child: Text('No items found'))
@@ -307,8 +291,8 @@ Future<void> showItemSelectionSheet<T>({
                                           : Colors.white,
                                       borderRadius: BorderRadius.circular(12),
                                       boxShadow: isSelected
-                                          ? [
-                                              const BoxShadow(
+                                          ? const [
+                                              BoxShadow(
                                                 color: Colors.black12,
                                                 blurRadius: 2,
                                                 offset: Offset(0, 1),
