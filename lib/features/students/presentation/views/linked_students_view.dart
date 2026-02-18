@@ -1,12 +1,10 @@
 import 'package:blithepay/core/navigation/app_routes.dart';
-import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
 import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student/components/empty_state.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student/components/unlink_button.dart';
+import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
 import 'package:blithepay/features/wallet/presentation/views/invoice_detail_dialog.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/app_outlined_icon_button.dart';
-import 'package:blithepay/shared/widgets/inputs/dropdown_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -410,52 +408,86 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
                                 'Payment History:',
                                 style: AppTextStyles.bodyLarge,
                               ),
-                              Row(
-                                children: [
-                                  // Filter button with search
-                                  AppOutlinedIconButton(
-                                    onPressed: () => showFilterPopup<String>(
-                                      context: context,
-                                      items: [
-                                        'Successful',
-                                        'Failed',
-                                        'Pending',
-                                        'Withdrawal',
-                                        'Fee Payment',
-                                        'Deposit',
-                                      ],
-                                      selectedValue: currentFilter,
-                                      onItemSelected: (value) =>
-                                          setState(() => currentFilter = value),
-                                      enableSearch: false,
-                                    ),
-                                    label: 'Filter',
-                                    icon: Icons.tune,
+                              GestureDetector(
+                                onTap: () {
+                                  context.push(AppRoutes.feeTransactions);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
                                   ),
-                                  const SizedBox(width: 8),
-
-                                  // Sort button without search
-                                  AppOutlinedIconButton(
-                                    onPressed: () => showFilterPopup<String>(
-                                      context: context,
-                                      items: [
-                                        'A-Z',
-                                        'Z-A',
-                                        'Highest - Lowest',
-                                        'Lowest - Highest',
-                                        'Most Recent',
-                                        'Oldest',
-                                      ],
-                                      selectedValue: currentSort,
-                                      onItemSelected: (value) =>
-                                          setState(() => currentSort = value),
-                                      enableSearch: false, // no search for sort
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: AppColors.primary,
                                     ),
-                                    label: 'Sort by',
-                                    icon: Icons.sort,
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                ],
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'See All',
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      const Icon(
+                                        Icons.arrow_forward,
+                                        color: AppColors.primary,
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
+
+                              // Row(
+                              //   children: [
+                              //     // Filter button with search
+                              //     AppOutlinedIconButton(
+                              //       onPressed: () => showFilterPopup<String>(
+                              //         context: context,
+                              //         items: [
+                              //           'Successful',
+                              //           'Failed',
+                              //           'Pending',
+                              //           'Withdrawal',
+                              //           'Fee Payment',
+                              //           'Deposit',
+                              //         ],
+                              //         selectedValue: currentFilter,
+                              //         onItemSelected: (value) =>
+                              //             setState(() => currentFilter = value),
+                              //         enableSearch: false,
+                              //       ),
+                              //       label: 'Filter',
+                              //       icon: Icons.tune,
+                              //     ),
+                              //     const SizedBox(width: 8),
+
+                              //     // Sort button without search
+                              //     AppOutlinedIconButton(
+                              //       onPressed: () => showFilterPopup<String>(
+                              //         context: context,
+                              //         items: [
+                              //           'A-Z',
+                              //           'Z-A',
+                              //           'Highest - Lowest',
+                              //           'Lowest - Highest',
+                              //           'Most Recent',
+                              //           'Oldest',
+                              //         ],
+                              //         selectedValue: currentSort,
+                              //         onItemSelected: (value) =>
+                              //             setState(() => currentSort = value),
+                              //         enableSearch: false, // no search for sort
+                              //       ),
+                              //       label: 'Sort by',
+                              //       icon: Icons.sort,
+                              //     ),
+                              //   ],
+                              // ),
                             ],
                           ),
                           const SizedBox(height: 24),
@@ -506,18 +538,38 @@ class _LinkedStudentsViewState extends State<LinkedStudentsView> {
 }
 
 final transactions = [
-  const TransactionItem(
-    title: 'Tuition fee',
-    amount: 'N300,000.00',
-    date: '11-09-25',
-    time: '11:15',
-    status: 'Successful',
+  WalletTransactionModel(
+    amount: '300',
+    status: 'success',
+    id: 'cmlqkb0qr003e0vpczzqhii7l',
+    name: 'Tuition fee',
+    walletId: 'cmljgzu8w00070vp3yy5udkc8',
+    fees: '10',
+    netAmount: '198',
+    reference: '1771330263964dmgr24pmlqkayzg',
+    type: 'Deposit',
+    flow: '',
+    transactionAt: '2026-02-17T12:11:06.242Z',
+    processedAt: '2026-02-17T12:11:07.027Z',
+    isDeleted: false,
+    createdAt: '2026-02-17T12:11:07.028Z',
+    updatedAt: '2026-02-17T12:11:06.243Z',
   ),
-  const TransactionItem(
-    title: 'Wallet Deposit',
-    amount: 'N200,000.00',
-    date: '11-09-25',
-    time: '11:15',
-    status: 'Successful',
+  WalletTransactionModel(
+    amount: '200',
+    status: 'success',
+    id: 'cmlqkb0qr003e0vpczzqhii7l',
+    name: 'Tuition fee',
+    walletId: 'cmljgzu8w00070vp3yy5udkc8',
+    fees: '10',
+    netAmount: '',
+    reference: '1771330263964dmgr24pmlqkayzg',
+    type: 'Deposit',
+    flow: '',
+    transactionAt: '2026-02-17T12:11:06.242Z',
+    processedAt: '2026-02-17T12:11:07.027Z',
+    isDeleted: false,
+    createdAt: '2026-02-17T12:11:07.028Z',
+    updatedAt: '2026-02-17T12:11:06.243Z',
   ),
 ];

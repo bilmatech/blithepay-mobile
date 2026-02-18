@@ -1,4 +1,5 @@
 import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
+import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
 import 'package:equatable/equatable.dart';
 import '../../data/models/wallet_model.dart';
 
@@ -17,6 +18,10 @@ class WalletLoading extends WalletState {
   const WalletLoading();
 }
 
+class WalletTransactionLoading extends WalletState {
+  const WalletTransactionLoading();
+}
+
 class WalletLoaded extends WalletState {
   final WalletModel wallet;
 
@@ -25,6 +30,30 @@ class WalletLoaded extends WalletState {
   @override
   List<Object?> get props => [wallet];
 }
+
+// class WalletTransactionLoaded extends WalletState {
+//   final List<WalletTransactionModel> wallet;
+//   final int? nextPage;
+//   final bool isFetchingMore;
+
+//   const WalletTransactionLoaded({
+//     required this.wallet,
+//     this.nextPage,
+//     this.isFetchingMore = false,
+//   });
+
+//   WalletTransactionLoaded copyWith({
+//     List<WalletTransactionModel>? wallet,
+//     int? nextPage,
+//     bool? isFetchingMore,
+//   }) {
+//     return WalletTransactionLoaded(
+//       wallet: wallet ?? this.wallet,
+//       nextPage: nextPage ?? this.nextPage,
+//       isFetchingMore: isFetchingMore ?? this.isFetchingMore,
+//     );
+//   }
+// }
 
 class TransactionsLoaded extends WalletState {
   final List<TransactionItem> transactions;

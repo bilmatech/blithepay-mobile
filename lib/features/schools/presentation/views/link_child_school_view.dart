@@ -84,10 +84,7 @@ class _LinkChildSchoolViewState extends State<LinkChildSchoolView> {
                 ],
               ),
               const SizedBox(height: 20),
-              Text(
-                _selectedSchool?.name ?? 'Select school',
-                style: AppTextStyles.bodyLarge,
-              ),
+              const Text('Select school', style: AppTextStyles.bodyLarge),
               const SizedBox(height: 8),
 
               GestureDetector(
@@ -115,7 +112,7 @@ class _LinkChildSchoolViewState extends State<LinkChildSchoolView> {
                       title: 'Select School',
                       items: state.schools,
                       selectedItem: _selectedSchool,
-                      itemLabel: (school) => school.name,
+                      itemLabel: (school) => school.displayName ?? '',
                       onItemSelected: (school) {
                         setState(() {
                           _selectedSchool = school;
@@ -147,9 +144,11 @@ class _LinkChildSchoolViewState extends State<LinkChildSchoolView> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        _selectedSchool?.displayName ?? 'Select School',
-                        style: const TextStyle(fontSize: 14),
+                      Expanded(
+                        child: Text(
+                          _selectedSchool?.displayName ?? 'Select School',
+                          style: const TextStyle(fontSize: 14),
+                        ),
                       ),
                       const Icon(Icons.arrow_drop_down_outlined),
                     ],

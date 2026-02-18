@@ -13,9 +13,7 @@ class FetchWalletDataEvent extends WalletEvent {
   const FetchWalletDataEvent({this.forceRefresh = false});
 }
 
-class GetTransactionsEvent extends WalletEvent {
-  const GetTransactionsEvent();
-}
+
 
 class FundWalletEvent extends WalletEvent {
   final String amount;

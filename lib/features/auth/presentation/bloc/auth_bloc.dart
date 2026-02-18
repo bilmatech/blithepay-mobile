@@ -1,6 +1,5 @@
 import 'package:blithepay/core/network/dio_error_mapper.dart';
 import 'package:blithepay/services/firebase_notifications.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'auth_event.dart';

@@ -14,6 +14,7 @@ import 'package:blithepay/features/splash/presentation/bloc/splash_bloc.dart';
 import 'package:blithepay/features/students/data/repositories/students_repository.dart';
 import 'package:blithepay/features/students/presentation/bloc/students_bloc.dart';
 import 'package:blithepay/features/support/presentation/bloc/support_bloc.dart';
+import 'package:blithepay/features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'package:blithepay/features/wallet/data/repositories/wallet_repository.dart';
 import 'package:blithepay/features/wallet/presentation/bloc/wallet_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -87,6 +88,11 @@ class AppProviders {
       ),
       BlocProvider<WalletBloc>(
         create: (context) => WalletBloc(
+          walletRepository: context.read<WalletRepositoryInterface>(),
+        ),
+      ),
+      BlocProvider<WalletTransactionBloc>(
+        create: (context) => WalletTransactionBloc(
           walletRepository: context.read<WalletRepositoryInterface>(),
         ),
       ),
