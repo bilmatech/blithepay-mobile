@@ -6,7 +6,6 @@ import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../bloc/wallet_state.dart' hide WalletTransactionLoading;
 import '../../../../shared/widgets/loaders/shimmer_table_loader.dart';
 
 class TransactionsView extends StatefulWidget {

@@ -1,6 +1,4 @@
-import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
 import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
-import 'package:equatable/equatable.dart';
 
 abstract class WalletTransactionState {}
 
