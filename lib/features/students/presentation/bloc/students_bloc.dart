@@ -1,5 +1,6 @@
 import 'package:blithepay/core/network/dio_error_mapper.dart';
 import 'package:blithepay/features/students/data/models/fee_transaction_model.dart';
+import 'package:blithepay/features/students/data/models/invoice_model.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/students_repository.dart';
@@ -16,6 +17,7 @@ class StudentsBloc extends Bloc<StudentsEvent, StudentsState> {
     on<GetLinkedStudentsEvent>(_onGetLinkedStudents);
     on<GetStudentDetailsEvent>(_onGetStudentDetails);
     on<GetFeeTransactionsEvent>(_onGetTransactions);
+    on<GetInvoiceEvent>(_onGetInvoices);
   }
 
   bool _hasFetchedOnce = false;
@@ -215,6 +217,60 @@ class StudentsBloc extends Bloc<StudentsEvent, StudentsState> {
 
       // Re-emit old state to avoid clearing screen
       if (currentState is FeeTransactionLoaded) {
+        emit(currentState);
+      }
+    }
+  }
+
+  bool _hasInvoiceFetchedOnce = false; // at bloc level
+
+  Future<void> _onGetInvoices(
+    GetInvoiceEvent event,
+    Emitter<StudentsState> emit,
+  ) async {
+    final currentState = state;
+
+    List<InvoiceModel> oldInvoice = [];
+
+    if (!event.refresh &&
+        currentState is InvoiceLoaded &&
+        event.page > 1) {
+      oldInvoice = currentState.invoice;
+    }
+
+    final showShimmer = !_hasInvoiceFetchedOnce && !event.refresh;
+
+    if (showShimmer) {
+      emit(const StudentsLoading());
+      await Future.delayed(const Duration(milliseconds: 250));
+    }
+    if (_hasInvoiceFetchedOnce && !event.refresh) return;
+
+    try {
+      final result = await repository.getInvoices(
+        event.studentId,
+        page: event.page,
+        limit: event.limit,
+      );
+
+      final updatedTransactions = event.refresh
+          ? result.invoices
+          : [...oldInvoice, ...result.invoices];
+
+      _hasInvoiceFetchedOnce = true;
+
+      emit(
+        InvoiceLoaded(
+          invoice: updatedTransactions,
+          nextPage: result.nextPage,
+          isFetchingMore: false,
+        ),
+      );
+    } catch (e) {
+      emit(StudentsError(message: extractError(e)));
+
+      // Re-emit old state to avoid clearing screen
+      if (currentState is InvoiceLoaded) {
         emit(currentState);
       }
     }
