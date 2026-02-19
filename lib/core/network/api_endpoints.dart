@@ -52,7 +52,7 @@ class ApiEndpoints {
   static const String feeBalance = '$fees/balance';
   static const String getFeeTransaction = '/fee/transactions';
 
-  static String getinvoices(String id) => 'invoices/$id';
+  static const String getinvoices = '/invoices';
 
   // Payments
   static const String payments = '/payments';

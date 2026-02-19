@@ -12,16 +12,14 @@ class PaginatedInvoiceModel {
   });
 
   factory PaginatedInvoiceModel.fromJson(Map<String, dynamic> json) {
-    final mainData = json['data'];
-    final List<dynamic> invoicesJson = mainData['data'];
-    final metadata = mainData['metadata'];
+    final mainData = json['data'] as Map<String, dynamic>;
+    final List<dynamic> invoicesJson = mainData['data'] ?? [];
+    final metadata = mainData['metadata'] as Map<String, dynamic>;
 
     return PaginatedInvoiceModel(
-      invoices: invoicesJson
-          .map((e) => InvoiceModel.fromJson(e))
-          .toList(),
-      currentPage: metadata['page'],
-      totalPages: metadata['totalPages'],
+      invoices: invoicesJson.map((e) => InvoiceModel.fromJson(e)).toList(),
+      currentPage: metadata['page'] ?? 1,
+      totalPages: metadata['totalPages'] ?? 1,
       nextPage: metadata['nextPage'],
     );
   }
@@ -29,65 +27,112 @@ class PaginatedInvoiceModel {
 
 class InvoiceModel {
   final String id;
-  final String name;
-  final String walletId;
-  final String amount;
-  final String fees;
-  final String netAmount;
-  final String reference;
-  final String type;
-  final String flow;
-  final String transactionAt;
-  final String processedAt;
-  final String? description;
+  final String invoiceNo;
+  final String feeId;
+  final String guardianId;
+  final String studentId;
   final String status;
+  final DateTime dueAt;
+  final DateTime? paidAt;
   final bool isDeleted;
-  final String createdAt;
-  final String updatedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final FeeModel fee;
 
   InvoiceModel({
     required this.id,
-    required this.name,
-    required this.walletId,
-    required this.amount,
-    required this.fees,
-    required this.netAmount,
-    required this.reference,
-    required this.type,
-    required this.flow,
-    required this.transactionAt,
-    required this.processedAt,
+    required this.invoiceNo,
+    required this.feeId,
+    required this.guardianId,
+    required this.studentId,
     required this.status,
+    required this.dueAt,
+    this.paidAt,
     required this.isDeleted,
     required this.createdAt,
     required this.updatedAt,
-    this.description,
+    required this.fee,
   });
 
   factory InvoiceModel.fromJson(Map<String, dynamic> json) {
     return InvoiceModel(
-      id: json['id'],
-      name: json['name'],
-      walletId: json['walletId'],
-      amount: json['amount'],
-      fees: json['fees'],
-      netAmount: json['netAmount'],
-      reference: json['reference'],
-      type: json['type'],
-      flow: json['flow'],
-      transactionAt: json['transactionAt'],
-      processedAt: json['processedAt'],
-      description: json['desc'],
-      status: json['status'],
-      isDeleted: json['isDeleted'],
-      createdAt: json['createdAt'],
-      updatedAt: json['updatedAt'],
+      id: json['id'] ?? '',
+      invoiceNo: json['invoiceNo'] ?? '',
+      feeId: json['feeId'] ?? '',
+      guardianId: json['guardianId'] ?? '',
+      studentId: json['studentId'] ?? '',
+      status: json['status'] ?? '',
+      dueAt: DateTime.parse(json['dueAt']),
+      paidAt: json['paidAt'] != null ? DateTime.parse(json['paidAt']) : null,
+      isDeleted: json['isDeleted'] ?? false,
+      createdAt: DateTime.parse(json['createdAt']),
+      updatedAt: DateTime.parse(json['updatedAt']),
+      fee: FeeModel.fromJson(json['fee']),
     );
   }
+}
 
-  /// Optional helper for UI
-  bool get isCredit => flow.toLowerCase() == 'inflow';
+class FeeModel {
+  final String id;
+  final String name;
+  final DateTime dueAt;
+  final String latePaymentFee;
+  final ClassModel classModel;
+  final TermModel term;
+  final AcademicSessionModel academicSession;
 
-  /// Optional helper to get display amount with sign
-  String get formattedAmount => isCredit ? '+$amount' : '-$amount';
+  FeeModel({
+    required this.id,
+    required this.name,
+    required this.dueAt,
+    required this.latePaymentFee,
+    required this.classModel,
+    required this.term,
+    required this.academicSession,
+  });
+
+  factory FeeModel.fromJson(Map<String, dynamic> json) {
+    return FeeModel(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      dueAt: DateTime.parse(json['dueAt']),
+      latePaymentFee: json['latePaymentFee'] ?? '0',
+      classModel: ClassModel.fromJson(json['class']),
+      term: TermModel.fromJson(json['term']),
+      academicSession: AcademicSessionModel.fromJson(json['academicSession']),
+    );
+  }
+}
+
+class ClassModel {
+  final String id;
+  final String name;
+
+  ClassModel({required this.id, required this.name});
+
+  factory ClassModel.fromJson(Map<String, dynamic> json) {
+    return ClassModel(id: json['id'] ?? '', name: json['name'] ?? '');
+  }
+}
+
+class TermModel {
+  final String id;
+  final String name;
+
+  TermModel({required this.id, required this.name});
+
+  factory TermModel.fromJson(Map<String, dynamic> json) {
+    return TermModel(id: json['id'] ?? '', name: json['name'] ?? '');
+  }
+}
+
+class AcademicSessionModel {
+  final String id;
+  final String name;
+
+  AcademicSessionModel({required this.id, required this.name});
+
+  factory AcademicSessionModel.fromJson(Map<String, dynamic> json) {
+    return AcademicSessionModel(id: json['id'] ?? '', name: json['name'] ?? '');
+  }
 }

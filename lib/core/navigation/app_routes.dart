@@ -29,6 +29,8 @@ abstract class AppRoutes {
   static const String feeTransactions = '/feeTransactions';
   static const String transactionReceiptView = '/transactionReceiptView';
 
+  static const String invoicedetail = '/invoicedetail';
+
   static const String profile = '/profile';
   static const String profileDetail = '/profile-detail';
   static const String walletManagement = '/wallet-management';

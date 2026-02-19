@@ -206,20 +206,21 @@ class StudentsRepositoryImpl implements StudentsRepository {
     int limit = 20,
   }) async {
     var response = await _dioClient.get(
-      '${ApiEndpoints.getinvoices(studentId)}?page=$page&limit=$limit',
+      '${ApiEndpoints.getinvoices}?page=$page&limit=$limit',
+      queryParameters: {"studentId": studentId},
     );
-    final mainData = response.data['data'];
-    final List<dynamic> invoiceJson = mainData['data'];
-    final metadata = mainData['metadata'];
+    final mainData = response.data['data'] ?? {};
+    final invoiceJson = (mainData['data'] as List<dynamic>?) ?? [];
+    final metadata = mainData['metadata'] ?? {};
 
-    final invoice = invoiceJson
+    final invoices = invoiceJson
         .map((json) => InvoiceModel.fromJson(json))
         .toList();
 
     return PaginatedInvoiceModel(
-      invoices: invoice,
-      currentPage: metadata['page'],
-      totalPages: metadata['totalPages'],
+      invoices: invoices,
+      currentPage: metadata['page'] ?? 1,
+      totalPages: metadata['totalPages'] ?? 1,
       nextPage: metadata['nextPage'],
     );
   }

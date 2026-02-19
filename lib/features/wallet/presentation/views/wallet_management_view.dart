@@ -1,7 +1,7 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
-import 'package:blithepay/features/students/presentation/views/linked_students_view.dart';
+import 'package:blithepay/features/students/presentation/views/linked_student_view/payment_history_section.dart';
 import 'package:blithepay/features/wallet/presentation/widgets/quick_action_button.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/app_outlined_icon_button.dart';

@@ -1,6 +1,5 @@
 import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
 import 'package:blithepay/features/students/data/models/fee_transaction_model.dart';
-import 'package:blithepay/features/students/data/models/invoice_model.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 
 abstract class StudentsState {
@@ -84,30 +83,6 @@ class FeeTransactionLoaded extends StudentsState {
   }) {
     return FeeTransactionLoaded(
       wallet: wallet ?? this.wallet,
-      nextPage: nextPage ?? this.nextPage,
-      isFetchingMore: isFetchingMore ?? this.isFetchingMore,
-    );
-  }
-}
-
-class InvoiceLoaded extends StudentsState {
-  final List<InvoiceModel> invoice;
-  final int? nextPage;
-  final bool isFetchingMore;
-
-  const InvoiceLoaded({
-    required this.invoice,
-    this.nextPage,
-    this.isFetchingMore = false,
-  });
-
-  InvoiceLoaded copyWith({
-    List<InvoiceModel>? invoice,
-    int? nextPage,
-    bool? isFetchingMore,
-  }) {
-    return InvoiceLoaded(
-      invoice: invoice ?? this.invoice,
       nextPage: nextPage ?? this.nextPage,
       isFetchingMore: isFetchingMore ?? this.isFetchingMore,
     );
