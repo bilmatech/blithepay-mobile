@@ -1,7 +1,7 @@
 import 'package:blithepay/core/network/api_endpoints.dart';
 import 'package:blithepay/core/network/dio_client.dart';
-import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
+import 'package:blithepay/features/students/data/models/fee_transaction_model.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 import 'package:dio/dio.dart';
 
@@ -24,6 +24,10 @@ abstract class StudentsRepository {
   Future<LinkedStudentModel> linkStudent(String studentId, String studentCode);
   Future<void> unlinkStudent(String studentId, String studentCode);
   Future<void> verifyGuardian(String phoneNumber, String otp);
+  Future<PaginatedFeeTransactionModel> getWalletTransaction({
+    int page = 1,
+    int limit = 20,
+  });
 }
 
 class StudentsRepositoryImpl implements StudentsRepository {
@@ -163,5 +167,29 @@ class StudentsRepositoryImpl implements StudentsRepository {
   @override
   Future<void> verifyGuardian(String phoneNumber, String otp) async {
     await Future.delayed(const Duration(seconds: 1));
+  }
+
+  @override
+  Future<PaginatedFeeTransactionModel> getWalletTransaction({
+    int page = 1,
+    int limit = 20,
+  }) async {
+    var response = await _dioClient.get(
+      '${ApiEndpoints.getFeeTransaction}?page=$page&limit=$limit',
+    );
+    final mainData = response.data['data'];
+    final List<dynamic> walletJson = mainData['data'];
+    final metadata = mainData['metadata'];
+
+    final wallet = walletJson
+        .map((json) => FeeTransactionModel.fromJson(json))
+        .toList();
+
+    return PaginatedFeeTransactionModel(
+      transactions: wallet,
+      currentPage: metadata['page'],
+      totalPages: metadata['totalPages'],
+      nextPage: metadata['nextPage'],
+    );
   }
 }

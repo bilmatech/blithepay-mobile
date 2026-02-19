@@ -1,5 +1,4 @@
 import 'package:blithepay/core/network/dio_error_mapper.dart';
-import 'package:blithepay/features/schools/data/models/school_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/schools_repository.dart';
 import 'schools_event.dart';

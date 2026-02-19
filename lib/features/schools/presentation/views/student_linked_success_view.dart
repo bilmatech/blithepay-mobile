@@ -1,5 +1,4 @@
 import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
-import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

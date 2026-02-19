@@ -1,4 +1,3 @@
-import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
 import 'package:equatable/equatable.dart';
 import '../../data/models/wallet_model.dart';
 
@@ -17,6 +16,10 @@ class WalletLoading extends WalletState {
   const WalletLoading();
 }
 
+class WalletTransactionLoading extends WalletState {
+  const WalletTransactionLoading();
+}
+
 class WalletLoaded extends WalletState {
   final WalletModel wallet;
 
@@ -25,16 +28,6 @@ class WalletLoaded extends WalletState {
   @override
   List<Object?> get props => [wallet];
 }
-
-class TransactionsLoaded extends WalletState {
-  final List<TransactionItem> transactions;
-
-  const TransactionsLoaded({required this.transactions});
-
-  @override
-  List<Object?> get props => [transactions];
-}
-
 class WalletError extends WalletState {
   final String message;
 

@@ -1,22 +1,20 @@
-import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 import 'package:blithepay/features/students/presentation/bloc/students_bloc.dart';
 import 'package:blithepay/features/students/presentation/bloc/students_event.dart';
 import 'package:blithepay/features/students/presentation/bloc/students_state.dart';
-import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 Widget UnlinkButton(BuildContext context, VerifiedStudentModel student) {
   return BlocBuilder<StudentsBloc, StudentsState>(
     builder: (context, state) {
-      if (state is! StudentsLoaded) return SizedBox.shrink();
+      if (state is! StudentsLoaded) return const SizedBox.shrink();
 
       final isLoading = state.loadingStudentIds.contains(student.id);
 
       return TextButton.icon(
         icon: isLoading
-            ? SizedBox(
+            ? const SizedBox(
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(strokeWidth: 2),

@@ -1,6 +1,5 @@
 import 'package:blithepay/features/auth/presentation/views/setup_pin_view.dart';
 import 'package:blithepay/features/common/data/success_args_model.dart';
-import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
 import 'package:blithepay/features/fees/presentation/views/payment_confirmation_view.dart';
 import 'package:blithepay/features/fees/presentation/views/payment_success_view.dart';
 import 'package:blithepay/features/profile/presentation/views/change_password_view.dart';
@@ -12,6 +11,9 @@ import 'package:blithepay/features/schools/presentation/views/link_profile.dart'
 import 'package:blithepay/features/schools/presentation/views/student_linked_success_view.dart';
 import 'package:blithepay/features/splash/presentation/views/splash_view.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
+import 'package:blithepay/features/students/presentation/views/linked_student/fees_transaction_view.dart';
+import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
+import 'package:blithepay/features/wallet/presentation/views/reciept_preview.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/signup_view.dart';
@@ -139,7 +141,7 @@ class AppRouterConfig {
         ),
         GoRoute(
           path: AppRoutes.linkProfile,
-          builder: (context, state){
+          builder: (context, state) {
             final student = state.extra as VerifiedStudentModel;
 
             return LinkProfileView(student: student);
@@ -147,12 +149,12 @@ class AppRouterConfig {
         ),
         GoRoute(
           path: AppRoutes.studentLinkedSuccess,
-            builder: (context, state){
+          builder: (context, state) {
             final student = state.extra as LinkedStudentModel;
 
             return StudentLinkedSucessView(student: student);
           },
-       //   builder: (_, __) => const StudentLinkedSucessView(),
+          //   builder: (_, __) => const StudentLinkedSucessView(),
         ),
         GoRoute(
           path: AppRoutes.feeSelection,
@@ -211,9 +213,21 @@ class AppRouterConfig {
           builder: (_, __) => const TransactionsView(),
         ),
         GoRoute(
+          path: AppRoutes.transactionReceiptView,
+          builder: (context, state) {
+            final transaction = state.extra as WalletTransactionModel;
+            return TransactionReceiptView(transaction: transaction);
+          },
+        ),
+
+        GoRoute(
+          path: AppRoutes.feeTransactions,
+          builder: (_, __) => const FeesTransactionsView(),
+        ),
+        GoRoute(
           path: AppRoutes.transactionDetail,
           builder: (context, state) {
-            final transaction = state.extra as TransactionItem?;
+            final transaction = state.extra as WalletTransactionModel;
             return TransactionDetailView(transaction: transaction);
           },
         ),

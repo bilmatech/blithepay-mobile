@@ -38,13 +38,13 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
     super.dispose();
   }
 
-  void _onOtpChanged(int index, String value) {
-    if (value.isNotEmpty && index < 3) {
-      _focusNodes[index + 1].requestFocus();
-    } else if (value.isEmpty && index > 0) {
-      _focusNodes[index - 1].requestFocus();
-    }
-  }
+  // void _onOtpChanged(int index, String value) {
+  //   if (value.isNotEmpty && index < 3) {
+  //     _focusNodes[index + 1].requestFocus();
+  //   } else if (value.isEmpty && index > 0) {
+  //     _focusNodes[index - 1].requestFocus();
+  //   }
+  // }
 
   void _onKeyPressed(String value) {
     for (int i = 0; i < _controllers.length; i++) {
