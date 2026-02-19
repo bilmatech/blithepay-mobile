@@ -233,7 +233,7 @@ class AppRouterConfig {
 
             return InvoiceAndFeeDetailsView(
               invoice: invoice,
-              fees: invoice.fee,
+              // fees: invoice.fee,
             );
           },
         ),

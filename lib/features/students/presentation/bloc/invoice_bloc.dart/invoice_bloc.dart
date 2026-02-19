@@ -13,6 +13,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
 
   InvoiceBloc({required this.repository}) : super(const InvoiceInitial()) {
     on<GetInvoiceEvent>(_onGetInvoices);
+    on<GetInvoiceByIdEvent>(_onGetInvoiceById);
   }
 
   Future<void> _onGetInvoices(
@@ -36,8 +37,9 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     }
 
     _loadingStudents.add(studentId);
-    if (event.page == 1 && !event.refresh)
+    if (event.page == 1 && !event.refresh) {
       emit(InvoiceLoading(studentId: studentId));
+    }
 
     try {
       final result = await repository.getInvoices(
@@ -64,6 +66,20 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
       emit(InvoiceError(studentId: studentId, message: e.toString()));
     } finally {
       _loadingStudents.remove(studentId);
+    }
+  }
+
+  Future<void> _onGetInvoiceById(
+    GetInvoiceByIdEvent event,
+    Emitter<InvoiceState> emit,
+  ) async {
+    emit(InvoiceByIdLoading());
+
+    try {
+      final invoice = await repository.getInvoiceById(event.invoiceId);
+      emit(InvoiceByIdLoaded(invoice: invoice));
+    } catch (e) {
+      emit(InvoiceByIdError(message: e.toString()));
     }
   }
 }

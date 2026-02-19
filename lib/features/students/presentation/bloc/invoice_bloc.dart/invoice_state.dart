@@ -48,3 +48,17 @@ class InvoiceError extends InvoiceState {
   final String message;
   const InvoiceError({required this.message, required this.studentId});
 }
+
+class InvoiceByIdLoading extends InvoiceState {}
+
+class InvoiceByIdLoaded extends InvoiceState {
+  final InvoiceModel invoice;
+
+  InvoiceByIdLoaded({required this.invoice});
+}
+
+class InvoiceByIdError extends InvoiceState {
+  final String message;
+
+  InvoiceByIdError({required this.message});
+}

@@ -80,6 +80,7 @@ class FeeModel {
   final ClassModel classModel;
   final TermModel term;
   final AcademicSessionModel academicSession;
+  final List<FeeBreakdownModel>? feeBreakdowns;
 
   FeeModel({
     required this.id,
@@ -89,9 +90,12 @@ class FeeModel {
     required this.classModel,
     required this.term,
     required this.academicSession,
+    this.feeBreakdowns,
   });
 
   factory FeeModel.fromJson(Map<String, dynamic> json) {
+    final breakdowns = json['feeBreakdowns'] as List<dynamic>?;
+
     return FeeModel(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
@@ -100,6 +104,9 @@ class FeeModel {
       classModel: ClassModel.fromJson(json['class']),
       term: TermModel.fromJson(json['term']),
       academicSession: AcademicSessionModel.fromJson(json['academicSession']),
+      feeBreakdowns: breakdowns
+          ?.map((e) => FeeBreakdownModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 }
@@ -134,5 +141,31 @@ class AcademicSessionModel {
 
   factory AcademicSessionModel.fromJson(Map<String, dynamic> json) {
     return AcademicSessionModel(id: json['id'] ?? '', name: json['name'] ?? '');
+  }
+}
+
+class FeeBreakdownModel {
+  final String id;
+  final String name;
+  final int amount;
+
+  FeeBreakdownModel({
+    required this.id,
+    required this.name,
+    required this.amount,
+  });
+
+  factory FeeBreakdownModel.fromJson(Map<String, dynamic> json) {
+    return FeeBreakdownModel(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      amount: json['amount'] is String
+          ? int.parse(json['amount'])
+          : json['amount'] as int,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name, 'amount': amount};
   }
 }

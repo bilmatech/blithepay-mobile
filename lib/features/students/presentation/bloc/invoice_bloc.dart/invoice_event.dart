@@ -17,3 +17,10 @@ class GetInvoiceEvent extends InvoiceEvent {
 
   List<Object?> get props => [studentId, page, limit, refresh];
 }
+
+
+class GetInvoiceByIdEvent extends InvoiceEvent {
+  final String invoiceId;
+
+  GetInvoiceByIdEvent({required this.invoiceId});
+}
