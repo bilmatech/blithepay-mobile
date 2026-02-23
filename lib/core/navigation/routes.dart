@@ -10,8 +10,10 @@ import 'package:blithepay/features/schools/presentation/views/link_child_school_
 import 'package:blithepay/features/schools/presentation/views/link_profile.dart';
 import 'package:blithepay/features/schools/presentation/views/student_linked_success_view.dart';
 import 'package:blithepay/features/splash/presentation/views/splash_view.dart';
+import 'package:blithepay/features/students/data/models/invoice_model.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student/fees_transaction_view.dart';
+import 'package:blithepay/features/students/presentation/views/linked_student_view/invoice_fee_view.dart';
 import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
 import 'package:blithepay/features/wallet/presentation/views/reciept_preview.dart';
 import 'package:go_router/go_router.dart';
@@ -224,6 +226,18 @@ class AppRouterConfig {
           path: AppRoutes.feeTransactions,
           builder: (_, __) => const FeesTransactionsView(),
         ),
+        GoRoute(
+          path: AppRoutes.invoicedetail,
+          builder: (context, state) {
+            final invoice = state.extra as InvoiceModel;
+
+            return InvoiceAndFeeDetailsView(
+              invoice: invoice,
+              // fees: invoice.fee,
+            );
+          },
+        ),
+
         GoRoute(
           path: AppRoutes.transactionDetail,
           builder: (context, state) {

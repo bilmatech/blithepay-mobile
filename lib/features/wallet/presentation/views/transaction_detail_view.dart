@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/utils/helpers.dart';
@@ -133,7 +135,7 @@ class TransactionDetailView extends StatelessWidget {
 
               // Amount Section
               pw.Container(
-                padding: pw.EdgeInsets.all(16),
+                padding: const pw.EdgeInsets.all(16),
                 decoration: pw.BoxDecoration(
                   border: pw.Border.all(color: PdfColors.grey300),
                   //borderRadius: BorderRadiusGeometry.all()
@@ -141,19 +143,10 @@ class TransactionDetailView extends StatelessWidget {
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    _pdfRowBold(
-                      'Amount',
-                      Helpers.formattedAmount(transaction.amount),
-                    ),
+                    _pdfRowBold('Amount', 'N${transaction.amount}'),
                     if (transaction.fees.isNotEmpty)
-                      _pdfRow(
-                        'Fees',
-                        Helpers.formattedAmount(transaction.fees),
-                      ),
-                    _pdfRowBold(
-                      'Net Amount',
-                      Helpers.formattedAmount(transaction.netAmount),
-                    ),
+                      _pdfRow('Fees', 'N${transaction.fees}'),
+                    _pdfRowBold('Net Amount', 'N${transaction.netAmount}'),
                   ],
                 ),
               ),
@@ -163,7 +156,7 @@ class TransactionDetailView extends StatelessWidget {
               // Footer
               pw.Center(
                 child: pw.Text(
-                  'Thank you for using Our Wallet Service',
+                  'Thank you for using BilthePay',
                   style: pw.TextStyle(
                     fontSize: 14,
                     color: PdfColors.grey700,
@@ -176,8 +169,14 @@ class TransactionDetailView extends StatelessWidget {
         },
       ),
     );
+    // Save PDF to device with a custom name
+    final Uint8List pdfBytes = await pdf.save();
 
-    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+    final filename =
+        'blithepay_transaction_recipient_${transaction.reference}.pdf';
+
+    await Printing.sharePdf(bytes: pdfBytes, filename: filename);
+    // await Printing.layoutPdf(onLayout: (format) async => pdf.save());
   }
 
   pw.Widget _pdfRow(String label, String value) {

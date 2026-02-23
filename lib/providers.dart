@@ -12,7 +12,9 @@ import 'package:blithepay/features/schools/data/repositories/schools_repository.
 import 'package:blithepay/features/schools/presentation/bloc/schools_bloc.dart';
 import 'package:blithepay/features/splash/presentation/bloc/splash_bloc.dart';
 import 'package:blithepay/features/students/data/repositories/students_repository.dart';
+import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_bloc.dart';
 import 'package:blithepay/features/students/presentation/bloc/students_bloc.dart';
+import 'package:blithepay/features/students/presentation/bloc/students_event.dart';
 import 'package:blithepay/features/support/presentation/bloc/support_bloc.dart';
 import 'package:blithepay/features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'package:blithepay/features/wallet/data/repositories/wallet_repository.dart';
@@ -101,8 +103,14 @@ class AppProviders {
       BlocProvider<SupportBloc>(create: (_) => SupportBloc()),
       BlocProvider<StudentsBloc>(
         create: (context) =>
-            StudentsBloc(repository: context.read<StudentsRepository>()),
+            StudentsBloc(repository: context.read<StudentsRepository>())
+              ..add(const GetLinkedStudentsEvent(page: 1)),
       ),
+      BlocProvider<InvoiceBloc>(
+        create: (context) =>
+            InvoiceBloc(repository: context.read<StudentsRepository>()),
+      ),
+
       BlocProvider<SchoolsBloc>(
         create: (context) =>
             SchoolsBloc(repository: context.read<SchoolsRepository>()),

@@ -56,7 +56,6 @@ class GetStudentDetailsEvent extends StudentsEvent {
   const GetStudentDetailsEvent(this.studentId);
 }
 
-
 class GetFeeTransactionsEvent extends StudentsEvent {
   final int page;
   final int limit;

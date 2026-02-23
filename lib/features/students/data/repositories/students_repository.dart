@@ -2,6 +2,7 @@ import 'package:blithepay/core/network/api_endpoints.dart';
 import 'package:blithepay/core/network/dio_client.dart';
 import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
 import 'package:blithepay/features/students/data/models/fee_transaction_model.dart';
+import 'package:blithepay/features/students/data/models/invoice_model.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 import 'package:dio/dio.dart';
 
@@ -28,6 +29,12 @@ abstract class StudentsRepository {
     int page = 1,
     int limit = 20,
   });
+  Future<PaginatedInvoiceModel> getInvoices(
+    String studentId, {
+    int page = 1,
+    int limit = 20,
+  });
+  Future<InvoiceModel> getInvoiceById(String studentId);
 }
 
 class StudentsRepositoryImpl implements StudentsRepository {
@@ -191,5 +198,39 @@ class StudentsRepositoryImpl implements StudentsRepository {
       totalPages: metadata['totalPages'],
       nextPage: metadata['nextPage'],
     );
+  }
+
+  @override
+  Future<PaginatedInvoiceModel> getInvoices(
+    String studentId, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    var response = await _dioClient.get(
+      '${ApiEndpoints.getinvoices}?page=$page&limit=$limit',
+      queryParameters: {"studentId": studentId},
+    );
+    final mainData = response.data['data'] ?? {};
+    final invoiceJson = (mainData['data'] as List<dynamic>?) ?? [];
+    final metadata = mainData['metadata'] ?? {};
+
+    final invoices = invoiceJson
+        .map((json) => InvoiceModel.fromJson(json))
+        .toList();
+
+    return PaginatedInvoiceModel(
+      invoices: invoices,
+      currentPage: metadata['page'] ?? 1,
+      totalPages: metadata['totalPages'] ?? 1,
+      nextPage: metadata['nextPage'],
+    );
+  }
+
+  @override
+  Future<InvoiceModel> getInvoiceById(String studentId) async {
+    var response = await _dioClient.get(
+      ApiEndpoints.getinvoicesById(studentId),
+    );
+    return InvoiceModel.fromJson(response.data['data']);
   }
 }
