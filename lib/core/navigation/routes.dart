@@ -104,12 +104,12 @@ class AppRouterConfig {
           },
           routes: [
             GoRoute(
-              path: AppRoutes.home,
-              builder: (context, state) => const HomeView(),
-            ),
-            GoRoute(
               path: AppRoutes.linkedStudents,
               builder: (_, __) => const LinkedStudentsView(),
+            ),
+            GoRoute(
+              path: AppRoutes.home,
+              builder: (context, state) => const HomeView(),
             ),
             GoRoute(
               path: AppRoutes.profile,

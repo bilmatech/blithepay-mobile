@@ -1,3 +1,4 @@
+import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/index.dart';
 import 'package:flutter/material.dart';
@@ -17,20 +18,38 @@ class ProfileDetailView extends StatefulWidget {
 }
 
 class _ProfileDetailViewState extends State<ProfileDetailView> {
-  bool isEditing = false; // Track edit mode
-  late TextEditingController nameController;
-  late TextEditingController phoneController;
-  late TextEditingController emailController;
-  late FocusNode nameFocusNode;
+  bool isEditing = false;
+
+  late final TextEditingController nameController;
+  late final TextEditingController phoneController;
+  late final TextEditingController emailController;
+  late final FocusNode nameFocusNode;
+
+  bool _controllersInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    context.read<ProfileBloc>().add(const GetProfileEvent());
+
     nameController = TextEditingController();
     phoneController = TextEditingController();
     emailController = TextEditingController();
     nameFocusNode = FocusNode();
+
+    _prefillFromSession();
+    context.read<ProfileBloc>().add(const GetProfileEvent());
+  }
+
+  Future<void> _prefillFromSession() async {
+    final session = await context.read<AppLocalDataSource>().getSession();
+
+    if (!mounted || session?.user == null) return;
+
+    nameController.text =
+        '${session!.user!.firstName ?? ''} ${session.user!.lastName ?? ''}'
+            .trim();
+    phoneController.text = session.user!.phone ?? '';
+    emailController.text = session.user!.email ?? '';
   }
 
   @override
@@ -39,7 +58,6 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
     phoneController.dispose();
     emailController.dispose();
     nameFocusNode.dispose();
-
     super.dispose();
   }
 
@@ -58,60 +76,78 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
         builder: (context, state) {
           if (state is ProfileLoading) {
             return const ShimmerProfileLoader();
-          } else if (state is ProfileLoaded) {
+          }
+
+          if (state is ProfileLoaded) {
             final profile = state.profile;
 
-            // Initialize controllers with profile values
-            if (!isEditing) {
-              nameController.text = profile['name'] ?? '';
-              phoneController.text = profile['phone'] ?? '';
-              emailController.text = profile['email'] ?? '';
+            // Apply API profile ONCE
+            if (!_controllersInitialized) {
+              nameController.text = profile['name'] ?? nameController.text;
+              phoneController.text = profile['phone'] ?? phoneController.text;
+              emailController.text = profile['email'] ?? emailController.text;
+              _controllersInitialized = true;
             }
 
             return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Information:'),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              isEditing = !isEditing;
-                            });
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Information:'),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            isEditing = !isEditing;
+                          });
 
-                            if (isEditing) {
-                              Future.microtask(() {
-                                nameFocusNode.requestFocus();
-                              });
-                            }
-                          },
-                          child: Text(isEditing ? 'Save' : 'Edit Profile'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
+                          if (isEditing) {
+                            Future.microtask(
+                              () => nameFocusNode.requestFocus(),
+                            );
+                          } else {
+                            // 🔹 SAVE here (name + phone only)
+                            // context.read<ProfileBloc>().add(
+                            //   UpdateProfileEvent(
+                            //     name: nameController.text.trim(),
+                            //     phone: phoneController.text.trim(),
+                            //   ),
+                            // );
+                          }
+                        },
+                        child: Text(isEditing ? 'Save' : 'Edit Profile'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
 
-                    _buildEditableItem(
-                      'Guardian Name',
-                      nameController,
-                      focusNode: nameFocusNode,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildEditableItem('Phone', phoneController),
-                    const SizedBox(height: 12),
-                    _buildEditableItem('Email', emailController),
-                  ],
-                ),
+                  _buildEditableItem(
+                    'Guardian Name',
+                    nameController,
+                    focusNode: nameFocusNode,
+                  ),
+                  const SizedBox(height: 12),
+
+                  _buildEditableItem('Phone', phoneController),
+                  const SizedBox(height: 12),
+
+                  _buildEditableItem(
+                    'Email',
+                    emailController,
+                    enabled: false, 
+                  ),
+                ],
               ),
             );
-          } else if (state is ProfileError) {
-            return Center(child: Text('Error: ${state.message}'));
           }
+
+          if (state is ProfileError) {
+            return Center(child: Text(state.message));
+          }
+
           return const SizedBox.shrink();
         },
       ),
@@ -122,8 +158,9 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
     String label,
     TextEditingController controller, {
     FocusNode? focusNode,
+    bool enabled = true,
   }) {
-    return isEditing
+    return isEditing && enabled
         ? AppTextField(
             controller: controller,
             label: label,
@@ -147,7 +184,6 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                 child: Text(
                   controller.text,
                   style: AppTextStyles.bodyRegular.copyWith(
-                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

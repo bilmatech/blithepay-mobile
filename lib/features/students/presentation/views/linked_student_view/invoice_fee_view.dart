@@ -424,7 +424,7 @@ pw.Widget _pdfKeyValueTable(List<Map<String, String>> rows) {
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Text(row['label']!, style: pw.TextStyle(fontSize: 12)),
+              pw.Text(row['label']!, style: const pw.TextStyle(fontSize: 12)),
               pw.Text(
                 row['value']!,
                 style: pw.TextStyle(

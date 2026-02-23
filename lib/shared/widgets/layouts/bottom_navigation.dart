@@ -21,17 +21,18 @@ class BottomNavigationWidget extends StatelessWidget {
       onTap: (index) => _navigate(context, index),
       items: [
         _buildItem(
-          icon: Icons.school_outlined,
-          activeIcon: Icons.school_outlined,
-          label: 'Link Child',
+          icon: Icons.home_outlined,
+          activeIcon: Icons.home_outlined,
+          label: 'Wallet',
           isActive: currentIndex == 0,
         ),
         _buildItem(
-          icon: Icons.home_outlined,
-          activeIcon: Icons.home_outlined,
-          label: 'Home',
+          icon: Icons.school_outlined,
+          activeIcon: Icons.school_outlined,
+          label: 'Link Child',
           isActive: currentIndex == 1,
         ),
+
         _buildItem(
           icon: Icons.person_outline,
           activeIcon: Icons.person,
@@ -72,8 +73,8 @@ class BottomNavigationWidget extends StatelessWidget {
   }
 
   int _getCurrentIndex() {
-    if (currentRoute == AppRoutes.linkedStudents) return 0;
-    if (currentRoute == AppRoutes.home) return 1;
+    if (currentRoute == AppRoutes.home) return 0;
+    if (currentRoute == AppRoutes.linkedStudents) return 1;
     if (currentRoute == AppRoutes.profile) return 2;
     return 1; // default to Home
   }
@@ -81,10 +82,10 @@ class BottomNavigationWidget extends StatelessWidget {
   void _navigate(BuildContext context, int index) {
     switch (index) {
       case 0:
-        context.go(AppRoutes.linkedStudents);
+        context.go(AppRoutes.home);
         break;
       case 1:
-        context.go(AppRoutes.home);
+        context.go(AppRoutes.linkedStudents);
         break;
       case 2:
         context.go(AppRoutes.profile);

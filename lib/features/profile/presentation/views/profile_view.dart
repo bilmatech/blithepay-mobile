@@ -50,10 +50,8 @@ class ProfileView extends StatelessWidget {
                                 context.push(AppRoutes.profileDetail);
                               },
                               child: Text(
-                                'View Details',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  decoration: TextDecoration.underline,
-                                ),
+                                '${user?.email}',
+                                style: AppTextStyles.bodySmall,
                               ),
                             ),
                           ],
@@ -69,7 +67,7 @@ class ProfileView extends StatelessWidget {
                       children: [
                         _ProfileItem(
                           icon: Icons.school_outlined,
-                          label: 'Students',
+                          label: 'Children',
                           onTap: () => context.push('/linked-students'),
                         ),
                         _ProfileItem(
@@ -89,7 +87,7 @@ class ProfileView extends StatelessWidget {
                         ),
                         _ProfileItem(
                           icon: Icons.person,
-                          label: 'View Details',
+                          label: 'Account',
                           onTap: () => context.push(AppRoutes.profileDetail),
                         ),
                         _ProfileItem(

@@ -164,7 +164,6 @@ class _InvoicesSection extends StatelessWidget {
               },
             ),
           );
-          ;
         }
 
         return const SizedBox(
