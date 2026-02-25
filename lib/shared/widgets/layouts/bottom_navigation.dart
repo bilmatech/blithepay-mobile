@@ -73,10 +73,10 @@ class BottomNavigationWidget extends StatelessWidget {
   }
 
   int _getCurrentIndex() {
-    if (currentRoute == AppRoutes.home) return 0;
-    if (currentRoute == AppRoutes.linkedStudents) return 1;
-    if (currentRoute == AppRoutes.profile) return 2;
-    return 1; // default to Home
+    if (currentRoute.startsWith(AppRoutes.home)) return 0;
+    if (currentRoute.startsWith(AppRoutes.linkedStudents)) return 1;
+    if (currentRoute.startsWith(AppRoutes.profile)) return 2;
+    return 1; // Link Child default
   }
 
   void _navigate(BuildContext context, int index) {

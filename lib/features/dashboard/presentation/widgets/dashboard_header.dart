@@ -50,13 +50,13 @@ class DashboardHeader extends StatelessWidget {
             Text(userName, style: AppTextStyles.headingSmall),
           ],
         ),
-        const Spacer(),
-        IconButton(
-          icon: const Icon(Icons.notifications_none),
-          onPressed: () {
-            context.push(AppRoutes.notifications);
-          },
-        ),
+        // const Spacer(),
+        // IconButton(
+        //   icon: const Icon(Icons.notifications_none),
+        //   onPressed: () {
+        //     context.push(AppRoutes.notifications);
+        //   },
+        // ),
         // Container(
         //   padding: const EdgeInsets.all(8),
         //   decoration: BoxDecoration(

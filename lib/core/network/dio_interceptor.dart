@@ -127,7 +127,6 @@ class DioInterceptor extends Interceptor {
   }
 
   Future<Response> _retryRequest(RequestOptions requestOptions) async {
-
     final accessToken = await _localDataSource.getAccessToken();
 
     final headers = Map<String, dynamic>.from(requestOptions.headers);

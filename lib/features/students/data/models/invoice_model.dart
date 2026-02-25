@@ -1,3 +1,5 @@
+import 'package:blithepay/features/fees/data/models/fee_model.dart';
+
 class PaginatedInvoiceModel {
   final List<InvoiceModel> invoices;
   final int currentPage;
@@ -72,45 +74,6 @@ class InvoiceModel {
   }
 }
 
-class FeeModel {
-  final String id;
-  final String name;
-  final DateTime dueAt;
-  final String latePaymentFee;
-  final ClassModel classModel;
-  final TermModel term;
-  final AcademicSessionModel academicSession;
-  final List<FeeBreakdownModel>? feeBreakdowns;
-
-  FeeModel({
-    required this.id,
-    required this.name,
-    required this.dueAt,
-    required this.latePaymentFee,
-    required this.classModel,
-    required this.term,
-    required this.academicSession,
-    this.feeBreakdowns,
-  });
-
-  factory FeeModel.fromJson(Map<String, dynamic> json) {
-    final breakdowns = json['feeBreakdowns'] as List<dynamic>?;
-
-    return FeeModel(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      dueAt: DateTime.parse(json['dueAt']),
-      latePaymentFee: json['latePaymentFee'] ?? '0',
-      classModel: ClassModel.fromJson(json['class']),
-      term: TermModel.fromJson(json['term']),
-      academicSession: AcademicSessionModel.fromJson(json['academicSession']),
-      feeBreakdowns: breakdowns
-          ?.map((e) => FeeBreakdownModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
-  }
-}
-
 class ClassModel {
   final String id;
   final String name;
@@ -148,11 +111,15 @@ class FeeBreakdownModel {
   final String id;
   final String name;
   final int amount;
+  final bool isRequired;
+  final String? amountInNaira;
 
   FeeBreakdownModel({
     required this.id,
     required this.name,
     required this.amount,
+    required this.isRequired,
+    this.amountInNaira,
   });
 
   factory FeeBreakdownModel.fromJson(Map<String, dynamic> json) {
@@ -162,6 +129,8 @@ class FeeBreakdownModel {
       amount: json['amount'] is String
           ? int.parse(json['amount'])
           : json['amount'] as int,
+      isRequired: json['isRequired'] as bool,
+      amountInNaira: json['amountInNaira'] as String?,
     );
   }
 

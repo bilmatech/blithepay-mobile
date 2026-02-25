@@ -1,5 +1,9 @@
 import 'package:blithepay/features/auth/presentation/views/setup_pin_view.dart';
 import 'package:blithepay/features/common/data/success_args_model.dart';
+import 'package:blithepay/features/fees/data/models/fee_selection_args.dart';
+import 'package:blithepay/features/fees/data/models/payment_data.dart';
+import 'package:blithepay/features/fees/presentation/bloc/fees_bloc.dart';
+import 'package:blithepay/features/fees/presentation/bloc/fees_event.dart';
 import 'package:blithepay/features/fees/presentation/views/payment_confirmation_view.dart';
 import 'package:blithepay/features/fees/presentation/views/payment_success_view.dart';
 import 'package:blithepay/features/profile/presentation/views/change_password_view.dart';
@@ -16,6 +20,7 @@ import 'package:blithepay/features/students/presentation/views/linked_student/fe
 import 'package:blithepay/features/students/presentation/views/linked_student_view/invoice_fee_view.dart';
 import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
 import 'package:blithepay/features/wallet/presentation/views/reciept_preview.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/signup_view.dart';
@@ -160,24 +165,47 @@ class AppRouterConfig {
         ),
         GoRoute(
           path: AppRoutes.feeSelection,
-          builder: (_, __) => const FeeBreakDownView(
-            fees: [
-              {'name': 'Tuition Fees', 'amount': 300000},
-              {'name': 'Exam Fees', 'amount': 50000},
-              {'name': 'Library Fees', 'amount': 10000},
-              {'name': 'Tuition Fees', 'amount': 300000},
-              {'name': 'Exam Fees', 'amount': 50000},
-              {'name': 'Library Fees', 'amount': 10000},
-            ],
-          ),
+          builder: (context, state) {
+            final args = state.extra as FeeSelectionArgs;
+
+            final feesBloc = context.read<FeesBloc>();
+
+            // Fire once per navigation
+            //if (feesBloc.state is FeesInitial) {
+            feesBloc.add(
+              FetchFeesByIdEvent(
+                invoice: args.invoice,
+                studentCode: args.studentCode,
+              ),
+            );
+            // }
+
+            return FeeBreakDownView(
+              student: args.student,
+              invoice: args.invoice,
+            );
+          },
         ),
         GoRoute(
           path: AppRoutes.feeConfirmation,
-          builder: (_, __) => const PaymentConfirmationView(),
+          builder: (context, state) {
+            final student = state.extra as PaymentPayload;
+
+            return PaymentConfirmationView(payload: student);
+          },
         ),
         GoRoute(
           path: AppRoutes.feeSuccess,
-          builder: (_, __) => const PaymentSuccessView(),
+          builder: (context, state) {
+            final extraData = state.extra as Map<String, dynamic>;
+            final payload = extraData['payload'] as PaymentPayload;
+            final paymentData = extraData['paymentData'] as WalletPaymentData;
+
+            return PaymentSuccessView(
+              payload: payload,
+              paymentData: paymentData, // pass reference explicitly
+            );
+          },
         ),
         GoRoute(
           path: AppRoutes.editSchools,

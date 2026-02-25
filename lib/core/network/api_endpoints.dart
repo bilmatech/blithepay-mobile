@@ -48,16 +48,22 @@ class ApiEndpoints {
   static const String getWalletTransaction = '/wallet/transactions';
 
   // Fees
+  static String getfeesById(String id) => '/fees/$id';
+
   static const String fees = '/fees';
   static const String feeBalance = '$fees/balance';
   static const String getFeeTransaction = '/fee/transactions';
 
   static const String getinvoices = '/invoices';
   static String getinvoicesById(String id) => '/invoices/$id';
+  static const String paywithWallet = '/invoices/pay_with_wallet';
 
   // Payments
   static const String payments = '/payments';
   static const String createPayment = '$payments/create';
+
+  //transactions
+  static String getStudentTransaction(String id) => '/transactions/student/$id';
 
   // Receipts
   static const String receipts = '/receipts';

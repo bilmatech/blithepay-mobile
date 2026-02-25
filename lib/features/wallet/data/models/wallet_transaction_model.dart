@@ -1,3 +1,5 @@
+import 'package:blithepay/features/students/data/models/student_transaction_model.dart';
+
 class PaginatedTransactionModel {
   final List<WalletTransactionModel> transactions;
   final int currentPage;
@@ -90,4 +92,56 @@ class WalletTransactionModel {
 
   /// Optional helper to get display amount with sign
   String get formattedAmount => isCredit ? '+$amount' : '-$amount';
+}
+
+class TransactionDetailData {
+  final String status;
+  final String type;
+  final String flow;
+  final String transactionAt;
+  final String reference;
+  final String amount;
+  final String fees;
+  final String netAmount;
+  final String? description;
+
+  TransactionDetailData({
+    required this.status,
+    required this.type,
+    required this.flow,
+    required this.transactionAt,
+    required this.reference,
+    required this.amount,
+    required this.fees,
+    required this.netAmount,
+    this.description,
+  });
+
+  factory TransactionDetailData.fromWallet(WalletTransactionModel tx) {
+    return TransactionDetailData(
+      status: tx.status,
+      type: tx.type,
+      flow: tx.flow,
+      transactionAt: tx.transactionAt,
+      reference: tx.reference,
+      amount: tx.amount,
+      fees: tx.fees,
+      netAmount: tx.netAmount,
+      description: tx.name,
+    );
+  }
+
+  factory TransactionDetailData.fromStudent(StudentTransactionModel tx) {
+    return TransactionDetailData(
+      status: tx.status,
+      type: 'Fees',
+      flow: '',
+      transactionAt: tx.transactionAt.toIso8601String(),
+      reference: tx.reference,
+      amount: tx.amount,
+      fees: (int.parse(tx.vatAmount) + int.parse(tx.latePaymentFee)).toString(),
+      netAmount: tx.amount,
+      description: tx.description,
+    );
+  }
 }

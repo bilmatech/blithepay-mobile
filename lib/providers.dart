@@ -4,6 +4,7 @@ import 'package:blithepay/core/theme/theme_cubit.dart';
 import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/fees/data/repositories/fees_repository.dart';
 import 'package:blithepay/features/fees/presentation/bloc/fees_bloc.dart';
 import 'package:blithepay/features/notifications/data/repositories/notifications_repository.dart';
 import 'package:blithepay/features/notifications/presentation/bloc/notifications_bloc.dart';
@@ -15,6 +16,7 @@ import 'package:blithepay/features/students/data/repositories/students_repositor
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_bloc.dart';
 import 'package:blithepay/features/students/presentation/bloc/students_bloc.dart';
 import 'package:blithepay/features/students/presentation/bloc/students_event.dart';
+import 'package:blithepay/features/students/presentation/bloc/transaction_bloc.dart/transaction_bloc.dart';
 import 'package:blithepay/features/support/presentation/bloc/support_bloc.dart';
 import 'package:blithepay/features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'package:blithepay/features/wallet/data/repositories/wallet_repository.dart';
@@ -67,6 +69,10 @@ class AppProviders {
       RepositoryProvider<NotificationsRepository>(
         create: (_) => NotificationsRepositoryImpl(),
       ),
+      RepositoryProvider<FeesRepository>(
+        create: (context) =>
+            FeesRepositoryImpl(dioClient: context.read<DioClient>()),
+      ),
     ];
   }
 
@@ -98,7 +104,6 @@ class AppProviders {
           walletRepository: context.read<WalletRepositoryInterface>(),
         ),
       ),
-      BlocProvider<FeesBloc>(create: (_) => FeesBloc()),
 
       BlocProvider<SupportBloc>(create: (_) => SupportBloc()),
       BlocProvider<StudentsBloc>(
@@ -120,6 +125,16 @@ class AppProviders {
           repository: context.read<NotificationsRepository>(),
         ),
       ),
+      BlocProvider<FeesBloc>(
+        create: (context) =>
+            FeesBloc(repository: context.read<FeesRepository>()),
+      ),
+      BlocProvider<StudentTransactionsBloc>(
+        create: (context) => StudentTransactionsBloc(
+          repository: context.read<StudentsRepository>(),
+        ),
+      ),
+
       BlocProvider<ProfileBloc>(create: (_) => ProfileBloc()),
     ];
   }

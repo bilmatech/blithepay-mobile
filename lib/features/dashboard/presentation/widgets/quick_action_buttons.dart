@@ -25,9 +25,8 @@ class QuickActionButtons extends StatelessWidget {
           backgroundColor: const Color(0xFFEADDFF).withValues(alpha: 0.7),
           icon: Icons.payment_outlined,
           label: 'Pay Fees',
-          onTap: () {
-            context.push(AppRoutes.payFees);
-          },
+          onTap: () => context.push('/linked-students'),
+          //            context.push(AppRoutes.payFees);
         ),
         const SizedBox(width: 8),
 

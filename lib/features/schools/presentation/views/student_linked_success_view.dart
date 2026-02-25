@@ -1,3 +1,5 @@
+import 'package:blithepay/core/navigation/app_routes.dart';
+import 'package:blithepay/features/fees/data/models/fee_selection_args.dart';
 import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -84,32 +86,40 @@ class StudentLinkedSucessView extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              InkWell(
-                onTap: () {
-                  context.push('/pay-fees');
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.shimmerBase,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  width: double.infinity,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    child: Text(
-                      'Pay Fees',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.primary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              ),
+              // InkWell(
+              //   onTap: () {
+              //     context.push(
+              //       AppRoutes.feeSelection,
+              //       extra: FeeSelectionArgs(
+              //         invoice: invoice,
+              //         studentCode: student.school.schoolCode,
+              //         student: student,
+              //       ),
+              //     );
+              //     // context.push('/pay-fees');
+              //   },
+              //   child: Container(
+              //     decoration: BoxDecoration(
+              //       color: AppColors.shimmerBase,
+              //       borderRadius: BorderRadius.circular(12),
+              //     ),
+              //     width: double.infinity,
+              //     child: Padding(
+              //       padding: const EdgeInsets.symmetric(
+              //         horizontal: 12,
+              //         vertical: 12,
+              //       ),
+              //       child: Text(
+              //         'Pay Fees',
+              //         style: AppTextStyles.bodySmall.copyWith(
+              //           fontWeight: FontWeight.w900,
+              //           color: AppColors.primary,
+              //         ),
+              //         textAlign: TextAlign.center,
+              //       ),
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),

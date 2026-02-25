@@ -2,6 +2,7 @@ import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/core/utils/helpers.dart';
+import 'package:blithepay/features/fees/data/models/fee_selection_args.dart';
 import 'package:blithepay/features/students/data/models/invoice_model.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_bloc.dart';
@@ -52,7 +53,7 @@ class OutstandingFeesCard extends StatelessWidget {
           const SizedBox(height: 16),
           UnlinkButton(context, student),
           const SizedBox(height: 20),
-          const PaymentHistorySection(),
+          PaymentHistorySection(student: student), // Pass the student here
           const SizedBox(height: 20),
         ],
       ),
@@ -138,24 +139,36 @@ class _InvoicesSection extends StatelessWidget {
                               label: const Text('View Invoice'),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              icon: const Icon(Icons.payment, size: 16),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
+
+                          // Hide Pay Fees if invoice is already paid
+                          if (invoice.status.toLowerCase() != 'paid') ...[
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                icon: const Icon(Icons.payment, size: 16),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  side: const BorderSide(
+                                    color: AppColors.border,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
                                 ),
-                                side: const BorderSide(color: AppColors.border),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                onPressed: () => context.push(
+                                  AppRoutes.feeSelection,
+                                  extra: FeeSelectionArgs(
+                                    invoice: invoice,
+                                    studentCode: student.school.schoolCode,
+                                    student: student,
+                                  ),
                                 ),
+                                label: const Text('Pay Fees'),
                               ),
-                              onPressed: () =>
-                                  context.push('/pay-fees/${student.id}'),
-                              label: const Text('Pay Fees'),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ],

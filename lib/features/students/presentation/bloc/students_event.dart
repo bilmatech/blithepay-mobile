@@ -56,16 +56,3 @@ class GetStudentDetailsEvent extends StudentsEvent {
   const GetStudentDetailsEvent(this.studentId);
 }
 
-class GetFeeTransactionsEvent extends StudentsEvent {
-  final int page;
-  final int limit;
-  final bool refresh;
-
-  const GetFeeTransactionsEvent({
-    this.page = 1,
-    this.limit = 20,
-    this.refresh = false,
-  });
-
-  List<Object?> get props => [page, limit, refresh];
-}

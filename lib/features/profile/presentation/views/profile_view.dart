@@ -70,11 +70,11 @@ class ProfileView extends StatelessWidget {
                           label: 'Children',
                           onTap: () => context.push('/linked-students'),
                         ),
-                        _ProfileItem(
-                          icon: Icons.payment_outlined,
-                          label: 'Pay Fees',
-                          onTap: () => context.push('/pay-fees'),
-                        ),
+                        // _ProfileItem(
+                        //   icon: Icons.payment_outlined,
+                        //   label: 'Pay Fees',
+                        //   onTap: () => context.push('/pay-fees'),
+                        // ),
                         _ProfileItem(
                           icon: Icons.account_balance_wallet_outlined,
                           label: 'Wallet',

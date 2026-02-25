@@ -1,6 +1,8 @@
 import 'package:blithepay/core/network/dio_error_mapper.dart';
 import 'package:blithepay/features/students/data/models/fee_transaction_model.dart';
+import 'package:blithepay/features/students/data/models/student_transaction_model.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
+import 'package:blithepay/features/wallet/data/models/wallet_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/students_repository.dart';
 import 'students_event.dart';
@@ -15,7 +17,6 @@ class StudentsBloc extends Bloc<StudentsEvent, StudentsState> {
     on<UNLinkChildEvent>(unlinkStudent);
     on<GetLinkedStudentsEvent>(_onGetLinkedStudents);
     on<GetStudentDetailsEvent>(_onGetStudentDetails);
-    on<GetFeeTransactionsEvent>(_onGetTransactions);
   }
 
   bool _hasFetchedOnce = false;
@@ -140,20 +141,6 @@ class StudentsBloc extends Bloc<StudentsEvent, StudentsState> {
     }
   }
 
-  // Future<void> _onGetLinkedStudents(
-  //   GetLinkedStudentsEvent event,
-  //   Emitter<StudentsState> emit,
-  // ) async {
-  //   if (state is StudentsLoaded) return;
-  //   emit(const StudentsLoading());
-  //   try {
-  //     final students = await repository.getLinkedStudents();
-  //     emit(StudentsLoaded(students: students));
-  //   } catch (e) {
-  //     emit(StudentsError(message: e.toString()));
-  //   }
-  // }
-
   Future<void> _onGetStudentDetails(
     GetStudentDetailsEvent event,
     Emitter<StudentsState> emit,
@@ -164,59 +151,6 @@ class StudentsBloc extends Bloc<StudentsEvent, StudentsState> {
       emit(StudentDetailsLoaded(student: student));
     } catch (e) {
       emit(StudentsError(message: extractError(e)));
-    }
-  }
-
-  bool _hasWalletTFetchedOnce = false; // at bloc level
-
-  Future<void> _onGetTransactions(
-    GetFeeTransactionsEvent event,
-    Emitter<StudentsState> emit,
-  ) async {
-    final currentState = state;
-
-    List<FeeTransactionModel> oldTransactions = [];
-
-    if (!event.refresh &&
-        currentState is FeeTransactionLoaded &&
-        event.page > 1) {
-      oldTransactions = currentState.wallet;
-    }
-
-    final showShimmer = !_hasWalletTFetchedOnce && !event.refresh;
-
-    if (showShimmer) {
-      emit(const StudentsLoading());
-      await Future.delayed(const Duration(milliseconds: 250));
-    }
-    if (_hasWalletTFetchedOnce && !event.refresh) return;
-
-    try {
-      final result = await repository.getWalletTransaction(
-        page: event.page,
-        limit: event.limit,
-      );
-
-      final updatedTransactions = event.refresh
-          ? result.transactions
-          : [...oldTransactions, ...result.transactions];
-
-      _hasWalletTFetchedOnce = true;
-
-      emit(
-        FeeTransactionLoaded(
-          wallet: updatedTransactions,
-          nextPage: result.nextPage,
-          isFetchingMore: false,
-        ),
-      );
-    } catch (e) {
-      emit(StudentsError(message: extractError(e)));
-
-      // Re-emit old state to avoid clearing screen
-      if (currentState is FeeTransactionLoaded) {
-        emit(currentState);
-      }
     }
   }
 }

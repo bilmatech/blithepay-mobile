@@ -63,7 +63,9 @@ class _LoginViewState extends State<LoginView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.authenticated) {
-          context.go(AppRoutes.home);
+          // context.go(AppRoutes.home);
+          context.go(AppRoutes.linkedStudents);
+
           context.read<DashboardBloc>().add(const FetchDashboardData());
         } else if (state.status == AuthStatus.error &&
             state.errorMessage?.contains('not verified') == true) {

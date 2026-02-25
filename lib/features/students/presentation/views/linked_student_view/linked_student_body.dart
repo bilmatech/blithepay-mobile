@@ -7,7 +7,6 @@ import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/
 import 'package:blithepay/features/students/presentation/views/linked_student_view/student_details_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 class LinkedStudentsBody extends StatefulWidget {
   final List<VerifiedStudentModel> students;
@@ -178,22 +177,31 @@ class StudentCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Fee Pending',
-                //  student.feeStatus,
+                '',
+                // 'Fee Pending',
+                //   student.feeStatus,
                 style: AppTextStyles.bodyRegular.copyWith(
                   color: AppColors.warning,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              GestureDetector(
-                onTap: () => context.push('/pay-fees'),
-                child: Text(
-                  'Pay Fee',
-                  style: AppTextStyles.bodyRegular.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+              // GestureDetector(
+              //   onTap: () => context.push(
+              //     AppRoutes.feeSelection,
+              //     extra: FeeSelectionArgs(
+              //       feeId: student.classModel,
+              //       studentCode: '',
+              //       student: student,
+              //     ),
+              //   ),
+              //   //   onTap: () => context.push('/pay-fees'),
+              //   child: Text(
+              //     'Pay Fee',
+              //     style: AppTextStyles.bodyRegular.copyWith(
+              //       color: Colors.white,
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ],

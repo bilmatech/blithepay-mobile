@@ -1,3 +1,5 @@
+import 'package:blithepay/features/fees/data/models/payment_data.dart';
+import 'package:blithepay/features/students/data/models/invoice_model.dart';
 import 'package:equatable/equatable.dart';
 import '../../data/models/fee_model.dart';
 
@@ -14,6 +16,15 @@ class FeesInitial extends FeesState {
 
 class FeesLoading extends FeesState {
   const FeesLoading();
+}
+
+class FeesByIdLoaded extends FeesState {
+  final List<FeeBreakdownModel> fees;
+
+  const FeesByIdLoaded(this.fees);
+
+  @override
+  List<Object?> get props => [fees];
 }
 
 class FeesLoaded extends FeesState {
@@ -37,6 +48,15 @@ class FeePaymentSuccess extends FeesState {
 
   @override
   List<Object?> get props => [message, transactionId];
+}
+
+class PinVerified extends FeesState {
+  const PinVerified();
+}
+
+class WalletPaymentSuccess extends FeesState {
+  final WalletPaymentData data;
+  const WalletPaymentSuccess(this.data);
 }
 
 class FeesError extends FeesState {
