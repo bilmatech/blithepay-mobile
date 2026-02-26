@@ -1,5 +1,4 @@
 import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
-import 'package:blithepay/features/students/data/models/fee_transaction_model.dart';
 import 'package:blithepay/features/students/data/models/student_transaction_model.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 

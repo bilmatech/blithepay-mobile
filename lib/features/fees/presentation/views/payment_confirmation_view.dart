@@ -33,41 +33,48 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
       appBar: AppBar(title: const Text('Pay Fees'), centerTitle: true),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 200,
-              child: StudentCard(student: widget.payload.student),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 200,
+                  child: StudentCard(student: widget.payload.student),
+                ),
+                const SizedBox(height: 16),
+                _buildFeeDetails(),
+                const SizedBox(height: 16),
+                _buildFeeSummary(),
+                const SizedBox(height: 24),
+                PaymentMethodTile(
+                  title: 'Wallet',
+                  subtitle: 'Pay using wallet balance',
+                  icon: Icons.account_balance_wallet_outlined,
+                  selected: _method == PaymentMethod.wallet,
+                  onTap: () => setState(() => _method = PaymentMethod.wallet),
+                ),
+                const SizedBox(height: 12),
+                PaymentMethodTile(
+                  title: 'Debit Card',
+                  subtitle: 'Secure card payment via Paystack',
+                  icon: Icons.credit_card,
+                  selected: _method == PaymentMethod.card,
+                  onTap: () => setState(() => _method = PaymentMethod.card),
+                ),
+                //  const Spacer(),
+                const SizedBox(height: 24),
+
+                PrimaryButton(
+                  label: _method == PaymentMethod.wallet
+                      ? 'Pay with Wallet'
+                      : 'Continue to Card Payment',
+                  isEnabled: _method != null,
+                  onPressed: _handlePayment,
+                ),
+                const SizedBox(height: 40),
+              ],
             ),
-            const SizedBox(height: 16),
-            _buildFeeDetails(),
-            const SizedBox(height: 16),
-            _buildFeeSummary(),
-            const SizedBox(height: 24),
-            PaymentMethodTile(
-              title: 'Wallet',
-              subtitle: 'Pay using wallet balance',
-              icon: Icons.account_balance_wallet_outlined,
-              selected: _method == PaymentMethod.wallet,
-              onTap: () => setState(() => _method = PaymentMethod.wallet),
-            ),
-            const SizedBox(height: 12),
-            PaymentMethodTile(
-              title: 'Debit Card',
-              subtitle: 'Secure card payment via Paystack',
-              icon: Icons.credit_card,
-              selected: _method == PaymentMethod.card,
-              onTap: () => setState(() => _method = PaymentMethod.card),
-            ),
-            const Spacer(),
-            PrimaryButton(
-              label: _method == PaymentMethod.wallet
-                  ? 'Pay with Wallet'
-                  : 'Continue to Card Payment',
-              isEnabled: _method != null,
-              onPressed: _handlePayment,
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -107,6 +114,20 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
     );
   }
 
+  bool get _isLateFeeApplicable {
+    final dueDate = widget.payload.invoice.dueAt; // DateTime
+    final now = DateTime.now();
+    return now.isAfter(dueDate);
+  }
+
+  double get _lateFee => _isLateFeeApplicable
+      ? double.tryParse(widget.payload.latePaymentFees) ?? 0
+      : 0;
+
+  double get _feesTotal => widget.payload.total.toDouble();
+
+  double get _totalPayable => _feesTotal + _lateFee;
+
   Widget _buildFeeSummary() {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -114,16 +135,27 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.border),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
         children: [
-          const Text('Total', style: AppTextStyles.bodyLarge),
-          Text(
-            Helpers.formatCurrency(widget.payload.total.toDouble()),
-            style: AppTextStyles.bodyLarge,
-          ),
+          _summaryRow('Subtotal', _feesTotal),
+          const SizedBox(height: 6),
+          if (_lateFee > 0) _summaryRow('Late Fee Payment', _lateFee),
+          const Divider(height: 20),
+          _summaryRow('Total Payable', _totalPayable, isBold: true),
         ],
       ),
+    );
+  }
+
+  Widget _summaryRow(String label, double amount, {bool isBold = false}) {
+    final style = isBold ? AppTextStyles.bodyLarge : AppTextStyles.bodyRegular;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: style),
+        Text(Helpers.formatCurrency(amount), style: style),
+      ],
     );
   }
 
@@ -147,28 +179,30 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
       context: context,
       builder: (_) {
         return BlocListener<FeesBloc, FeesState>(
-          listener: (context, state) async {
+          listener: (context, state) {
             if (state is PinVerified) {
-              final feeIds = widget.payload.fees.map((fee) => fee.id).toList();
+              final feeIds = widget.payload.fees.map((e) => e.id).toList();
+
               context.read<FeesBloc>().add(
                 PayWithWalletEvent(widget.payload.invoice.id, feeIds),
               );
             }
 
             if (state is WalletPaymentSuccess) {
-              Navigator.pop(context); // close bottom sheet
-              context.go(
-                AppRoutes.feeSuccess,
-                extra: {
-                  'payload': widget.payload,
-                  'paymentData': state.data,
-                },
-              );
+              // parent page context
+              Navigator.pop(context); // close bottom sheet first
+
+              // delay navigation slightly to allow pop to complete
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                context.go(
+                  AppRoutes.feeSuccess,
+                  extra: {'payload': widget.payload, 'paymentData': state.data},
+                );
+              });
             }
 
-            if (state is FeesError) {
+            if (state is WalletPaymentFailure) {
               Navigator.pop(context);
-              context.read<FeesBloc>().add(const ResetFeesEvent());
 
               ScaffoldMessenger.of(
                 scaffoldContext,
@@ -177,6 +211,7 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
           },
           child: const PinBottomSheetContent(),
         );
+        ;
       },
     );
   }

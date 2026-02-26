@@ -1,7 +1,8 @@
-import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
-import 'package:blithepay/features/students/presentation/bloc/students_bloc.dart';
-import 'package:blithepay/features/students/presentation/bloc/students_state.dart';
-import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
+import 'package:blithepay/features/students/data/models/verify_student_model.dart';
+import 'package:blithepay/features/students/presentation/bloc/transaction_bloc.dart/transaction_bloc.dart';
+import 'package:blithepay/features/students/presentation/bloc/transaction_bloc.dart/transaction_event.dart';
+import 'package:blithepay/features/students/presentation/bloc/transaction_bloc.dart/transaction_state.dart';
+import 'package:blithepay/features/students/presentation/views/linked_student_view/payment_history_section.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/loaders/shimmer_table_loader.dart';
 import 'package:flutter/material.dart';
@@ -9,21 +10,52 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class FeesTransactionsView extends StatefulWidget {
-  const FeesTransactionsView({super.key});
+  const FeesTransactionsView({super.key, required this.student});
+  final VerifiedStudentModel student;
 
   @override
-  State<FeesTransactionsView> createState() => _FeeTransactionsViewState();
+  State<FeesTransactionsView> createState() => _FeesTransactionsViewState();
 }
 
-class _FeeTransactionsViewState extends State<FeesTransactionsView> {
-  // String _searchQuery = '';
+class _FeesTransactionsViewState extends State<FeesTransactionsView> {
+  final ScrollController _scrollController = ScrollController();
+
   String? currentFilter;
   String? currentSort;
 
   @override
   void initState() {
     super.initState();
-    //context.read<WalletBloc>().add(const GetTransactionsEvent());
+
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+
+    final position = _scrollController.position;
+
+    if (position.pixels >= position.maxScrollExtent - 100) {
+      final state = context.read<StudentTransactionsBloc>().state;
+
+      if (state is StudentTransactionLoaded &&
+          state.nextPage != null &&
+          !state.isFetchingMore) {
+        context.read<StudentTransactionsBloc>().add(
+          GetPaymentHistoryEvent(
+            page: state.nextPage!,
+            limit: 20,
+            studentId: widget.student.id,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -34,83 +66,65 @@ class _FeeTransactionsViewState extends State<FeesTransactionsView> {
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => context.pop(),
         ),
-        title: const Text(' Fees Transactions'),
+        title: const Text('Payment History'),
         centerTitle: true,
       ),
-      body: BlocBuilder<StudentsBloc, StudentsState>(
-        builder: (context, state) {
-          if (state is StudentsLoading) {
-            return const ShimmerTableLoader();
-          } else if (state is StudentsLoaded) {
-            return Padding(
-              padding: const EdgeInsets.all(16),
-              child: ListView.separated(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: transactions.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final transaction = transactions[index];
-                  return TransactionContainer(transaction: transaction);
-                },
-              ),
-            );
-          } else if (state is StudentsError) {
-            return Center(child: Text('Error: ${state.message}'));
-          }
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: ListView.separated(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: transactions.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final transaction = transactions[index];
-                return TransactionContainer(transaction: transaction);
-              },
-            ),
-          );
-          // return const SizedBox.shrink();
-        },
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 26),
+        child: BlocBuilder<StudentTransactionsBloc, StudentTransactionState>(
+          builder: (context, state) {
+            if (state is StudentTransactionLoading) {
+              return const ShimmerTableLoader();
+            }
+
+            if (state is StudentTransactionError) {
+              return Center(child: Text(state.message));
+            }
+
+            if (state is StudentTransactionLoaded) {
+              return state.studentTransaction.isEmpty
+                  ? const Center(child: Text('No payment history available.'))
+                  : RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<StudentTransactionsBloc>().add(
+                          GetPaymentHistoryEvent(
+                            page: 1,
+                            limit: 20,
+                            refresh: true,
+                            studentId: widget.student.id,
+                          ),
+                        );
+                      },
+                      child: ListView.separated(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(16),
+                        itemCount:
+                            state.studentTransaction.length +
+                            (state.isFetchingMore ? 1 : 0),
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          if (index < state.studentTransaction.length) {
+                            final transaction = state.studentTransaction[index];
+                            return StudentTransactionContainer(
+                              transaction: transaction,
+                            );
+                          }
+
+                          // Bottom loader
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        },
+                      ),
+                    );
+            }
+
+                  return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
 }
-
-final transactions = [
-  WalletTransactionModel(
-    amount: '300',
-    status: 'success',
-    id: 'cmlqkb0qr003e0vpczzqhii7l',
-    name: 'Tuition fee',
-    walletId: 'cmljgzu8w00070vp3yy5udkc8',
-    fees: '10',
-    netAmount: '190',
-    reference: '1771330263964dmgr24pmlqkayzg',
-    type: 'Deposit',
-    flow: '',
-    transactionAt: '2026-02-17T12:11:06.242Z',
-    processedAt: '2026-02-17T12:11:07.027Z',
-    isDeleted: false,
-    createdAt: '2026-02-17T12:11:07.028Z',
-    updatedAt: '2026-02-17T12:11:06.243Z',
-  ),
-  WalletTransactionModel(
-    amount: '200',
-    status: 'success',
-    id: 'cmlqkb0qr003e0vpczzqhii7l',
-    name: 'Tuition fee',
-    walletId: 'cmljgzu8w00070vp3yy5udkc8',
-    fees: '10',
-    netAmount: '190',
-    reference: '1771330263964dmgr24pmlqkayzg',
-    type: 'Deposit',
-    flow: '',
-    transactionAt: '2026-02-17T12:11:06.242Z',
-    processedAt: '2026-02-17T12:11:07.027Z',
-    isDeleted: false,
-    createdAt: '2026-02-17T12:11:07.028Z',
-    updatedAt: '2026-02-17T12:11:06.243Z',
-  ),
-];

@@ -1,3 +1,4 @@
+import 'package:blithepay/features/students/presentation/bloc/students_event.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student/components/empty_state.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student_view/linked_student_appbar.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student_view/linked_student_body.dart';
@@ -15,31 +16,50 @@ class LinkedStudentsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: const LinkedStudentsAppBar(),
-      body: BlocBuilder<StudentsBloc, StudentsState>(
-        builder: (context, state) {
-          if (state is StudentsLoading) {
-            return const ShimmerListLoader(); // initial load
-          }
-
-          if (state is StudentsLoaded) {
-            if (state.students.isEmpty) {
-              return buildEmptyState(context);
+      body: RefreshIndicator(
+        onRefresh: () async {
+          context.read<StudentsBloc>().add(
+            const GetLinkedStudentsEvent(refresh: true),
+          );
+        },
+        child: BlocBuilder<StudentsBloc, StudentsState>(
+          builder: (context, state) {
+            if (state is StudentsLoading) {
+              return const ShimmerListLoader();
             }
 
-            return LinkedStudentsBody(students: state.students);
-          }
+            if (state is StudentsLoaded) {
+              if (state.students.isEmpty) {
+                // Empty state MUST be scrollable
+                return ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    const SizedBox(height: 120),
+                    buildEmptyState(context),
+                  ],
+                );
+              }
 
-          if (state is StudentsError) {
-            return Center(child: Text(state.message));
-          }
+              return LinkedStudentsBody(students: state.students);
+            }
 
-          return const SizedBox.shrink();
-        },
+            if (state is StudentsError) {
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  const SizedBox(height: 120),
+                  Center(child: Text(state.message)),
+                ],
+              );
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
 }
-
 // class LinkedStudentsView extends StatefulWidget {
 //   const LinkedStudentsView({super.key});
 

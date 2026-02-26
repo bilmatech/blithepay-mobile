@@ -6,8 +6,6 @@ import 'package:blithepay/features/fees/presentation/views/widgets/student_card_
 import 'package:blithepay/features/students/data/models/student_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 class PayFeesView extends StatefulWidget {
   const PayFeesView({super.key});

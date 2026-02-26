@@ -21,7 +21,7 @@ class PaymentHistorySection extends StatelessWidget {
   Widget build(BuildContext context) {
     // Trigger the API call for this student
     context.read<StudentTransactionsBloc>().add(
-      GetTransactionsEvent(studentId: student.id, refresh: true),
+      GetPaymentHistoryEvent(studentId: student.id, refresh: true),
     );
 
     return BlocBuilder<StudentTransactionsBloc, StudentTransactionState>(
@@ -30,7 +30,8 @@ class PaymentHistorySection extends StatelessWidget {
 
         bool isLoading = state is StudentsLoading;
         if (state is StudentTransactionLoaded) {
-          transactions = state.studentTransaction;
+          transactions = state.studentTransaction.take(4).toList();
+          ;
           print("$transactions");
         }
 
@@ -106,7 +107,7 @@ class StudentTransactionContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // context.push(AppRoutes.transactionDetail, extra: transaction);
+        context.push(AppRoutes.studentTransactionDetail, extra: transaction);
       },
       behavior: HitTestBehavior.opaque,
       child: Container(

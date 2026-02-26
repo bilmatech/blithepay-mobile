@@ -5,10 +5,12 @@ class FeeSelectionArgs {
   final String studentCode;
   final VerifiedStudentModel student;
   final InvoiceModel invoice;
+  final String latePaymentFee;
 
   FeeSelectionArgs({
     required this.studentCode,
     required this.student,
     required this.invoice,
+    required this.latePaymentFee,
   });
 }

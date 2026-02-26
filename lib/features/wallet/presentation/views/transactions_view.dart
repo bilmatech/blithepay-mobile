@@ -149,39 +149,47 @@ class _TransactionsViewState extends State<TransactionsView> {
                   }
 
                   if (state is WalletTransactionLoaded) {
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        context.read<WalletTransactionBloc>().add(
-                          GetTransactionsEvent(
-                            page: 1,
-                            limit: 20,
-                            refresh: true,
-                          ),
-                        );
-                      },
-                      child: ListView.separated(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.all(16),
-                        itemCount:
-                            state.transactions.length +
-                            (state.nextPage != null ? 1 : 0),
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          if (index < state.transactions.length) {
-                            final transaction = state.transactions[index];
-                            return TransactionContainer(
-                              transaction: transaction,
-                            );
-                          }
+                    return state.transactions.isEmpty
+                        ? const Center(
+                            child: Text('No wallet Transaction available.'),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: () async {
+                              context.read<WalletTransactionBloc>().add(
+                                GetTransactionsEvent(
+                                  page: 1,
+                                  limit: 20,
+                                  refresh: true,
+                                ),
+                              );
+                            },
+                            child: ListView.separated(
+                              controller: _scrollController,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.all(16),
+                              itemCount:
+                                  state.transactions.length +
+                                  (state.isFetchingMore ? 1 : 0),
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 12),
+                              itemBuilder: (context, index) {
+                                if (index < state.transactions.length) {
+                                  final transaction = state.transactions[index];
+                                  return TransactionContainer(
+                                    transaction: transaction,
+                                  );
+                                }
 
-                          // Bottom loader
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            child: Center(child: CircularProgressIndicator()),
+                                // Bottom loader
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              },
+                            ),
                           );
-                        },
-                      ),
-                    );
                   }
 
                   return const SizedBox.shrink();

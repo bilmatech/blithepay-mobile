@@ -8,8 +8,6 @@ class WalletTransactionBloc
     extends Bloc<WalletTransactionEvent, WalletTransactionState> {
   final WalletRepositoryInterface walletRepository;
 
-  bool _hasFetchedOnce = false;
-
   WalletTransactionBloc({required this.walletRepository})
     : super(WalletTransactionInitial()) {
     on<GetTransactionsEvent>(_onGetTransactions);
@@ -21,19 +19,24 @@ class WalletTransactionBloc
   ) async {
     final currentState = state;
 
+    // Block duplicate pagination calls
+    if (currentState is WalletTransactionLoaded &&
+        currentState.isFetchingMore &&
+        !event.refresh) {
+      return;
+    }
+
     List<WalletTransactionModel> oldTransactions = [];
 
     if (!event.refresh &&
         currentState is WalletTransactionLoaded &&
         event.page > 1) {
       oldTransactions = currentState.transactions;
+
+      emit(currentState.copyWith(isFetchingMore: true));
+    } else if (event.page == 1 && !event.refresh) {
+      emit(WalletTransactionLoading());
     }
-
-    // Show shimmer only for first load
-    final showShimmer = !_hasFetchedOnce && !event.refresh;
-
-    if (showShimmer) emit(WalletTransactionLoading());
-    if (_hasFetchedOnce && !event.refresh) return;
 
     try {
       final result = await walletRepository.getWalletTransaction(
@@ -41,24 +44,20 @@ class WalletTransactionBloc
         limit: event.limit,
       );
 
-      final updatedTransactions = event.refresh
-          ? result.transactions
-          : [...oldTransactions, ...result.transactions];
-
-      _hasFetchedOnce = true;
-
       emit(
         WalletTransactionLoaded(
-          transactions: updatedTransactions,
+          transactions: event.refresh
+              ? result.transactions
+              : [...oldTransactions, ...result.transactions],
           nextPage: result.nextPage,
           isFetchingMore: false,
         ),
       );
     } catch (e) {
-      emit(WalletTransactionError(e.toString()));
-
       if (currentState is WalletTransactionLoaded) {
-        emit(currentState); // prevent clearing UI
+        emit(currentState.copyWith(isFetchingMore: false));
+      } else {
+        emit(WalletTransactionError(e.toString()));
       }
     }
   }

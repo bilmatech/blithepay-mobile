@@ -109,7 +109,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                               () => nameFocusNode.requestFocus(),
                             );
                           } else {
-                            // 🔹 SAVE here (name + phone only)
+                            // SAVE here (name + phone only)
                             // context.read<ProfileBloc>().add(
                             //   UpdateProfileEvent(
                             //     name: nameController.text.trim(),

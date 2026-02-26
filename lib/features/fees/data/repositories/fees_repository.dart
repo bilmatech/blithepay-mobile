@@ -80,7 +80,7 @@ class FeesRepositoryImpl implements FeesRepository {
       options: Options(headers: {'X-PIN-CHALLENGE-TOKEN': token ?? ''}),
     );
     // Ensure we return the response data as a Map
-    return response.data['data'];
+    return WalletPaymentData.fromJson(response.data['data']);
   }
 
   @override

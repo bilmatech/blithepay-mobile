@@ -23,7 +23,6 @@ class PinBottomSheetContent extends StatefulWidget {
 class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
   late final List<TextEditingController> _controllers;
   late final List<FocusNode> _focusNodes;
-  String? _errorMessage;
 
   @override
   void initState() {

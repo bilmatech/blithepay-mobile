@@ -96,7 +96,7 @@ class _InvoicesSection extends StatelessWidget {
           }
 
           return SizedBox(
-            height: 240,
+            height: 200,
             width: MediaQuery.of(context).size.width,
 
             child: PageView.builder(
@@ -111,7 +111,7 @@ class _InvoicesSection extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 🔹 Full Width Card
+                      //  Full Width Card
                       Expanded(child: InvoiceCard(invoice: invoice)),
 
                       const SizedBox(height: 12),
@@ -163,6 +163,7 @@ class _InvoicesSection extends StatelessWidget {
                                     invoice: invoice,
                                     studentCode: student.school.schoolCode,
                                     student: student,
+                                    latePaymentFee: invoice.fee.latePaymentFee,
                                   ),
                                 ),
                                 label: const Text('Pay Fees'),
@@ -226,19 +227,19 @@ class InvoiceCard extends StatelessWidget {
               color: AppColors.textSecondary,
             ),
           ),
-          Text(
-            'Fee Amount: ${Helpers.formattedAmount(invoice.fee.latePaymentFee)}',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
+          // Text(
+          //   'Fee Amount: ${Helpers.formattedAmount(invoice.fee.latePaymentFee)}',
+          //   style: AppTextStyles.bodySmall.copyWith(
+          //     color: AppColors.textSecondary,
+          //   ),
+          // ),
           Text(
             'Due Date: ${Helpers.formatDate(invoice.fee.dueAt)}',
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
           Text(
             'Status: ${invoice.status}',
             style: AppTextStyles.bodySmall.copyWith(

@@ -2,14 +2,14 @@ abstract class StudentTransactionEvent {
   const StudentTransactionEvent();
 }
 
-class GetTransactionsEvent extends StudentTransactionEvent {
+class GetPaymentHistoryEvent extends StudentTransactionEvent {
   final int page;
   final int limit;
   final String studentId;
 
   final bool refresh;
 
-  const GetTransactionsEvent({
+  const GetPaymentHistoryEvent({
     this.page = 1,
     this.limit = 20,
     required this.studentId,

@@ -21,8 +21,8 @@ class BottomNavigationWidget extends StatelessWidget {
       onTap: (index) => _navigate(context, index),
       items: [
         _buildItem(
-          icon: Icons.home_outlined,
-          activeIcon: Icons.home_outlined,
+          icon: Icons.wallet_outlined,
+          activeIcon: Icons.wallet_outlined,
           label: 'Wallet',
           isActive: currentIndex == 0,
         ),

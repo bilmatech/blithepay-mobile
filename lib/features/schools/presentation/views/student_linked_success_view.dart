@@ -1,5 +1,3 @@
-import 'package:blithepay/core/navigation/app_routes.dart';
-import 'package:blithepay/features/fees/data/models/fee_selection_args.dart';
 import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -82,7 +80,7 @@ class StudentLinkedSucessView extends StatelessWidget {
               const SizedBox(height: 32),
               PrimaryButton(
                 label: 'Go Home',
-                onPressed: onPressed ?? () => context.go('/home'),
+                onPressed: onPressed ?? () => context.go('/linked-students'),
               ),
               const SizedBox(height: 16),
 

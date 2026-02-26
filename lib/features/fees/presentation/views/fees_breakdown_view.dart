@@ -13,11 +13,14 @@ import 'package:go_router/go_router.dart';
 
 class FeeBreakDownView extends StatefulWidget {
   final VerifiedStudentModel student;
+  final String latePaymentFee;
+
   final InvoiceModel invoice;
   const FeeBreakDownView({
     super.key,
     required this.student,
     required this.invoice,
+    required this.latePaymentFee,
   });
 
   @override
@@ -222,6 +225,7 @@ class _FeeBreakDownViewState extends State<FeeBreakDownView> {
                     fees: selectedFees,
                     total: totalAmount,
                     invoice: widget.invoice,
+                    latePaymentFees: widget.latePaymentFee,
                   ),
                 );
               },
@@ -290,11 +294,13 @@ class PaymentPayload {
   final List<FeeBreakdownModel> fees;
   final int total;
   final InvoiceModel invoice;
+  final String latePaymentFees;
 
   PaymentPayload({
     required this.student,
     required this.fees,
     required this.total,
     required this.invoice,
+    required this.latePaymentFees,
   });
 }

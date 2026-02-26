@@ -54,19 +54,19 @@ class InvoiceAndFeeDetailsView extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    // 🔹 Table 1: Invoice Details
+                    //Table 1: Invoice Details
                     _buildSectionTitle('Invoice Details'),
                     const SizedBox(height: 8),
                     _buildInvoiceTable(invoice),
                     const SizedBox(height: 24),
 
-                    // 🔹 Table 2: Fee Summary (top-level info)
+                    //  Table 2: Fee Summary (top-level info)
                     _buildSectionTitle('Fee Details'),
                     const SizedBox(height: 8),
                     _buildFeeTable(fee),
                     const SizedBox(height: 24),
 
-                    // 🔹 Table 3: Fee Breakdown (line items)
+                    //  Table 3: Fee Breakdown (line items)
                     _buildSectionTitle('Fee Breakdown'),
                     const SizedBox(height: 8),
                     _buildFeeBreakdownTable(invoice.fee.feeBreakdowns ?? []),
@@ -224,13 +224,13 @@ Future<void> _downloadReceipt(
 //         padding: const EdgeInsets.all(16),
 //         child: Column(
 //           children: [
-//             // 🔹 Table 1: Invoice Details
+//             //  Table 1: Invoice Details
 //             _buildSectionTitle('Invoice Details'),
 //             const SizedBox(height: 8),
 //             _buildInvoiceTable(invoice),
 //             const SizedBox(height: 24),
 
-//             // 🔹 Table 2: Fee Breakdown
+//             //  Table 2: Fee Breakdown
 //             _buildSectionTitle('Fee Details'),
 //             const SizedBox(height: 8),
 //             _buildFeeTable(fees),
@@ -352,7 +352,7 @@ Widget _buildKeyValueTable(List<Map<String, String>> rows) {
 //             pw.Divider(color: PdfColors.grey, thickness: 1.5),
 //             pw.SizedBox(height: 20),
 
-//             // 🔹 Invoice Table
+//             //  Invoice Table
 //             pw.Text(
 //               'Invoice Details',
 //               style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
@@ -367,7 +367,7 @@ Widget _buildKeyValueTable(List<Map<String, String>> rows) {
 //             ]),
 //             pw.SizedBox(height: 24),
 
-//             // 🔹 Fee Table
+//             //  Fee Table
 //             pw.Text(
 //               'Fee Details',
 //               style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),

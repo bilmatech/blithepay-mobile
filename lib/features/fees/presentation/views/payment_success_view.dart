@@ -6,12 +6,7 @@ import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.d
 import 'package:blithepay/features/fees/data/models/payment_data.dart';
 import 'package:blithepay/features/fees/presentation/views/fees_breakdown_view.dart';
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_bloc.dart';
-import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_event.dart'
-    show GetInvoiceEvent;
-import 'package:blithepay/features/students/presentation/bloc/students_bloc.dart';
-import 'package:blithepay/features/students/presentation/bloc/students_event.dart';
-import 'package:blithepay/features/students/presentation/bloc/transaction_bloc.dart/transaction_bloc.dart';
-import 'package:blithepay/features/students/presentation/bloc/transaction_bloc.dart/transaction_event.dart';
+import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_event.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student_view/linked_student_body.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
@@ -107,22 +102,13 @@ class PaymentSuccessView extends StatelessWidget {
                   Expanded(
                     child: PrimaryButton(
                       onPressed: () {
-                        // context.read<StudentsBloc>().add(
-                        //   const GetLinkedStudentsEvent(page: 1),
-                        // );
                         context.read<DashboardBloc>().add(
                           const FetchDashboardData(forceRefresh: true),
                         );
                         context.read<InvoiceBloc>().add(
                           GetInvoiceEvent(studentId: payload.student.id),
                         );
-                        context.read<StudentTransactionsBloc>().add(
-                          GetTransactionsEvent(
-                            refresh: true,
-                            studentId: payload.student.id,
-                          ),
-                        );
-                        context.go('/home');
+                        context.go('/linked-students');
                       },
                       label: 'Done',
                     ),

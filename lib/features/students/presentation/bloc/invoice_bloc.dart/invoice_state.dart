@@ -10,12 +10,15 @@ class InvoiceInitial extends InvoiceState {
 
 class InvoiceLoaded extends InvoiceState {
   final String studentId;
+  //final Fee fee;
+
   final List<InvoiceModel> invoice;
   final int? nextPage;
   final bool isFetchingMore;
 
   const InvoiceLoaded({
     required this.studentId,
+   // required this.fee,
     required this.invoice,
     this.nextPage,
     this.isFetchingMore = false,
@@ -23,12 +26,16 @@ class InvoiceLoaded extends InvoiceState {
 
   InvoiceLoaded copyWith({
     String? studentId,
+  //  final Fee? fee,
+
     List<InvoiceModel>? invoice,
     int? nextPage,
     bool? isFetchingMore,
   }) {
     return InvoiceLoaded(
       studentId: studentId ?? this.studentId,
+    //  fee: fee ?? this.fee,
+
       invoice: invoice ?? this.invoice,
       nextPage: nextPage ?? this.nextPage,
       isFetchingMore: isFetchingMore ?? this.isFetchingMore,

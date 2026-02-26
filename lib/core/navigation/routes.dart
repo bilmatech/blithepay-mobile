@@ -1,56 +1,5 @@
-import 'package:blithepay/features/auth/presentation/views/setup_pin_view.dart';
-import 'package:blithepay/features/common/data/success_args_model.dart';
-import 'package:blithepay/features/fees/data/models/fee_selection_args.dart';
-import 'package:blithepay/features/fees/data/models/payment_data.dart';
-import 'package:blithepay/features/fees/presentation/bloc/fees_bloc.dart';
-import 'package:blithepay/features/fees/presentation/bloc/fees_event.dart';
-import 'package:blithepay/features/fees/presentation/views/payment_confirmation_view.dart';
-import 'package:blithepay/features/fees/presentation/views/payment_success_view.dart';
-import 'package:blithepay/features/profile/presentation/views/change_password_view.dart';
-import 'package:blithepay/features/profile/presentation/views/profile_view.dart';
-import 'package:blithepay/features/fees/presentation/views/fees_breakdown_view.dart';
-import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
-import 'package:blithepay/features/schools/presentation/views/link_child_school_view.dart';
-import 'package:blithepay/features/schools/presentation/views/link_profile.dart';
-import 'package:blithepay/features/schools/presentation/views/student_linked_success_view.dart';
-import 'package:blithepay/features/splash/presentation/views/splash_view.dart';
-import 'package:blithepay/features/students/data/models/invoice_model.dart';
+import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
-import 'package:blithepay/features/students/presentation/views/linked_student/fees_transaction_view.dart';
-import 'package:blithepay/features/students/presentation/views/linked_student_view/invoice_fee_view.dart';
-import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
-import 'package:blithepay/features/wallet/presentation/views/reciept_preview.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import '../../features/auth/presentation/views/login_view.dart';
-import '../../features/auth/presentation/views/signup_view.dart';
-import '../../features/auth/presentation/views/forgot_password_view.dart';
-import '../../features/auth/presentation/views/verify_otp_view.dart';
-import '../../features/auth/presentation/views/reset_password_view.dart';
-import '../../features/auth/presentation/views/password_changed_view.dart';
-import '../../features/auth/presentation/views/onboarding_view.dart';
-import '../../features/dashboard/presentation/views/dashboard_view.dart';
-import '../../features/schools/presentation/views/confirm_school_view.dart';
-import '../../features/schools/presentation/views/search_school_view.dart';
-import '../../features/schools/presentation/views/add_school_view.dart';
-import '../../features/schools/presentation/views/edit_schools_view.dart';
-import '../../features/schools/presentation/views/edit_school_detail_view.dart';
-import '../../features/students/presentation/views/link_students_view.dart';
-import '../../features/students/presentation/views/guardian_verification_view.dart';
-import '../../features/students/presentation/views/linked_students_view.dart';
-import '../../features/profile/presentation/views/change_phone_number_view.dart';
-import '../../features/profile/presentation/views/profile_detail_view.dart';
-import '../../features/common/presentation/views/request_pending_view.dart';
-import '../../features/common/presentation/views/request_failed_view.dart';
-import '../../features/common/presentation/views/success_view.dart';
-import '../../features/notifications/presentation/views/notifications_view.dart';
-import '../../features/wallet/presentation/views/fund_wallet_view.dart';
-import '../../features/wallet/presentation/views/transactions_view.dart';
-import '../../features/wallet/presentation/views/wallet_management_view.dart';
-import '../../features/wallet/presentation/views/transaction_detail_view.dart';
-import '../../features/fees/presentation/views/pay_fees_view.dart';
-import '../../features/support/presentation/views/help_support_view.dart';
-import 'app_routes.dart';
 
 class AppRouterConfig {
   static GoRouter createRouter() {
@@ -168,21 +117,17 @@ class AppRouterConfig {
           builder: (context, state) {
             final args = state.extra as FeeSelectionArgs;
 
-            final feesBloc = context.read<FeesBloc>();
-
-            // Fire once per navigation
-            //if (feesBloc.state is FeesInitial) {
-            feesBloc.add(
+            context.read<FeesBloc>().add(
               FetchFeesByIdEvent(
                 invoice: args.invoice,
                 studentCode: args.studentCode,
               ),
             );
-            // }
 
             return FeeBreakDownView(
               student: args.student,
               invoice: args.invoice,
+              latePaymentFee: args.latePaymentFee,
             );
           },
         ),
@@ -203,7 +148,7 @@ class AppRouterConfig {
 
             return PaymentSuccessView(
               payload: payload,
-              paymentData: paymentData, // pass reference explicitly
+              paymentData: paymentData, 
             );
           },
         ),
@@ -251,10 +196,6 @@ class AppRouterConfig {
         ),
 
         GoRoute(
-          path: AppRoutes.feeTransactions,
-          builder: (_, __) => const FeesTransactionsView(),
-        ),
-        GoRoute(
           path: AppRoutes.invoicedetail,
           builder: (context, state) {
             final invoice = state.extra as InvoiceModel;
@@ -296,6 +237,20 @@ class AppRouterConfig {
         GoRoute(
           path: AppRoutes.requestFailed,
           builder: (_, __) => const RequestFailedView(),
+        ),
+        GoRoute(
+          path: AppRoutes.feeTransactions,
+          builder: (context, state) {
+            final studentId = state.extra as VerifiedStudentModel;
+            return FeesTransactionsView(student: studentId);
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.studentTransactionDetail,
+          builder: (context, state) {
+            final transaction = state.extra as StudentTransactionModel;
+            return PaymentHistoryDetailView(transaction: transaction);
+          },
         ),
 
         GoRoute(

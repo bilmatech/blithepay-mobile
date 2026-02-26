@@ -14,22 +14,33 @@ class FeesBloc extends Bloc<FeesEvent, FeesState> {
 
     on<FetchFeesEvent>(_onFetchFees);
     on<PayFeeEvent>(_onPayFee);
-    on<ResetFeesEvent>(_onResetFees);
   }
 
   Future<void> _onFeesById(
     FetchFeesByIdEvent event,
     Emitter<FeesState> emit,
   ) async {
-    emit(const FeesLoading());
+    final currentState = state;
+
+    // Only show loading spinner if we don't already have data
+    if (currentState is! FeesByIdLoaded) {
+      emit(const FeesLoading());
+    }
+
     try {
       final fees = await repository.getFeesById(
         event.invoice.feeId,
         event.studentCode,
       );
+
       emit(FeesByIdLoaded(fees.feeBreakdowns));
     } catch (e) {
-      emit(FeesError(extractError(e)));
+      // Preserve previous data if it exists
+      if (currentState is FeesByIdLoaded) {
+        emit(currentState);
+      } else {
+        emit(FeesError(extractError(e)));
+      }
     }
   }
 
@@ -46,21 +57,25 @@ class FeesBloc extends Bloc<FeesEvent, FeesState> {
     }
   }
 
-  Future<void> _onPayWithWallet(
-    PayWithWalletEvent event,
-    Emitter<FeesState> emit,
-  ) async {
-    emit(const FeesLoading());
-    try {
-      final result = await repository.payWithWallet(
-        event.invoiceId,
-        event.feeItemIds,
-      );
-      emit(WalletPaymentSuccess(result));
-    } catch (e) {
-      emit(FeesError(extractError(e)));
-    }
+Future<void> _onPayWithWallet(
+  PayWithWalletEvent event,
+  Emitter<FeesState> emit,
+) async {
+  emit(const WalletPaymentInProgress());
+
+  try {
+    final result = await repository.payWithWallet(
+      event.invoiceId,
+      event.feeItemIds,
+    );
+
+    emit(WalletPaymentSuccess(result));
+  } catch (e) {
+    emit(
+      WalletPaymentFailure(extractError(e)),
+    );
   }
+}
 
   Future<void> _onFetchFees(
     FetchFeesEvent event,
@@ -110,9 +125,5 @@ class FeesBloc extends Bloc<FeesEvent, FeesState> {
     } catch (e) {
       emit(FeesError(e.toString()));
     }
-  }
-
-  void _onResetFees(ResetFeesEvent event, Emitter<FeesState> emit) {
-    emit(const FeesInitial());
   }
 }

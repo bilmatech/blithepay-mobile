@@ -61,6 +61,4 @@ class PayWithWalletEvent extends FeesEvent {
   List<Object?> get props => [invoiceId, feeItemIds];
 }
 
-class ResetFeesEvent extends FeesEvent {
-  const ResetFeesEvent();
-}
+

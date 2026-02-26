@@ -67,3 +67,12 @@ class FeesError extends FeesState {
   @override
   List<Object?> get props => [message];
 }
+
+class WalletPaymentInProgress extends FeesState {
+  const WalletPaymentInProgress();
+}
+
+class WalletPaymentFailure extends FeesState {
+  final String message;
+  const WalletPaymentFailure(this.message);
+}

@@ -3,7 +3,6 @@ import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_bloc.dart';
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_event.dart';
-
 import 'package:blithepay/features/students/presentation/views/linked_student_view/student_details_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,22 +51,25 @@ class _LinkedStudentsBodyState extends State<LinkedStudentsBody> {
     return Column(
       children: [
         const SizedBox(height: 12),
-        // 🔹 Carousel
+        //  Carousel
         SizedBox(
-          height: 200, // Only the top carousel
+          height: 180, // Only the top carousel
           child: PageView.builder(
             controller: _pageController,
             onPageChanged: _onPageChanged,
             itemCount: widget.students.length,
             itemBuilder: (context, index) {
               final s = widget.students[index];
-              return StudentCard(student: s);
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: StudentCard(student: s),
+              );
             },
           ),
         ),
         const SizedBox(height: 12),
 
-        // 🔹 Page indicators
+        //  Page indicators
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(
@@ -88,7 +90,7 @@ class _LinkedStudentsBodyState extends State<LinkedStudentsBody> {
 
         const SizedBox(height: 16),
 
-        // 🔹 Details + Outstanding Fees (scrollable)
+        //  Details + Outstanding Fees (scrollable)
         Expanded(
           child: SingleChildScrollView(
             child: StudentDetailsSection(student: student),

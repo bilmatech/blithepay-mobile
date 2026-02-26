@@ -11,15 +11,21 @@ class StudentTransactionsBloc
 
   StudentTransactionsBloc({required this.repository})
     : super(const StudentTransactionInitial()) {
-    on<GetTransactionsEvent>(_onGetStudentTransactions);
+    on<GetPaymentHistoryEvent>(_onGetStudentTransactions);
   }
 
-  bool _hasWalletTFetchedOnce = false; // at bloc level
   Future<void> _onGetStudentTransactions(
-    GetTransactionsEvent event,
+    GetPaymentHistoryEvent event,
     Emitter<StudentTransactionState> emit,
   ) async {
     final currentState = state;
+
+    // Prevent duplicate pagination calls
+    if (currentState is StudentTransactionLoaded &&
+        currentState.isFetchingMore &&
+        !event.refresh) {
+      return;
+    }
 
     List<StudentTransactionModel> oldTransactions = [];
 
@@ -27,15 +33,12 @@ class StudentTransactionsBloc
         currentState is StudentTransactionLoaded &&
         event.page > 1) {
       oldTransactions = currentState.studentTransaction;
-    }
 
-    final showShimmer = !_hasWalletTFetchedOnce && !event.refresh;
-
-    if (showShimmer) {
+      // Emit fetching-more state
+      emit(currentState.copyWith(isFetchingMore: true));
+    } else if (event.page == 1 && !event.refresh) {
       emit(const StudentTransactionLoading());
-      await Future.delayed(const Duration(milliseconds: 250));
     }
-    if (_hasWalletTFetchedOnce && !event.refresh) return;
 
     try {
       final result = await repository.getStudentTransaction(
@@ -44,25 +47,20 @@ class StudentTransactionsBloc
         studentId: event.studentId,
       );
 
-      final updatedTransactions = event.refresh
-          ? result.transactions
-          : [...oldTransactions, ...result.transactions];
-
-      _hasWalletTFetchedOnce = true;
-
       emit(
         StudentTransactionLoaded(
-          studentTransaction: updatedTransactions,
+          studentTransaction: event.refresh
+              ? result.transactions
+              : [...oldTransactions, ...result.transactions],
           nextPage: result.nextPage,
           isFetchingMore: false,
         ),
       );
     } catch (e) {
-      emit(StudentTransactionError(message: extractError(e)));
-
-      // Re-emit old state to avoid clearing screen
       if (currentState is StudentTransactionLoaded) {
-        emit(currentState);
+        emit(currentState.copyWith(isFetchingMore: false));
+      } else {
+        emit(StudentTransactionError(message: extractError(e)));
       }
     }
   }
