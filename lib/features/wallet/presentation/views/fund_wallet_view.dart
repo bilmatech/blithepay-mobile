@@ -61,7 +61,9 @@ class _FundWalletViewState extends State<FundWalletView> {
               PrimaryButton(
                 label: 'Transfer Done',
                 onPressed: () {
-                  context.go(AppRoutes.home);
+                            context.go(AppRoutes.linkedStudents);
+
+                 // context.go(AppRoutes.home);
                   // showDialog(
                   //   context: context,
                   //   builder: (context) =>

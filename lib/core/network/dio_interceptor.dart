@@ -2,14 +2,27 @@ import 'package:blithepay/core/network/dio_client.dart';
 import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 class DioInterceptor extends Interceptor {
-  final AppLocalDataSource _localDataSource;
+  final Dio _dio;
 
+  final AppLocalDataSource _localDataSource;
+  final GlobalKey<NavigatorState> _navigatorKey;
+
+  // Internal flags
   bool _isRefreshing = false;
   final List<void Function()> _retryQueue = [];
+  final int _maxRetries = 3; // Max number of refresh attempts
 
-  DioInterceptor(this._localDataSource);
+  DioInterceptor({
+    required Dio dio,
+
+    required AppLocalDataSource localDataSource,
+    required GlobalKey<NavigatorState> navigatorKey,
+  }) : _dio = dio,
+       _localDataSource = localDataSource,
+       _navigatorKey = navigatorKey;
 
   @override
   Future<void> onRequest(
@@ -35,34 +48,24 @@ class DioInterceptor extends Interceptor {
       return _handle401(err, handler);
     }
 
-    // Extract backend message
-    String message = "Unknown error";
-    try {
+    String message;
+
+    if (err.response == null) {
+      // Network / timeout / socket
+      message = 'No internet connection';
+    } else {
       final data = err.response?.data;
+      message = 'Something went wrong';
+
       if (data is Map<String, dynamic>) {
-        // If backend sends multiple errors, combine them
         message =
-            data['message']?.toString() ??
-            data.values.map((e) => e.toString()).join(", ");
-      } else if (data is List) {
-        message = data.join(", ");
+            data['message']?.toString() ?? data['error']?.toString() ?? message;
       } else if (data is String) {
         message = data;
       }
-    } catch (_) {
-      message = err.message ?? "Unknown error";
     }
 
-   // print("Backend Error: $message"); // Log in terminal
-
-    final newErr = DioException(
-      requestOptions: err.requestOptions,
-      response: err.response,
-      error: message, 
-      type: err.type,
-    );
-
-    handler.reject(newErr);
+    handler.reject(err.copyWith(error: message));
   }
 
   Future<void> _handle401(
@@ -72,54 +75,64 @@ class DioInterceptor extends Interceptor {
     final refreshToken = await _localDataSource.getRefreshToken();
 
     if (refreshToken == null) {
-      await _localDataSource.clearSession();
+      // No refresh token → force logout
+      await _logoutUser();
       return handler.reject(err);
     }
 
     if (_isRefreshing) {
       _retryQueue.add(() async {
-        final clonedRequest = await _retryRequest(err.requestOptions);
-        handler.resolve(clonedRequest);
+        final clonedResponse = await _retryRequest(err.requestOptions);
+        handler.resolve(clonedResponse);
       });
       return;
     }
 
     _isRefreshing = true;
+    int retryCount = 0;
 
-    try {
-      final response = await AuthRepository(
-        dioClient: DioClient(_localDataSource),
-        localDataSource: _localDataSource,
-      ).refresh(refreshToken);
+    while (retryCount < _maxRetries) {
+      try {
+        final response = await AuthRepository(
+          dioClient: DioClient(_localDataSource),
+          localDataSource: _localDataSource,
+        ).refresh(refreshToken);
+        await _localDataSource.saveTokens(response);
 
-      await _localDataSource.saveTokens(response);
+        // Retry queued requests
+        for (final retry in _retryQueue) {
+          retry();
+        }
+        _retryQueue.clear();
 
-      _isRefreshing = false;
+        final newResponse = await _retryRequest(err.requestOptions);
+        handler.resolve(newResponse);
 
-      for (final retry in _retryQueue) {
-        retry();
+        _isRefreshing = false;
+        return;
+      } catch (_) {
+        retryCount++;
+        if (retryCount >= _maxRetries) {
+          // Max retries reached → logout
+          await _logoutUser();
+          _retryQueue.clear();
+          handler.reject(err);
+          _isRefreshing = false;
+          return;
+        }
+        // Optional: small delay before retrying
+        await Future.delayed(const Duration(milliseconds: 500));
       }
-      _retryQueue.clear();
-
-      final newResponse = await _retryRequest(err.requestOptions);
-      handler.resolve(newResponse);
-    } catch (_) {
-      _isRefreshing = false;
-      _retryQueue.clear();
-      await _localDataSource.clearSession();
-      handler.reject(err);
     }
   }
 
   Future<Response> _retryRequest(RequestOptions requestOptions) async {
-    final dio = Dio(); // or reuse base Dio instance safely
-
     final accessToken = await _localDataSource.getAccessToken();
 
     final headers = Map<String, dynamic>.from(requestOptions.headers);
     headers['Authorization'] = 'Bearer $accessToken';
 
-    return dio.request(
+    return _dio.request(
       requestOptions.path,
       data: requestOptions.data,
       queryParameters: requestOptions.queryParameters,
@@ -130,5 +143,14 @@ class DioInterceptor extends Interceptor {
       ),
     );
   }
-}
 
+  Future<void> _logoutUser() async {
+    await _localDataSource.clearSession();
+
+    // Navigate to login safely
+    _navigatorKey.currentState?.pushNamedAndRemoveUntil(
+      '/login',
+      (route) => false,
+    );
+  }
+}

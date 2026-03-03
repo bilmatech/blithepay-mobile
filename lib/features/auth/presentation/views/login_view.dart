@@ -63,8 +63,38 @@ class _LoginViewState extends State<LoginView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.authenticated) {
-          context.go(AppRoutes.home);
+          // context.go(AppRoutes.home);
+          context.go(AppRoutes.linkedStudents);
+
           context.read<DashboardBloc>().add(const FetchDashboardData());
+        } else if (state.status == AuthStatus.error &&
+            state.errorMessage?.contains('not verified') == true) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage ?? ''),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+
+          context.go(
+            AppRoutes.verifyOtp,
+            extra: {
+              'email': _emailController.text,
+              'flow': OtpFlow.verifyEmail,
+            },
+          );
+        } else if (state.status == AuthStatus.error) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.errorMessage ?? 'An unknown error occurred',
+                ),
+              ),
+            );
         }
       },
       child: AppScaffold(

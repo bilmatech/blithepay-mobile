@@ -1,6 +1,4 @@
-import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 
@@ -50,13 +48,13 @@ class DashboardHeader extends StatelessWidget {
             Text(userName, style: AppTextStyles.headingSmall),
           ],
         ),
-        const Spacer(),
-        IconButton(
-          icon: const Icon(Icons.notifications_none),
-          onPressed: () {
-            context.push(AppRoutes.notifications);
-          },
-        ),
+        // const Spacer(),
+        // IconButton(
+        //   icon: const Icon(Icons.notifications_none),
+        //   onPressed: () {
+        //     context.push(AppRoutes.notifications);
+        //   },
+        // ),
         // Container(
         //   padding: const EdgeInsets.all(8),
         //   decoration: BoxDecoration(

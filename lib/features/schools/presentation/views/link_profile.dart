@@ -1,13 +1,20 @@
 import 'package:blithepay/core/navigation/app_routes.dart';
+import 'package:blithepay/features/students/data/models/verify_student_model.dart';
+import 'package:blithepay/features/students/presentation/bloc/students_bloc.dart';
+import 'package:blithepay/features/students/presentation/bloc/students_event.dart';
+import 'package:blithepay/features/students/presentation/bloc/students_state.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 
 class LinkProfileView extends StatefulWidget {
-  const LinkProfileView({super.key});
+  final VerifiedStudentModel student;
+
+  const LinkProfileView({super.key, required this.student});
 
   @override
   State<LinkProfileView> createState() => _LinkProfileViewState();
@@ -54,24 +61,58 @@ class _LinkProfileViewState extends State<LinkProfileView> {
                   //   fit: BoxFit.cover,
                   // ),
                 ),
-                child: Icon(Icons.person, size: 80),
+                child: const Icon(Icons.person, size: 80),
               ),
 
               const SizedBox(height: 24),
 
-              _buildDetailBox('Full Name', 'Adebowale Anthony Joshua'),
-              Divider(),
-              _buildDetailBox('School Name', 'Adebowale School'),
-              Divider(),
+              _buildDetailBox('Full Name', widget.student.fullName),
+              const Divider(),
+              _buildDetailBox('School Name', widget.student.school.name),
+              const Divider(),
 
-              _buildDetailBox('Class', 'Primary 3'),
-              Divider(),
+              _buildDetailBox('Class', widget.student.classModel.name),
+              const Divider(),
 
               const SizedBox(height: 40),
-              PrimaryButton(
-                label: 'Link Profile',
-                onPressed: () => context.push(AppRoutes.studentLinkedSuccess),
+              BlocListener<StudentsBloc, StudentsState>(
+                listener: (context, state) {
+                  // if (state is StudentsError) {
+                  //   ScaffoldMessenger.of(
+                  //     context,
+                  //   ).showSnackBar(SnackBar(content: Text(state.message)));
+                  // }
+                  if (state is StudentsLinkSuccess) {
+                    // Navigate after success
+                    GoRouter.of(
+                      context,
+                    ).push(AppRoutes.studentLinkedSuccess, extra: state.model);
+                  }
+                },
+                child: BlocBuilder<StudentsBloc, StudentsState>(
+                  builder: (context, state) {
+                    final isLoading = state is StudentsLinking;
+
+                    return PrimaryButton(
+                      label: 'Link Profile',
+                      onPressed: () {
+                        context.read<StudentsBloc>().add(
+                          LinkChildEvent(
+                            studentId: widget.student.id,
+                            studentCode: widget.student.school.schoolCode,
+                          ),
+                        );
+                      },
+                      isLoading: isLoading,
+                    );
+                  },
+                ),
               ),
+
+              // PrimaryButton(
+              //   label: 'Link Profile',
+              //   onPressed: () => context.push(AppRoutes.studentLinkedSuccess),
+              // ),
             ],
           ),
         ),

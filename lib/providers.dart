@@ -4,7 +4,9 @@ import 'package:blithepay/core/theme/theme_cubit.dart';
 import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/fees/data/repositories/fees_repository.dart';
 import 'package:blithepay/features/fees/presentation/bloc/fees_bloc.dart';
+import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_bloc.dart';
 import 'package:blithepay/features/notifications/data/repositories/notifications_repository.dart';
 import 'package:blithepay/features/notifications/presentation/bloc/notifications_bloc.dart';
 import 'package:blithepay/features/profile/presentation/bloc/profile_bloc.dart';
@@ -12,8 +14,13 @@ import 'package:blithepay/features/schools/data/repositories/schools_repository.
 import 'package:blithepay/features/schools/presentation/bloc/schools_bloc.dart';
 import 'package:blithepay/features/splash/presentation/bloc/splash_bloc.dart';
 import 'package:blithepay/features/students/data/repositories/students_repository.dart';
+import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_bloc.dart';
 import 'package:blithepay/features/students/presentation/bloc/students_bloc.dart';
+import 'package:blithepay/features/students/presentation/bloc/students_event.dart';
+import 'package:blithepay/features/students/presentation/bloc/transaction_bloc.dart/transaction_bloc.dart';
 import 'package:blithepay/features/support/presentation/bloc/support_bloc.dart';
+import 'package:blithepay/features/transaction/presentation/bloc/transaction_bloc.dart';
+import 'package:blithepay/features/wallet/data/repositories/wallet_repository.dart';
 import 'package:blithepay/features/wallet/presentation/bloc/wallet_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -34,17 +41,38 @@ class AppProviders {
       RepositoryProvider<AppLocalDataSource>(
         create: (_) => authLocalDataSource,
       ),
-      RepositoryProvider<DioClient>(create: (_) => dioClient),
+      RepositoryProvider<FlutterSecureStorage>(
+        create: (_) => const FlutterSecureStorage(),
+      ),
+
+      RepositoryProvider<AppLocalDataSourceImpl>(
+        create: (context) =>
+            AppLocalDataSourceImpl(context.read<FlutterSecureStorage>()),
+      ),
+
+      RepositoryProvider<DioClient>(
+        create: (context) => DioClient(context.read<AppLocalDataSourceImpl>()),
+      ),
       RepositoryProvider<AuthRepository>(create: (_) => authRepository),
+      RepositoryProvider<WalletRepositoryInterface>(
+        create: (context) =>
+            WalletRepository(dioClient: context.read<DioClient>()),
+      ),
       // Add other repositories here
       RepositoryProvider<StudentsRepository>(
-        create: (_) => StudentsRepositoryImpl(),
+        create: (context) =>
+            StudentsRepositoryImpl(dioClient: context.read<DioClient>()),
       ),
       RepositoryProvider<SchoolsRepository>(
-        create: (_) => SchoolsRepositoryImpl(),
+        create: (context) =>
+            SchoolsRepositoryImpl(dioClient: context.read<DioClient>()),
       ),
       RepositoryProvider<NotificationsRepository>(
         create: (_) => NotificationsRepositoryImpl(),
+      ),
+      RepositoryProvider<FeesRepository>(
+        create: (context) =>
+            FeesRepositoryImpl(dioClient: context.read<DioClient>()),
       ),
     ];
   }
@@ -62,16 +90,33 @@ class AppProviders {
             AuthBloc(authRepository: context.read<AuthRepository>()),
       ),
       BlocProvider<DashboardBloc>(
-        create: (_) =>
-            DashboardBloc(AppLocalDataSourceImpl(const FlutterSecureStorage())),
+        create: (context) => DashboardBloc(
+          localDataSource: context.read<AppLocalDataSourceImpl>(),
+          walletRepository: context.read<WalletRepositoryInterface>(),
+        ),
       ),
-      BlocProvider<FeesBloc>(create: (_) => FeesBloc()),
-      BlocProvider<WalletBloc>(create: (_) => WalletBloc()),
+      BlocProvider<WalletBloc>(
+        create: (context) => WalletBloc(
+          walletRepository: context.read<WalletRepositoryInterface>(),
+        ),
+      ),
+      BlocProvider<WalletTransactionBloc>(
+        create: (context) => WalletTransactionBloc(
+          walletRepository: context.read<WalletRepositoryInterface>(),
+        ),
+      ),
+
       BlocProvider<SupportBloc>(create: (_) => SupportBloc()),
       BlocProvider<StudentsBloc>(
         create: (context) =>
-            StudentsBloc(repository: context.read<StudentsRepository>()),
+            StudentsBloc(repository: context.read<StudentsRepository>())
+              ..add(const GetLinkedStudentsEvent(page: 1)),
       ),
+      BlocProvider<InvoiceBloc>(
+        create: (context) =>
+            InvoiceBloc(repository: context.read<StudentsRepository>()),
+      ),
+
       BlocProvider<SchoolsBloc>(
         create: (context) =>
             SchoolsBloc(repository: context.read<SchoolsRepository>()),
@@ -80,6 +125,19 @@ class AppProviders {
         create: (context) => NotificationsBloc(
           repository: context.read<NotificationsRepository>(),
         ),
+      ),
+      BlocProvider<FeesBloc>(
+        create: (context) =>
+            FeesBloc(repository: context.read<FeesRepository>()),
+      ),
+      BlocProvider<StudentTransactionsBloc>(
+        create: (context) => StudentTransactionsBloc(
+          repository: context.read<StudentsRepository>(),
+        ),
+      ),
+      BlocProvider<PaymentBloc>(
+        create: (context) =>
+            PaymentBloc(repository: context.read<FeesRepository>()),
       ),
       BlocProvider<ProfileBloc>(create: (_) => ProfileBloc()),
     ];

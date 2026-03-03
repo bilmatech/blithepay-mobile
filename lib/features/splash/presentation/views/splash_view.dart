@@ -52,7 +52,7 @@ class _SplashViewState extends State<SplashView>
         if (state is SplashNavigateOnboarding) {
           context.go(AppRoutes.onboarding);
         } else if (state is SplashNavigateDashboard) {
-          context.go(AppRoutes.home);
+          context.go(AppRoutes.linkedStudents);
         } else if (state is SplashNavigateLogin) {
           context.go(AppRoutes.login);
         }

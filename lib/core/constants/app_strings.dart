@@ -52,8 +52,8 @@ class AppStrings {
   static const String codeVerified = 'Code Verified!';
 
   // OTP
-  static const String enterConfirmationCode = 'Enter Confirmation Code';
-  static const String codeSentTo = 'A 4-digit code was sent to';
+  static const String enterVerificationCode = 'Enter Verification Code';
+  static const String codeSentTo = 'A 6-digit code was sent to';
   static const String resendCode = 'Resend Code';
   static const String verify = 'Verify';
 

@@ -8,21 +8,18 @@ abstract class WalletEvent extends Equatable {
 }
 
 class FetchWalletDataEvent extends WalletEvent {
-  const FetchWalletDataEvent();
+  final bool forceRefresh;
+
+  const FetchWalletDataEvent({this.forceRefresh = false});
 }
 
-class GetTransactionsEvent extends WalletEvent {
-  const GetTransactionsEvent();
-}
+
 
 class FundWalletEvent extends WalletEvent {
   final String amount;
   final String paymentMethod;
 
-  const FundWalletEvent({
-    required this.amount,
-    required this.paymentMethod,
-  });
+  const FundWalletEvent({required this.amount, required this.paymentMethod});
 
   @override
   List<Object?> get props => [amount, paymentMethod];

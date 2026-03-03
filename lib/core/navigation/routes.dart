@@ -1,45 +1,6 @@
-import 'package:blithepay/features/auth/presentation/views/setup_pin_view.dart';
-import 'package:blithepay/features/common/data/success_args_model.dart';
-import 'package:blithepay/features/dashboard/presentation/models/dashboard_model.dart';
-import 'package:blithepay/features/fees/presentation/views/payment_confirmation_view.dart';
-import 'package:blithepay/features/fees/presentation/views/payment_success_view.dart';
-import 'package:blithepay/features/profile/presentation/views/change_password_view.dart';
-import 'package:blithepay/features/profile/presentation/views/profile_view.dart';
-import 'package:blithepay/features/fees/presentation/views/fees_breakdown_view.dart';
-import 'package:blithepay/features/schools/presentation/views/link_child_school_view.dart';
-import 'package:blithepay/features/schools/presentation/views/link_profile.dart';
-import 'package:blithepay/features/schools/presentation/views/student_linked_success_view.dart';
-import 'package:blithepay/features/splash/presentation/views/splash_view.dart';
-import 'package:go_router/go_router.dart';
-import '../../features/auth/presentation/views/login_view.dart';
-import '../../features/auth/presentation/views/signup_view.dart';
-import '../../features/auth/presentation/views/forgot_password_view.dart';
-import '../../features/auth/presentation/views/verify_otp_view.dart';
-import '../../features/auth/presentation/views/reset_password_view.dart';
-import '../../features/auth/presentation/views/password_changed_view.dart';
-import '../../features/auth/presentation/views/onboarding_view.dart';
-import '../../features/dashboard/presentation/views/dashboard_view.dart';
-import '../../features/schools/presentation/views/confirm_school_view.dart';
-import '../../features/schools/presentation/views/search_school_view.dart';
-import '../../features/schools/presentation/views/add_school_view.dart';
-import '../../features/schools/presentation/views/edit_schools_view.dart';
-import '../../features/schools/presentation/views/edit_school_detail_view.dart';
-import '../../features/students/presentation/views/link_students_view.dart';
-import '../../features/students/presentation/views/guardian_verification_view.dart';
-import '../../features/students/presentation/views/linked_students_view.dart';
-import '../../features/profile/presentation/views/change_phone_number_view.dart';
-import '../../features/profile/presentation/views/profile_detail_view.dart';
-import '../../features/common/presentation/views/request_pending_view.dart';
-import '../../features/common/presentation/views/request_failed_view.dart';
-import '../../features/common/presentation/views/success_view.dart';
-import '../../features/notifications/presentation/views/notifications_view.dart';
-import '../../features/wallet/presentation/views/fund_wallet_view.dart';
-import '../../features/wallet/presentation/views/transactions_view.dart';
-import '../../features/wallet/presentation/views/wallet_management_view.dart';
-import '../../features/wallet/presentation/views/transaction_detail_view.dart';
-import '../../features/fees/presentation/views/pay_fees_view.dart';
-import '../../features/support/presentation/views/help_support_view.dart';
-import 'app_routes.dart';
+import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/features/students/data/models/verify_student_model.dart';
+import 'package:blithepay/features/students/data/models/view_invoice_model.dart';
 
 class AppRouterConfig {
   static GoRouter createRouter() {
@@ -98,12 +59,12 @@ class AppRouterConfig {
           },
           routes: [
             GoRoute(
-              path: AppRoutes.home,
-              builder: (context, state) => const HomeView(),
-            ),
-            GoRoute(
               path: AppRoutes.linkedStudents,
               builder: (_, __) => const LinkedStudentsView(),
+            ),
+            GoRoute(
+              path: AppRoutes.home,
+              builder: (context, state) => const HomeView(),
             ),
             GoRoute(
               path: AppRoutes.profile,
@@ -137,32 +98,53 @@ class AppRouterConfig {
         ),
         GoRoute(
           path: AppRoutes.linkProfile,
-          builder: (_, __) => const LinkProfileView(),
+          builder: (context, state) {
+            final student = state.extra as VerifiedStudentModel;
+
+            return LinkProfileView(student: student);
+          },
         ),
         GoRoute(
           path: AppRoutes.studentLinkedSuccess,
-          builder: (_, __) => const StudentLinkedSucessView(),
+          builder: (context, state) {
+            final student = state.extra as LinkedStudentModel;
+
+            return StudentLinkedSucessView(student: student);
+          },
+          //   builder: (_, __) => const StudentLinkedSucessView(),
         ),
         GoRoute(
           path: AppRoutes.feeSelection,
-          builder: (_, __) => const FeeBreakDownView(
-            fees: [
-              {'name': 'Tuition Fees', 'amount': 300000},
-              {'name': 'Exam Fees', 'amount': 50000},
-              {'name': 'Library Fees', 'amount': 10000},
-              {'name': 'Tuition Fees', 'amount': 300000},
-              {'name': 'Exam Fees', 'amount': 50000},
-              {'name': 'Library Fees', 'amount': 10000},
-            ],
-          ),
+          builder: (context, state) {
+            final args = state.extra as FeeSelectionArgs;
+
+            return FeeBreakDownView(
+              student: args.student,
+              invoice: args.invoice,
+              latePaymentFee: args.latePaymentFee,
+            );
+          },
         ),
         GoRoute(
           path: AppRoutes.feeConfirmation,
-          builder: (_, __) => const PaymentConfirmationView(),
+          builder: (context, state) {
+            final invoiceId = state.extra as String;
+
+            return PaymentConfirmationView(invoiceId: invoiceId);
+          },
         ),
         GoRoute(
           path: AppRoutes.feeSuccess,
-          builder: (_, __) => const PaymentSuccessView(),
+          builder: (context, state) {
+            final extraData = state.extra as Map<String, dynamic>;
+            final invoice = extraData['invoice'] as ViewInvoiceModel;
+            final paymentData = extraData['paymentData'] as WalletPaymentData;
+
+            return PaymentSuccessView(
+              invoice: invoice,
+              paymentData: paymentData,
+            );
+          },
         ),
         GoRoute(
           path: AppRoutes.editSchools,
@@ -200,9 +182,33 @@ class AppRouterConfig {
           builder: (_, __) => const TransactionsView(),
         ),
         GoRoute(
+          path: AppRoutes.transactionReceiptView,
+          builder: (context, state) {
+            final transaction = state.extra as WalletTransactionModel;
+            return TransactionReceiptView(transaction: transaction);
+          },
+        ),
+
+        GoRoute(
+          path: AppRoutes.invoicedetail,
+          builder: (context, state) {
+            final extraData = state.extra as Map<String, dynamic>;
+
+            final invoice = extraData['invoice'] as InvoiceModel;
+            final student = extraData['student'] as VerifiedStudentModel;
+
+            return InvoiceAndFeeDetailsView(
+              invoice: invoice,
+              student: student,
+              // fees: invoice.fee,
+            );
+          },
+        ),
+
+        GoRoute(
           path: AppRoutes.transactionDetail,
           builder: (context, state) {
-            final transaction = state.extra as TransactionItem?;
+            final transaction = state.extra as WalletTransactionModel;
             return TransactionDetailView(transaction: transaction);
           },
         ),
@@ -229,6 +235,20 @@ class AppRouterConfig {
         GoRoute(
           path: AppRoutes.requestFailed,
           builder: (_, __) => const RequestFailedView(),
+        ),
+        GoRoute(
+          path: AppRoutes.feeTransactions,
+          builder: (context, state) {
+            final studentId = state.extra as VerifiedStudentModel;
+            return FeesTransactionsView(student: studentId);
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.studentTransactionDetail,
+          builder: (context, state) {
+            final transaction = state.extra as StudentTransactionModel;
+            return PaymentHistoryDetailView(transaction: transaction);
+          },
         ),
 
         GoRoute(

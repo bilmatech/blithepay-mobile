@@ -14,7 +14,26 @@ class SchoolsLoading extends SchoolsState {
 
 class SchoolsLoaded extends SchoolsState {
   final List<SchoolModel> schools;
-  const SchoolsLoaded({required this.schools});
+  final int? nextPage;
+  final bool isFetchingMore;
+
+  const SchoolsLoaded({
+    required this.schools,
+    this.nextPage,
+    this.isFetchingMore = false,
+  });
+
+  SchoolsLoaded copyWith({
+    List<SchoolModel>? schools,
+    int? nextPage,
+    bool? isFetchingMore,
+  }) {
+    return SchoolsLoaded(
+      schools: schools ?? this.schools,
+      nextPage: nextPage ?? this.nextPage,
+      isFetchingMore: isFetchingMore ?? this.isFetchingMore,
+    );
+  }
 }
 
 class SchoolsError extends SchoolsState {

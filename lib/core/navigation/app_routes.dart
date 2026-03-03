@@ -26,6 +26,11 @@ abstract class AppRoutes {
   static const String fundWallet = '/fund-wallet';
   static const String linkedStudents = '/linked-students';
   static const String transactions = '/transactions';
+  static const String feeTransactions = '/feeTransactions';
+  static const String transactionReceiptView = '/transactionReceiptView';
+
+  static const String invoicedetail = '/invoicedetail';
+
   static const String profile = '/profile';
   static const String profileDetail = '/profile-detail';
   static const String walletManagement = '/wallet-management';
@@ -42,4 +47,5 @@ abstract class AppRoutes {
   static const String feeSelection = '/fee-selection';
   static const String feeConfirmation = '/fee-confirmation';
   static const String feeSuccess = '/fee-success';
+  static const String studentTransactionDetail = '/student-transaction-detail';
 }

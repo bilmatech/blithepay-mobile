@@ -17,7 +17,7 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
   final _newPhoneController = TextEditingController();
   final _otpControllers = List.generate(4, (_) => TextEditingController());
 
-  bool _showOTP = false;
+  final bool _showOTP = false;
 
   @override
   void dispose() {

@@ -1,7 +1,7 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
-import 'package:blithepay/features/students/presentation/views/linked_students_view.dart';
+import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
 import 'package:blithepay/features/wallet/presentation/widgets/quick_action_button.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/app_outlined_icon_button.dart';
@@ -188,3 +188,40 @@ class _WalletManagementViewState extends State<WalletManagementView> {
     );
   }
 }
+
+final transactions = [
+  WalletTransactionModel(
+    amount: '300',
+    status: 'success',
+    id: 'cmlqkb0qr003e0vpczzqhii7l',
+    name: 'Tuition fee',
+    walletId: 'cmljgzu8w00070vp3yy5udkc8',
+    fees: '10',
+    netAmount: '198',
+    reference: '1771330263964dmgr24pmlqkayzg',
+    type: 'Deposit',
+    flow: '',
+    transactionAt: '2026-02-17T12:11:06.242Z',
+    processedAt: '2026-02-17T12:11:07.027Z',
+    isDeleted: false,
+    createdAt: '2026-02-17T12:11:07.028Z',
+    updatedAt: '2026-02-17T12:11:06.243Z',
+  ),
+  WalletTransactionModel(
+    amount: '200',
+    status: 'success',
+    id: 'cmlqkb0qr003e0vpczzqhii7l',
+    name: 'Tuition fee',
+    walletId: 'cmljgzu8w00070vp3yy5udkc8',
+    fees: '10',
+    netAmount: '',
+    reference: '1771330263964dmgr24pmlqkayzg',
+    type: 'Deposit',
+    flow: '',
+    transactionAt: '2026-02-17T12:11:06.242Z',
+    processedAt: '2026-02-17T12:11:07.027Z',
+    isDeleted: false,
+    createdAt: '2026-02-17T12:11:07.028Z',
+    updatedAt: '2026-02-17T12:11:06.243Z',
+  ),
+];

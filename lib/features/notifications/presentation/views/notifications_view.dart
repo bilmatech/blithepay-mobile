@@ -20,7 +20,7 @@ class NotificationsView extends StatefulWidget {
 
 class _NotificationsViewState extends State<NotificationsView> {
   final String _selectedNotification = '';
-  String _searchQuery = '';
+  final String _searchQuery = '';
   String? currentFilter;
   String? currentSort;
 

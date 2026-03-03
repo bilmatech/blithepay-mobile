@@ -13,4 +13,3 @@ export 'dialogs/confirmation_dialog.dart';
 export 'dialogs/error_dialog.dart';
 export 'dialogs/search_modal.dart';
 export 'empty_state.dart';
-export 'app_drawer.dart';
