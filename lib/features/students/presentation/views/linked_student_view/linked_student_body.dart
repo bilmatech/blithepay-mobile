@@ -62,7 +62,7 @@ class _LinkedStudentsBodyState extends State<LinkedStudentsBody> {
               final s = widget.students[index];
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: StudentCard(student: s),
+                child: StudentCard(data: student.toStudentCardData()),
               );
             },
           ),
@@ -102,9 +102,9 @@ class _LinkedStudentsBodyState extends State<LinkedStudentsBody> {
 }
 
 class StudentCard extends StatelessWidget {
-  final VerifiedStudentModel student;
+  final StudentCardData data;
 
-  const StudentCard({super.key, required this.student});
+  const StudentCard({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -119,20 +119,20 @@ class StudentCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleAvatar(radius: 24, child: Text(student.fullName[0])),
+              CircleAvatar(radius: 24, child: Text(data.fullName[0])),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Student ID: ${student.regNumber}',
+                      'Student ID: ${data.regNumber}',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.white,
                       ),
                     ),
                     Text(
-                      student.fullName,
+                      data.fullName,
                       style: AppTextStyles.bodyLarge.copyWith(
                         color: Colors.white,
                       ),
@@ -152,7 +152,7 @@ class StudentCard extends StatelessWidget {
               const Icon(Icons.school, color: Colors.white70, size: 16),
               const SizedBox(width: 6),
               Text(
-                student.classModel.name,
+                data.className,
                 style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
               ),
             ],
@@ -164,7 +164,7 @@ class StudentCard extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  student.school.name,
+                  data.schoolName,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Colors.white70,
                   ),
@@ -178,15 +178,15 @@ class StudentCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '',
-                // 'Fee Pending',
-                //   student.feeStatus,
-                style: AppTextStyles.bodyRegular.copyWith(
-                  color: AppColors.warning,
-                  fontWeight: FontWeight.w600,
+              if (data.status != StudentCardStatus.none) ...[
+                Text(
+                  'Status: ${data.status.label}',
+                  style: AppTextStyles.bodyRegular.copyWith(
+                    color: data.status.color,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
+              ],
               // GestureDetector(
               //   onTap: () => context.push(
               //     AppRoutes.feeSelection,
@@ -209,5 +209,37 @@ class StudentCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+extension StudentCardStatusX on StudentCardStatus {
+  String get label {
+    switch (this) {
+      case StudentCardStatus.paid:
+        return 'Paid';
+      case StudentCardStatus.pending:
+        return 'Fee Pending';
+      case StudentCardStatus.unpaid:
+        return 'Unpaid';
+      case StudentCardStatus.overdue:
+        return 'Overdue';
+      default:
+        return '';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case StudentCardStatus.paid:
+        return AppColors.success;
+      case StudentCardStatus.unpaid:
+        return AppColors.warning;
+      case StudentCardStatus.overdue:
+        return AppColors.error;
+      case StudentCardStatus.pending:
+        return AppColors.warning;
+      default:
+        return Colors.transparent;
+    }
   }
 }

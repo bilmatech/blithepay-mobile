@@ -1,17 +1,11 @@
-import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/core/navigation/app_routes.dart';
-import 'package:blithepay/core/storage/auth_local_storage.dart';
-import 'package:blithepay/features/auth/presentation/bloc/auth_event.dart';
-import 'package:blithepay/features/fees/presentation/bloc/fees_bloc.dart';
-import 'package:blithepay/features/fees/presentation/bloc/fees_event.dart';
-import 'package:blithepay/features/fees/presentation/bloc/fees_state.dart';
+import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_bloc.dart';
+import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_event.dart';
+import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_state.dart';
 import 'package:blithepay/features/fees/presentation/views/widgets/nemeric_keyboard.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:go_router/go_router.dart';
 
 class PinBottomSheetContent extends StatefulWidget {
   const PinBottomSheetContent({super.key});
@@ -33,12 +27,8 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
 
   @override
   void dispose() {
-    for (final c in _controllers) {
-      c.dispose();
-    }
-    for (final f in _focusNodes) {
-      f.dispose();
-    }
+    for (final c in _controllers) c.dispose();
+    for (final f in _focusNodes) f.dispose();
     super.dispose();
   }
 
@@ -74,18 +64,6 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Center(
-            child: SizedBox(
-              width: 40,
-              height: 4,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.all(Radius.circular(4)),
-                ),
-              ),
-            ),
-          ),
           const SizedBox(height: 20),
           Text(
             'Enter Payment PIN',
@@ -115,64 +93,45 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: AppColors.primary,
-                        width: 2,
-                      ),
-                    ),
                   ),
                 ),
               ),
             ),
           ),
           const SizedBox(height: 16),
-          //           const SizedBox(height: 12),
-          GestureDetector(
-            onTap: () async {
-              final userSession = await AppLocalDataSourceImpl(
-                const FlutterSecureStorage(),
-              ).getSession();
-
-              Navigator.pop(context); // close bottom sheet
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                context.push(
-                  AppRoutes.setupOtp,
-                  extra: {
-                    'email': userSession?.user?.email ?? '',
-                    'flow': OtpFlow.forgotPassword,
-                    'pop': true,
-                  },
-                );
-              });
-            },
-            child: Text(
-              'Forgot PIN? Reset',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.success,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
           NumericKeypad(onKeyTap: _onKeyPressed, onDelete: _onDeletePressed),
           const SizedBox(height: 24),
-          BlocBuilder<FeesBloc, FeesState>(
-            builder: (context, state) {
-              final isLoading = state is FeesLoading;
+          BlocListener<PaymentBloc, PaymentState>(
+            listener: (context, state) {
+              if (state.status == PaymentStatus.success) {
+                Navigator.pop(context); // CLOSE SHEET
+              }
 
-              return PrimaryButton(
-                label: 'Confirm Payment',
-                isLoading: isLoading,
-                onPressed: () {
-                  final pin = _controllers.map((c) => c.text).join();
-                  if (pin.length != 4) return;
+              if (state.status == PaymentStatus.failure &&
+                  state.message != null) {
+                Navigator.pop(context); // CLOSE SHEET
 
-                  context.read<FeesBloc>().add(VerifyPinEvent(pin));
-                },
-              );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message!)));
+              }
             },
+            child: BlocBuilder<PaymentBloc, PaymentState>(
+              builder: (context, state) {
+                return PrimaryButton(
+                  label: 'Confirm Payment',
+                  isLoading:
+                      state.status == PaymentStatus.pinVerifying ||
+                      state.status == PaymentStatus.walletInProgress,
+                  onPressed: () {
+                    final pin = _controllers.map((c) => c.text).join();
+                    if (pin.length == 4) {
+                      context.read<PaymentBloc>().add(VerifyPin(pin));
+                    }
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),

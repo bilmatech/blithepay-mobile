@@ -87,40 +87,74 @@ class _InvoicesSection extends StatelessWidget {
           );
         }
 
+        List<InvoiceModel> invoices = [];
+
         if (state is InvoiceLoaded && state.studentId == student.id) {
-          if (state.invoice.isEmpty) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text("No invoices available"),
-            );
-          }
+          invoices = state.invoice;
+        } else if (state is InvoiceByIdLoading &&
+            state.existingInvoices != null) {
+          invoices = state.existingInvoices!;
+        } else if (state is InvoiceByIdViewLoaded &&
+            state.existingInvoices != null) {
+          invoices = state.existingInvoices!;
+        }
 
-          return SizedBox(
-            height: 200,
-            width: MediaQuery.of(context).size.width,
+        if (invoices.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text("No invoices available"),
+          );
+        }
 
-            child: PageView.builder(
-              controller: PageController(viewportFraction: 1.0),
-              itemCount: state.invoice.length,
-              itemBuilder: (context, index) {
-                final invoice = state.invoice[index];
+        return SizedBox(
+          height: 200,
+          width: MediaQuery.of(context).size.width,
 
-                return SizedBox(
-                  width: double.infinity,
+          child: PageView.builder(
+            controller: PageController(viewportFraction: 1.0),
+            itemCount: invoices.length,
+            itemBuilder: (context, index) {
+              final invoice = invoices[index];
 
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      //  Full Width Card
-                      Expanded(child: InvoiceCard(invoice: invoice)),
+              return SizedBox(
+                width: double.infinity,
 
-                      const SizedBox(height: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    //  Full Width Card
+                    Expanded(child: InvoiceCard(invoice: invoice)),
 
-                      Row(
-                        children: [
+                    const SizedBox(height: 12),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.receipt, size: 16),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              side: const BorderSide(color: AppColors.border),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed: () {
+                              context.push(
+                                AppRoutes.invoicedetail,
+                                extra: {'invoice': invoice, 'student': student},
+                              );
+                            },
+                            label: const Text('View Invoice'),
+                          ),
+                        ),
+
+                        // Hide Pay Fees if invoice is already paid
+                        if (invoice.status.toLowerCase() != 'paid') ...[
+                          const SizedBox(width: 12),
                           Expanded(
                             child: OutlinedButton.icon(
-                              icon: const Icon(Icons.receipt, size: 16),
+                              icon: const Icon(Icons.payment, size: 16),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 12,
@@ -130,61 +164,34 @@ class _InvoicesSection extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              onPressed: () {
-                                context.push(
-                                  AppRoutes.invoicedetail,
-                                  extra: invoice,
-                                );
-                              },
-                              label: const Text('View Invoice'),
+                              onPressed: () => context.push(
+                                AppRoutes.feeSelection,
+                                extra: FeeSelectionArgs(
+                                  invoice: invoice,
+                                  studentCode: student.school.schoolCode,
+                                  student: student,
+                                  latePaymentFee: invoice.fee.latePaymentFee,
+                                ),
+                              ),
+                              label: const Text('Pay Fees'),
                             ),
                           ),
-
-                          // Hide Pay Fees if invoice is already paid
-                          if (invoice.status.toLowerCase() != 'paid') ...[
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                icon: const Icon(Icons.payment, size: 16),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  side: const BorderSide(
-                                    color: AppColors.border,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                onPressed: () => context.push(
-                                  AppRoutes.feeSelection,
-                                  extra: FeeSelectionArgs(
-                                    invoice: invoice,
-                                    studentCode: student.school.schoolCode,
-                                    student: student,
-                                    latePaymentFee: invoice.fee.latePaymentFee,
-                                  ),
-                                ),
-                                label: const Text('Pay Fees'),
-                              ),
-                            ),
-                          ],
                         ],
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          );
-        }
-
-        return const SizedBox(
-          height: 140,
-          child: Center(child: Text('Invoices not loaded')),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         );
       },
+
+      // return const SizedBox(
+      //   height: 140,
+      //   child: Center(child: Text('Invoices not loaded')),
+      // );
+      // },
     );
   }
 }

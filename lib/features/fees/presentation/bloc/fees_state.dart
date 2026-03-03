@@ -76,3 +76,8 @@ class WalletPaymentFailure extends FeesState {
   final String message;
   const WalletPaymentFailure(this.message);
 }
+
+class PinVerificationFailure extends FeesState {
+  final String message;
+  const PinVerificationFailure(this.message);
+}

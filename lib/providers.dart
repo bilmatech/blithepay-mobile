@@ -6,6 +6,7 @@ import 'package:blithepay/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:blithepay/features/fees/data/repositories/fees_repository.dart';
 import 'package:blithepay/features/fees/presentation/bloc/fees_bloc.dart';
+import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_bloc.dart';
 import 'package:blithepay/features/notifications/data/repositories/notifications_repository.dart';
 import 'package:blithepay/features/notifications/presentation/bloc/notifications_bloc.dart';
 import 'package:blithepay/features/profile/presentation/bloc/profile_bloc.dart';
@@ -134,7 +135,10 @@ class AppProviders {
           repository: context.read<StudentsRepository>(),
         ),
       ),
-
+      BlocProvider<PaymentBloc>(
+        create: (context) =>
+            PaymentBloc(repository: context.read<FeesRepository>()),
+      ),
       BlocProvider<ProfileBloc>(create: (_) => ProfileBloc()),
     ];
   }

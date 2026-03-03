@@ -42,23 +42,8 @@ class PayFeeEvent extends FeesEvent {
   List<Object?> get props => [feeId, amount, paymentMethod];
 }
 
-class VerifyPinEvent extends FeesEvent {
-  final String pin;
 
-  const VerifyPinEvent(this.pin);
 
-  @override
-  List<Object?> get props => [pin];
-}
 
-class PayWithWalletEvent extends FeesEvent {
-  final String invoiceId;
-  final List<String> feeItemIds;
-
-  const PayWithWalletEvent(this.invoiceId, this.feeItemIds);
-
-  @override
-  List<Object?> get props => [invoiceId, feeItemIds];
-}
 
 

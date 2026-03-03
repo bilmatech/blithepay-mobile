@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:blithepay/core/network/api_endpoints.dart';
 import 'package:blithepay/core/network/dio_client.dart';
 import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
@@ -5,6 +7,7 @@ import 'package:blithepay/features/students/data/models/fee_transaction_model.da
 import 'package:blithepay/features/students/data/models/invoice_model.dart';
 import 'package:blithepay/features/students/data/models/student_transaction_model.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
+import 'package:blithepay/features/students/data/models/view_invoice_model.dart';
 import 'package:dio/dio.dart';
 
 import '../models/student_model.dart';
@@ -35,12 +38,15 @@ abstract class StudentsRepository {
     int page = 1,
     int limit = 20,
   });
-  Future<InvoiceModel> getInvoiceById(String studentId);
+  Future<InvoiceModel> getInvoiceById(String invoiceId);
   Future<PaginatedStudentTransactionModel> getStudentTransaction({
     int page = 1,
     int limit = 20,
     String studentId = '',
   });
+
+  Future<ViewInvoiceModel> getInvoiceView(String id);
+  Future<Uint8List> downloadInvoice(String invoiceId);
 }
 
 class StudentsRepositoryImpl implements StudentsRepository {
@@ -233,9 +239,9 @@ class StudentsRepositoryImpl implements StudentsRepository {
   }
 
   @override
-  Future<InvoiceModel> getInvoiceById(String studentId) async {
+  Future<InvoiceModel> getInvoiceById(String invoiceId) async {
     var response = await _dioClient.get(
-      ApiEndpoints.getinvoicesById(studentId),
+      ApiEndpoints.getinvoicesById(invoiceId),
     );
     return InvoiceModel.fromJson(response.data['data']);
   }
@@ -263,5 +269,22 @@ class StudentsRepositoryImpl implements StudentsRepository {
       totalPages: metadata['totalPages'],
       nextPage: metadata['nextPage'],
     );
+  }
+
+  @override
+  Future<ViewInvoiceModel> getInvoiceView(String id) async {
+    var response = await _dioClient.get(ApiEndpoints.getinvoicesByIdView(id));
+    return ViewInvoiceModel.fromJson(response.data['data']);
+  }
+
+
+  @override
+  Future<Uint8List> downloadInvoice(String invoiceId) async {
+    final response = await _dioClient.get(
+      ApiEndpoints.getinvoicesByIdDownload(invoiceId),
+      options: Options(responseType: ResponseType.bytes),
+    );
+
+    return Uint8List.fromList(response.data);
   }
 }

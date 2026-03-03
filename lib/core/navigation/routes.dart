@@ -1,5 +1,6 @@
 import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
+import 'package:blithepay/features/students/data/models/view_invoice_model.dart';
 
 class AppRouterConfig {
   static GoRouter createRouter() {
@@ -117,13 +118,6 @@ class AppRouterConfig {
           builder: (context, state) {
             final args = state.extra as FeeSelectionArgs;
 
-            context.read<FeesBloc>().add(
-              FetchFeesByIdEvent(
-                invoice: args.invoice,
-                studentCode: args.studentCode,
-              ),
-            );
-
             return FeeBreakDownView(
               student: args.student,
               invoice: args.invoice,
@@ -134,21 +128,21 @@ class AppRouterConfig {
         GoRoute(
           path: AppRoutes.feeConfirmation,
           builder: (context, state) {
-            final student = state.extra as PaymentPayload;
+            final invoiceId = state.extra as String;
 
-            return PaymentConfirmationView(payload: student);
+            return PaymentConfirmationView(invoiceId: invoiceId);
           },
         ),
         GoRoute(
           path: AppRoutes.feeSuccess,
           builder: (context, state) {
             final extraData = state.extra as Map<String, dynamic>;
-            final payload = extraData['payload'] as PaymentPayload;
+            final invoice = extraData['invoice'] as ViewInvoiceModel;
             final paymentData = extraData['paymentData'] as WalletPaymentData;
 
             return PaymentSuccessView(
-              payload: payload,
-              paymentData: paymentData, 
+              invoice: invoice,
+              paymentData: paymentData,
             );
           },
         ),
@@ -198,10 +192,14 @@ class AppRouterConfig {
         GoRoute(
           path: AppRoutes.invoicedetail,
           builder: (context, state) {
-            final invoice = state.extra as InvoiceModel;
+            final extraData = state.extra as Map<String, dynamic>;
+
+            final invoice = extraData['invoice'] as InvoiceModel;
+            final student = extraData['student'] as VerifiedStudentModel;
 
             return InvoiceAndFeeDetailsView(
               invoice: invoice,
+              student: student,
               // fees: invoice.fee,
             );
           },

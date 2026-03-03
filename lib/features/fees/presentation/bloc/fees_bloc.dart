@@ -9,9 +9,6 @@ class FeesBloc extends Bloc<FeesEvent, FeesState> {
 
   FeesBloc({required this.repository}) : super(const FeesInitial()) {
     on<FetchFeesByIdEvent>(_onFeesById);
-    on<VerifyPinEvent>(_onVerifyPin);
-    on<PayWithWalletEvent>(_onPayWithWallet);
-
     on<FetchFeesEvent>(_onFetchFees);
     on<PayFeeEvent>(_onPayFee);
   }
@@ -43,39 +40,6 @@ class FeesBloc extends Bloc<FeesEvent, FeesState> {
       }
     }
   }
-
-  Future<void> _onVerifyPin(
-    VerifyPinEvent event,
-    Emitter<FeesState> emit,
-  ) async {
-    emit(const FeesLoading());
-    try {
-      await repository.verifyPin(event.pin);
-      emit(const PinVerified());
-    } catch (e) {
-      emit(FeesError(extractError(e)));
-    }
-  }
-
-Future<void> _onPayWithWallet(
-  PayWithWalletEvent event,
-  Emitter<FeesState> emit,
-) async {
-  emit(const WalletPaymentInProgress());
-
-  try {
-    final result = await repository.payWithWallet(
-      event.invoiceId,
-      event.feeItemIds,
-    );
-
-    emit(WalletPaymentSuccess(result));
-  } catch (e) {
-    emit(
-      WalletPaymentFailure(extractError(e)),
-    );
-  }
-}
 
   Future<void> _onFetchFees(
     FetchFeesEvent event,

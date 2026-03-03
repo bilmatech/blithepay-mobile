@@ -55,8 +55,9 @@ class ApiEndpoints {
   static const String getFeeTransaction = '/fee/transactions';
 
   static const String getinvoices = '/invoices';
-   static String getinvoicesById(String id) => '/invoices/$id';
-  // static String getinvoicesById(String id) => '/invoices/$id/view';
+  static String getinvoicesById(String id) => '/invoices/$id';
+  static String getinvoicesByIdView(String id) => '/invoices/$id/view';
+  static String getinvoicesByIdDownload(String id) => '/invoices/$id/download';
 
   static const String paywithWallet = '/invoices/pay_with_wallet';
 

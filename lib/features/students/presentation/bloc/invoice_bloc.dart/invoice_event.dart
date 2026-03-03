@@ -24,3 +24,15 @@ class GetInvoiceByIdEvent extends InvoiceEvent {
 
   GetInvoiceByIdEvent({required this.invoiceId});
 }
+
+
+class GetInvoiceByIdViewEvent extends InvoiceEvent {
+  final String invoiceId;
+
+  GetInvoiceByIdViewEvent({required this.invoiceId});
+}
+class GetInvoiceByIdDownloadEvent extends InvoiceEvent {
+  final String invoiceId;
+
+  GetInvoiceByIdDownloadEvent({required this.invoiceId});
+}

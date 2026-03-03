@@ -4,7 +4,7 @@ import 'package:blithepay/core/utils/helpers.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:blithepay/features/fees/data/models/payment_data.dart';
-import 'package:blithepay/features/fees/presentation/views/fees_breakdown_view.dart';
+import 'package:blithepay/features/students/data/models/view_invoice_model.dart';
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_bloc.dart';
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_event.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student_view/linked_student_body.dart';
@@ -19,17 +19,19 @@ import 'package:printing/printing.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 class PaymentSuccessView extends StatelessWidget {
-  final PaymentPayload payload;
+  final ViewInvoiceModel invoice;
   final WalletPaymentData paymentData;
 
   const PaymentSuccessView({
     super.key,
-    required this.payload,
+    required this.invoice,
     required this.paymentData,
   });
 
   @override
   Widget build(BuildContext context) {
+    final studentCardData = invoice.toStudentCardData();
+
     return AppScaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -37,88 +39,90 @@ class PaymentSuccessView extends StatelessWidget {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // Success Indicator
-              Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(
-                  color: AppColors.success,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.check, color: Colors.white, size: 28),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Payment Successful',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.success,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '-${Helpers.formatCurrency(payload.total.toDouble())}',
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 32),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _buildSuccessHeader(),
+            const SizedBox(height: 32),
 
-              // Student Card
-              SizedBox(
-                height: 200,
-                child: StudentCard(student: payload.student),
-              ),
-              const SizedBox(height: 24),
+            // Student Card
+            SizedBox(height: 200, child: StudentCard(data: studentCardData)),
+            const SizedBox(height: 24),
 
-              // Transaction Details
-              _buildDetailRow('Student', payload.student.fullName),
-              const SizedBox(height: 12),
-              _buildDetailRow(
-                'Total',
-                Helpers.formatCurrency(payload.total.toDouble()),
-              ),
-              const SizedBox(height: 12),
-              _buildDetailRow('Date', Helpers.formatDate(DateTime.now())),
-              // const SizedBox(height: 12),
-              // _buildDetailRow('Reference', payload.student.regNumber),
-              const SizedBox(height: 40),
+            // Transaction Details
+            _buildDetailRow('Student', invoice.childName),
+            const SizedBox(height: 12),
+            _buildDetailRow(
+              'Total Paid',
+              Helpers.formatCurrency(invoice.totalAmount),
+            ),
+            const SizedBox(height: 12),
+            _buildDetailRow('Date', Helpers.formatDate(paymentData.paidAt)),
+            const SizedBox(height: 40),
 
-              // Action Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: SecondaryOutlinedButton(
-                      onPressed: () => _downloadReceipt(context),
-                      label: 'Download Receipt',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: PrimaryButton(
-                      onPressed: () {
-                        context.read<DashboardBloc>().add(
-                          const FetchDashboardData(forceRefresh: true),
-                        );
-                        context.read<InvoiceBloc>().add(
-                          GetInvoiceEvent(studentId: payload.student.id),
-                        );
-                        context.go('/linked-students');
-                      },
-                      label: 'Done',
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            _buildActions(context),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSuccessHeader() {
+    return Column(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: const BoxDecoration(
+            color: AppColors.success,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.check, color: Colors.white, size: 28),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'Payment Successful',
+          style: AppTextStyles.bodyLarge.copyWith(
+            color: AppColors.success,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '-${Helpers.formatCurrency(invoice.totalAmount)}',
+          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActions(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: SecondaryOutlinedButton(
+            onPressed: () => _downloadReceipt(context),
+            label: 'Download Receipt',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: PrimaryButton(
+            onPressed: () {
+              context.read<DashboardBloc>().add(
+                const FetchDashboardData(forceRefresh: true),
+              );
+
+              context.read<InvoiceBloc>().add(
+                GetInvoiceByIdViewEvent(invoiceId: invoice.invoiceNo),
+              );
+
+              context.go('/linked-students');
+            },
+            label: 'Done',
+          ),
+        ),
+      ],
     );
   }
 
@@ -179,11 +183,10 @@ class PaymentSuccessView extends StatelessWidget {
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    _pdfRow('Student', payload.student.fullName),
-                    _pdfRow('Student ID', payload.student.regNumber),
-                    _pdfRow('Invoice No', paymentData.invoiceNo),
+                    _pdfRow('Student', invoice.childName),
+                    _pdfRow('Invoice No', invoice.invoiceNo),
                     _pdfRow('Date', Helpers.formatDate(paymentData.paidAt)),
-                    _pdfRow('Status', paymentData.status.toUpperCase()),
+                    _pdfRow('Status', invoice.paymentStatus.toUpperCase()),
                   ],
                 ),
               ),
@@ -201,7 +204,7 @@ class PaymentSuccessView extends StatelessWidget {
                   children: [
                     _pdfRowBold(
                       'Total Paid',
-                      Helpers.formatCurrency(payload.total.toDouble()),
+                      Helpers.formatCurrency(invoice.totalAmount),
                     ),
                   ],
                 ),
@@ -265,6 +268,7 @@ class PaymentSuccessView extends StatelessWidget {
     );
   }
 }
+
 // class PaymentSuccessView extends StatelessWidget {
 //   const PaymentSuccessView({super.key});
 

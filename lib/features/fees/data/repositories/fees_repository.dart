@@ -27,7 +27,7 @@ abstract class FeesRepository {
     int page = 1,
     int limit = 20,
   });
-  Future<InvoiceModel> getInvoiceById(String studentId);
+
 }
 
 class FeesRepositoryImpl implements FeesRepository {
@@ -159,11 +159,4 @@ class FeesRepositoryImpl implements FeesRepository {
     );
   }
 
-  @override
-  Future<InvoiceModel> getInvoiceById(String studentId) async {
-    var response = await _dioClient.get(
-      ApiEndpoints.getinvoicesById(studentId),
-    );
-    return InvoiceModel.fromJson(response.data['data']);
-  }
 }
