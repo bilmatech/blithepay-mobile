@@ -8,7 +8,9 @@ abstract class DashboardEvent extends Equatable {
 }
 
 class FetchDashboardData extends DashboardEvent {
-  const FetchDashboardData();
+  final bool forceRefresh;
+
+  const FetchDashboardData({this.forceRefresh = false});
 }
 
 class SelectChild extends DashboardEvent {

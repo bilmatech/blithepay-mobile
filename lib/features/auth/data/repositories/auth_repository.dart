@@ -11,6 +11,7 @@ abstract class AuthRepositoryInterface {
     String password,
     String fullName,
     String phoneNumber,
+    String fcmtoken,
   );
   Future<AuthResponseModel> login(String email, String password);
   Future<void> forgotPassword(String email);
@@ -28,6 +29,7 @@ abstract class AuthRepositoryInterface {
 
   Future<AuthResponseModel?> getSession();
   Future<bool> isOnboardingCompleted();
+  Future<void> syncFcmToken(String token);
 }
 
 class AuthRepository implements AuthRepositoryInterface {
@@ -49,6 +51,7 @@ class AuthRepository implements AuthRepositoryInterface {
     String password,
     String fullName,
     String phoneNumber,
+    String fcmtoken,
   ) async {
     final response = await _dioClient.post(
       ApiEndpoints.signup,
@@ -58,7 +61,7 @@ class AuthRepository implements AuthRepositoryInterface {
         "phone": phoneNumber,
         "isTermsAndPrivacyAccepted": true,
         "password": password,
-        //  "fcmToken": '',
+        "fcmToken": fcmtoken,
       },
     );
     return UserModel.fromJson(response.data['data']);
@@ -69,7 +72,7 @@ class AuthRepository implements AuthRepositoryInterface {
     return AuthResponseModel.fromJson(
       (await _dioClient.post(
         ApiEndpoints.login,
-        data: {"email": email, "password": password},
+        data: {"email": email, "password": password, "source": 'mobile'},
       )).data['data'],
     );
   }
@@ -164,6 +167,11 @@ class AuthRepository implements AuthRepositoryInterface {
       data: {'token': token},
     );
     return AuthTokensModel.fromJson(response.data['data']);
+  }
+
+  @override
+  Future<void> syncFcmToken(String token) async {
+    await _dioClient.post(ApiEndpoints.synToken, data: {'token': token});
   }
 }
 

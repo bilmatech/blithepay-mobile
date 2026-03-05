@@ -1,3 +1,4 @@
+import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -9,7 +10,14 @@ class StudentLinkedSucessView extends StatelessWidget {
   final String? message;
   final VoidCallback? onPressed;
 
-  const StudentLinkedSucessView({super.key, this.message, this.onPressed});
+  final LinkedStudentModel? student;
+
+  const StudentLinkedSucessView({
+    super.key,
+    this.message,
+    this.onPressed,
+    this.student,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +47,11 @@ class StudentLinkedSucessView extends StatelessWidget {
                   //   fit: BoxFit.cover,
                   // ),
                 ),
-                child: Icon(Icons.person, size: 40),
+                child: const Icon(Icons.person, size: 40),
               ),
               const SizedBox(height: 16),
               Text(
-                'Adebowale Anthony Joshua',
+                student?.fullName ?? '',
                 style: AppTextStyles.bodyRegular.copyWith(
                   color: AppColors.textPrimary,
                 ),
@@ -72,36 +80,44 @@ class StudentLinkedSucessView extends StatelessWidget {
               const SizedBox(height: 32),
               PrimaryButton(
                 label: 'Go Home',
-                onPressed: onPressed ?? () => context.go('/home'),
+                onPressed: onPressed ?? () => context.go('/linked-students'),
               ),
               const SizedBox(height: 16),
 
-              InkWell(
-                onTap: () {
-                  context.push('/pay-fees');
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.shimmerBase,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  width: double.infinity,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    child: Text(
-                      'Pay Fees',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.primary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              ),
+              // InkWell(
+              //   onTap: () {
+              //     context.push(
+              //       AppRoutes.feeSelection,
+              //       extra: FeeSelectionArgs(
+              //         invoice: invoice,
+              //         studentCode: student.school.schoolCode,
+              //         student: student,
+              //       ),
+              //     );
+              //     // context.push('/pay-fees');
+              //   },
+              //   child: Container(
+              //     decoration: BoxDecoration(
+              //       color: AppColors.shimmerBase,
+              //       borderRadius: BorderRadius.circular(12),
+              //     ),
+              //     width: double.infinity,
+              //     child: Padding(
+              //       padding: const EdgeInsets.symmetric(
+              //         horizontal: 12,
+              //         vertical: 12,
+              //       ),
+              //       child: Text(
+              //         'Pay Fees',
+              //         style: AppTextStyles.bodySmall.copyWith(
+              //           fontWeight: FontWeight.w900,
+              //           color: AppColors.primary,
+              //         ),
+              //         textAlign: TextAlign.center,
+              //       ),
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),

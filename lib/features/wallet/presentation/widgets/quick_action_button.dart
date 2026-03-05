@@ -29,7 +29,7 @@ class QuickActionButtons extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         _buildActionButton(
-          backgroundColor: const Color(0xFFD8E4).withValues(alpha: 0.7),
+          backgroundColor: const Color(0x00ffd8e4).withValues(alpha: 0.7),
           icon: Icons.card_travel,
           label: 'Withdraw',
           onTap: () {},

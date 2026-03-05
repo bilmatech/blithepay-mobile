@@ -1,15 +1,12 @@
 import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
+import 'package:blithepay/features/transaction/presentation/bloc/transaction_bloc.dart';
+import 'package:blithepay/features/transaction/presentation/bloc/transaction_event.dart';
+import 'package:blithepay/features/transaction/presentation/bloc/transaction_state.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/app_outlined_icon_button.dart';
-import 'package:blithepay/shared/widgets/inputs/dropdown_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../bloc/wallet_bloc.dart';
-import '../bloc/wallet_event.dart';
-import '../bloc/wallet_state.dart';
 import '../../../../shared/widgets/loaders/shimmer_table_loader.dart';
-import '../../../../core/constants/app_text_styles.dart';
 
 class TransactionsView extends StatefulWidget {
   const TransactionsView({super.key});
@@ -19,14 +16,37 @@ class TransactionsView extends StatefulWidget {
 }
 
 class _TransactionsViewState extends State<TransactionsView> {
-  // String _searchQuery = '';
+  final ScrollController _scrollController = ScrollController();
+
   String? currentFilter;
   String? currentSort;
 
   @override
   void initState() {
     super.initState();
-    context.read<WalletBloc>().add(const GetTransactionsEvent());
+
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 100) {
+      final state = context.read<WalletTransactionBloc>().state;
+
+      if (state is WalletTransactionLoaded &&
+          state.nextPage != null &&
+          !state.isFetchingMore) {
+        context.read<WalletTransactionBloc>().add(
+          GetTransactionsEvent(page: state.nextPage!, limit: 20),
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -37,114 +57,147 @@ class _TransactionsViewState extends State<TransactionsView> {
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Transactions'),
+        title: const Text('Wallet Transactions'),
         centerTitle: true,
       ),
-      body: BlocBuilder<WalletBloc, WalletState>(
-        builder: (context, state) {
-          if (state is WalletLoading) {
-            return const ShimmerTableLoader();
-          } else if (state is TransactionsLoaded) {
-            final transactions = state.transactions;
-            return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Search
-                    // TextField(
-                    //   onChanged: (value) =>
-                    //       setState(() => _searchQuery = value),
-                    //   decoration: InputDecoration(
-                    //     hintText: 'Search transactions...',
-                    //     prefixIcon: const Icon(Icons.search),
-                    //     border: OutlineInputBorder(
-                    //       borderRadius: BorderRadius.circular(12),
-                    //     ),
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 16),
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 26),
+        child: Column(
+          children: [
+            // Search
+            // TextField(
+            //   onChanged: (value) =>
+            //       setState(() => _searchQuery = value),
+            //   decoration: InputDecoration(
+            //     hintText: 'Search transactions...',
+            //     prefixIcon: const Icon(Icons.search),
+            //     border: OutlineInputBorder(
+            //       borderRadius: BorderRadius.circular(12),
+            //     ),
+            //   ),
+            // ),
+            // const SizedBox(height: 16),
 
-                    // Filter & Sort buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Today:',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            // Filter button with search
-                            AppOutlinedIconButton(
-                              onPressed: () => showFilterPopup<String>(
-                                context: context,
-                                items: [
-                                  'Successful',
-                                  'Failed',
-                                  'Pending',
-                                  'Withdrawal',
-                                  'Fee Payment',
-                                  'Deposit',
-                                ],
-                                selectedValue: currentFilter,
-                                onItemSelected: (value) =>
-                                    setState(() => currentFilter = value),
-                                enableSearch: false,
-                              ),
-                              label: 'Filter',
-                              icon: Icons.tune,
-                            ),
-                            const SizedBox(width: 8),
+            // Filter & Sort buttons
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children: [
+            //     Text(
+            //       'Today:',
+            //       style: AppTextStyles.bodyMedium.copyWith(
+            //         fontWeight: FontWeight.w600,
+            //       ),
+            //     ),
+            //     Row(
+            //       children: [
+            //         // Filter button with search
+            //         AppOutlinedIconButton(
+            //           onPressed: () => showFilterPopup<String>(
+            //             context: context,
+            //             items: [
+            //               'Successful',
+            //               'Failed',
+            //               'Pending',
+            //               'Withdrawal',
+            //               'Fee Payment',
+            //               'Deposit',
+            //             ],
+            //             selectedValue: currentFilter,
+            //             onItemSelected: (value) =>
+            //                 setState(() => currentFilter = value),
+            //             enableSearch: false,
+            //           ),
+            //           label: 'Filter',
+            //           icon: Icons.tune,
+            //         ),
+            //         const SizedBox(width: 8),
 
-                            // Sort button without search
-                            AppOutlinedIconButton(
-                              onPressed: () => showFilterPopup<String>(
-                                context: context,
-                                items: [
-                                  'A-Z',
-                                  'Z-A',
-                                  'Highest - Lowest',
-                                  'Lowest - Highest',
-                                  'Most Recent',
-                                  'Oldest',
-                                ],
-                                selectedValue: currentSort,
-                                onItemSelected: (value) =>
-                                    setState(() => currentSort = value),
-                                enableSearch: false, // no search for sort
-                              ),
-                              label: 'Sort by',
-                              icon: Icons.sort,
+            //         // Sort button without search
+            //         AppOutlinedIconButton(
+            //           onPressed: () => showFilterPopup<String>(
+            //             context: context,
+            //             items: [
+            //               'A-Z',
+            //               'Z-A',
+            //               'Highest - Lowest',
+            //               'Lowest - Highest',
+            //               'Most Recent',
+            //               'Oldest',
+            //             ],
+            //             selectedValue: currentSort,
+            //             onItemSelected: (value) =>
+            //                 setState(() => currentSort = value),
+            //             enableSearch: false, // no search for sort
+            //           ),
+            //           label: 'Sort by',
+            //           icon: Icons.sort,
+            //         ),
+            //       ],
+            //     ),
+            //   ],
+            // ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: BlocBuilder<WalletTransactionBloc, WalletTransactionState>(
+                builder: (context, state) {
+                  if (state is WalletTransactionLoading) {
+                    return const ShimmerTableLoader();
+                  }
+
+                  if (state is WalletTransactionError) {
+                    return Center(child: Text(state.message));
+                  }
+
+                  if (state is WalletTransactionLoaded) {
+                    return state.transactions.isEmpty
+                        ? const Center(
+                            child: Text('No wallet Transaction available.'),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: () async {
+                              context.read<WalletTransactionBloc>().add(
+                                GetTransactionsEvent(
+                                  page: 1,
+                                  limit: 20,
+                                  refresh: true,
+                                ),
+                              );
+                            },
+                            child: ListView.separated(
+                              controller: _scrollController,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.all(16),
+                              itemCount:
+                                  state.transactions.length +
+                                  (state.isFetchingMore ? 1 : 0),
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 12),
+                              itemBuilder: (context, index) {
+                                if (index < state.transactions.length) {
+                                  final transaction = state.transactions[index];
+                                  return TransactionContainer(
+                                    transaction: transaction,
+                                  );
+                                }
+
+                                // Bottom loader
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              },
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    ListView.separated(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: transactions.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final transaction = transactions[index];
-                        return TransactionContainer(transaction: transaction);
-                      },
-                    ),
-                    // Transaction table
-                  ],
-                ),
+                          );
+                  }
+
+                  return const SizedBox.shrink();
+                },
               ),
-            );
-          } else if (state is WalletError) {
-            return Center(child: Text('Error: ${state.message}'));
-          }
-          return const SizedBox.shrink();
-        },
+            ),
+          ],
+        ),
       ),
     );
   }

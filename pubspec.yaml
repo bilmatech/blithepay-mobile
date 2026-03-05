@@ -30,6 +30,13 @@ dependencies:
   flutter_native_splash: ^2.4.7
   country_picker: ^2.0.27
   pretty_dio_logger: ^1.4.0
+  permission_handler: ^12.0.1
+  printing: ^5.14.2
+  pdf: ^3.11.3
+  path_provider: ^2.1.5
+  bloc: ^9.2.0
+  open_filex: ^4.7.0
+  share_plus: ^12.0.1
 
 
 dev_dependencies:

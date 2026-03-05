@@ -50,10 +50,8 @@ class ProfileView extends StatelessWidget {
                                 context.push(AppRoutes.profileDetail);
                               },
                               child: Text(
-                                'View Details',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  decoration: TextDecoration.underline,
-                                ),
+                                '${user?.email}',
+                                style: AppTextStyles.bodySmall,
                               ),
                             ),
                           ],
@@ -69,14 +67,14 @@ class ProfileView extends StatelessWidget {
                       children: [
                         _ProfileItem(
                           icon: Icons.school_outlined,
-                          label: 'Students',
+                          label: 'Children',
                           onTap: () => context.push('/linked-students'),
                         ),
-                        _ProfileItem(
-                          icon: Icons.payment_outlined,
-                          label: 'Pay Fees',
-                          onTap: () => context.push('/pay-fees'),
-                        ),
+                        // _ProfileItem(
+                        //   icon: Icons.payment_outlined,
+                        //   label: 'Pay Fees',
+                        //   onTap: () => context.push('/pay-fees'),
+                        // ),
                         _ProfileItem(
                           icon: Icons.account_balance_wallet_outlined,
                           label: 'Wallet',
@@ -89,7 +87,7 @@ class ProfileView extends StatelessWidget {
                         ),
                         _ProfileItem(
                           icon: Icons.person,
-                          label: 'View Details',
+                          label: 'Account',
                           onTap: () => context.push(AppRoutes.profileDetail),
                         ),
                         _ProfileItem(

@@ -107,7 +107,7 @@ class LogoutRequested extends AuthEvent {
   const LogoutRequested();
 }
 
-enum OtpFlow { signup, forgotPassword }
+enum OtpFlow { signup, forgotPassword, verifyEmail }
 
 class SignupPayload extends Equatable {
   final String userId;

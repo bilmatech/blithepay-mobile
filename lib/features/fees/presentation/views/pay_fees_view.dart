@@ -1,11 +1,11 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:blithepay/features/fees/presentation/views/widgets/student_card_container_widget.dart';
 import 'package:blithepay/features/students/data/models/student_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class PayFeesView extends StatefulWidget {
   const PayFeesView({super.key});
@@ -17,7 +17,7 @@ class PayFeesView extends StatefulWidget {
 class _PayFeesViewState extends State<PayFeesView> {
   // String? _selectedStudent;
   // String? _selectedFee;
-  String? _selectedSchool;
+  // String? _selectedSchool;
   int? _selectedIndex;
 
   @override
@@ -67,22 +67,36 @@ class _PayFeesViewState extends State<PayFeesView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Wallet Balance:',
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
                           ),
                         ),
-                        Text(
-                          'N200,000.00',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        BlocBuilder<DashboardBloc, DashboardState>(
+                          builder: (context, state) {
+                            if (state is DashboardLoaded) {
+                              return Text(
+                                state.dashboard.walletBalance,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            }
+
+                            return const Text(
+                              '--',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -253,19 +267,23 @@ class _PayFeesViewState extends State<PayFeesView> {
               // ),
               const SizedBox(height: 40),
 
-              PrimaryButton(
-                label: 'Proceed',
-                isEnabled: _selectedIndex != null,
-                onPressed: _selectedIndex == null
-                    ? () {}
-                    : () {
-                        final selectedStudent = students[_selectedIndex!];
-                        context.push(
-                          AppRoutes.feeSelection,
-                          extra: selectedStudent,
-                        );
-                      },
-              ),
+              // PrimaryButton(
+              //   label: 'Proceed',
+              //   isEnabled: _selectedIndex != null,
+              //   onPressed: _selectedIndex == null
+              //       ? () {}
+              //       : () {
+              //           final selectedStudent = students[_selectedIndex!];
+              //           context.push(
+              //             AppRoutes.feeSelection,
+              //             extra: FeeSelectionArgs(
+              //               feeId: '',
+              //               studentCode: '',
+              //               student: selectedStudent,
+              //             ),
+              //           );
+              //         },
+              // ),
             ],
           ),
         ),

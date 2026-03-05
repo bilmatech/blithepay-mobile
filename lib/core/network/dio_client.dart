@@ -1,5 +1,6 @@
 import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../config/app_config.dart';
 import '../config/env.dart';
@@ -21,7 +22,8 @@ class DioClient {
       ),
     );
 
-    _dio.interceptors.add(DioInterceptor(localDataSource));
+    final GlobalKey<NavigatorState> appNavigatorKey =
+        GlobalKey<NavigatorState>();
 
     if (AppConfig.enableDebugLogging) {
       _dio.interceptors.add(
@@ -36,6 +38,14 @@ class DioClient {
         ),
       );
     }
+
+    _dio.interceptors.add(
+      DioInterceptor(
+        dio: _dio,
+        localDataSource: localDataSource,
+        navigatorKey: appNavigatorKey,
+      ),
+    );
   }
 
   factory DioClient(AppLocalDataSource localDataSource) {
