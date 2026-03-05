@@ -59,7 +59,7 @@ class _LinkedStudentsBodyState extends State<LinkedStudentsBody> {
             onPageChanged: _onPageChanged,
             itemCount: widget.students.length,
             itemBuilder: (context, index) {
-              final s = widget.students[index];
+           //   final s = widget.students[index];
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: StudentCard(data: student.toStudentCardData()),

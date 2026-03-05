@@ -96,7 +96,7 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                 title: AppStrings.successful,
                 message: AppStrings.anAccounthasbeen,
                 buttonLabel: AppStrings.gotToHome,
-                nextRoute: AppRoutes.home,
+                nextRoute: AppRoutes.linkedStudents,
               ),
             );
                 context.read<DashboardBloc>().add(const FetchDashboardData());

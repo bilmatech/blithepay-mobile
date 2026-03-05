@@ -1,6 +1,4 @@
 import 'package:blithepay/features/schools/data/models/school_model.dart';
-import 'package:flutter/material.dart';
-
 class VerifiedStudentModel {
   final String id;
   final String firstName;

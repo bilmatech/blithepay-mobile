@@ -16,8 +16,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:open_filex/open_filex.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 
 class InvoiceAndFeeDetailsView extends StatelessWidget {
   final InvoiceModel invoice;
@@ -191,95 +189,95 @@ Widget _buildFeeBreakdownTable(List<FeeBreakdownModel> items) {
   return _buildKeyValueTable(rows);
 }
 
-Future<void> _downloadReceipt(
-  BuildContext context,
-  InvoiceModel invoice,
-) async {
-  context.read<InvoiceBloc>()
-    ..add(GetInvoiceByIdDownloadEvent(invoiceId: invoice.id));
-  // final pdf = pw.Document();
+// Future<void> _downloadReceipt(
+//   BuildContext context,
+//   InvoiceModel invoice,
+// ) async {
+// context.read<InvoiceBloc>()
+//   ..add(GetInvoiceByIdDownloadEvent(invoiceId: invoice.id));
+// final pdf = pw.Document();
 
-  // pdf.addPage(
-  //   pw.Page(
-  //     pageFormat: PdfPageFormat.a4,
-  //     margin: const pw.EdgeInsets.all(32),
-  //     build: (pw.Context context) {
-  //       return pw.Column(
-  //         crossAxisAlignment: pw.CrossAxisAlignment.start,
-  //         children: [
-  //           pw.Text(
-  //             'Invoice Receipt',
-  //             style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold),
-  //           ),
-  //           pw.SizedBox(height: 12),
-  //           pw.Divider(color: PdfColors.grey, thickness: 1.5),
-  //           pw.SizedBox(height: 20),
+// pdf.addPage(
+//   pw.Page(
+//     pageFormat: PdfPageFormat.a4,
+//     margin: const pw.EdgeInsets.all(32),
+//     build: (pw.Context context) {
+//       return pw.Column(
+//         crossAxisAlignment: pw.CrossAxisAlignment.start,
+//         children: [
+//           pw.Text(
+//             'Invoice Receipt',
+//             style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold),
+//           ),
+//           pw.SizedBox(height: 12),
+//           pw.Divider(color: PdfColors.grey, thickness: 1.5),
+//           pw.SizedBox(height: 20),
 
-  //           // Invoice Table
-  //           pw.Text(
-  //             'Invoice Details',
-  //             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
-  //           ),
-  //           pw.SizedBox(height: 8),
-  //           _pdfKeyValueTable([
-  //             {'label': 'Invoice No', 'value': invoice.invoiceNo},
-  //             {'label': 'Class Name', 'value': invoice.fee.classModel.name},
-  //             {'label': 'Term Name', 'value': invoice.fee.term.name},
-  //             {'label': 'Academic', 'value': invoice.fee.academicSession.name},
-  //             {'label': 'Due Date', 'value': Helpers.formatDate(invoice.dueAt)},
-  //           ]),
-  //           pw.SizedBox(height: 24),
+//           // Invoice Table
+//           pw.Text(
+//             'Invoice Details',
+//             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+//           ),
+//           pw.SizedBox(height: 8),
+//           _pdfKeyValueTable([
+//             {'label': 'Invoice No', 'value': invoice.invoiceNo},
+//             {'label': 'Class Name', 'value': invoice.fee.classModel.name},
+//             {'label': 'Term Name', 'value': invoice.fee.term.name},
+//             {'label': 'Academic', 'value': invoice.fee.academicSession.name},
+//             {'label': 'Due Date', 'value': Helpers.formatDate(invoice.dueAt)},
+//           ]),
+//           pw.SizedBox(height: 24),
 
-  //           // Fee Table
-  //           pw.Text(
-  //             'Fee Details',
-  //             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
-  //           ),
-  //           pw.SizedBox(height: 8),
-  //           _pdfKeyValueTable([
-  //             {'label': 'Fee Name', 'value': invoice.fee.name},
-  //             {
-  //               'label': 'Late Payment Fees',
-  //               'value': 'N${invoice.fee.latePaymentFee}',
-  //             },
-  //           ]),
-  //           pw.SizedBox(height: 24),
+//           // Fee Table
+//           pw.Text(
+//             'Fee Details',
+//             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+//           ),
+//           pw.SizedBox(height: 8),
+//           _pdfKeyValueTable([
+//             {'label': 'Fee Name', 'value': invoice.fee.name},
+//             {
+//               'label': 'Late Payment Fees',
+//               'value': 'N${invoice.fee.latePaymentFee}',
+//             },
+//           ]),
+//           pw.SizedBox(height: 24),
 
-  //           // Fee Breakdown Table
-  //           pw.Text(
-  //             'Fee Breakdown',
-  //             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
-  //           ),
-  //           pw.SizedBox(height: 8),
-  //           if (invoice.fee.feeBreakdowns != null) ...[
-  //             _pdfKeyValueTable(
-  //               invoice.fee.feeBreakdowns!.map((item) {
-  //                 return {'label': item.name, 'value': 'N${item.amount}'};
-  //               }).toList(),
-  //             ),
-  //           ],
+//           // Fee Breakdown Table
+//           pw.Text(
+//             'Fee Breakdown',
+//             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+//           ),
+//           pw.SizedBox(height: 8),
+//           if (invoice.fee.feeBreakdowns != null) ...[
+//             _pdfKeyValueTable(
+//               invoice.fee.feeBreakdowns!.map((item) {
+//                 return {'label': item.name, 'value': 'N${item.amount}'};
+//               }).toList(),
+//             ),
+//           ],
 
-  //           pw.Spacer(),
-  //           pw.Center(
-  //             child: pw.Text(
-  //               'Thank you for using BilthePay',
-  //               style: pw.TextStyle(
-  //                 fontSize: 14,
-  //                 color: PdfColors.grey700,
-  //                 fontStyle: pw.FontStyle.italic,
-  //               ),
-  //             ),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   ),
-  // );
+//           pw.Spacer(),
+//           pw.Center(
+//             child: pw.Text(
+//               'Thank you for using BilthePay',
+//               style: pw.TextStyle(
+//                 fontSize: 14,
+//                 color: PdfColors.grey700,
+//                 fontStyle: pw.FontStyle.italic,
+//               ),
+//             ),
+//           ),
+//         ],
+//       );
+//     },
+//   ),
+// );
 
-  // final pdfBytes = await pdf.save();
-  // final filename = 'invoice_${invoice.invoiceNo}.pdf';
-  // await Printing.sharePdf(bytes: pdfBytes, filename: filename);
-}
+// final pdfBytes = await pdf.save();
+// final filename = 'invoice_${invoice.invoiceNo}.pdf';
+// await Printing.sharePdf(bytes: pdfBytes, filename: filename);
+// }
 
 // class InvoiceAndFeeDetailsView extends StatelessWidget {
 //   final InvoiceModel invoice;
@@ -518,37 +516,37 @@ Widget _buildKeyValueTable(List<Map<String, String>> rows) {
 //   await Printing.sharePdf(bytes: pdfBytes, filename: filename);
 // }
 
-pw.Widget _pdfKeyValueTable(List<Map<String, String>> rows) {
-  return pw.Container(
-    decoration: pw.BoxDecoration(
-      border: pw.Border.all(color: PdfColors.grey300),
-      borderRadius: pw.BorderRadius.circular(8),
-      color: PdfColors.grey100,
-    ),
-    child: pw.Column(
-      children: List.generate(rows.length * 2 - 1, (index) {
-        if (index.isOdd) {
-          return pw.Divider(height: 1, color: PdfColors.grey300);
-        }
+// pw.Widget _pdfKeyValueTable(List<Map<String, String>> rows) {
+//   return pw.Container(
+//     decoration: pw.BoxDecoration(
+//       border: pw.Border.all(color: PdfColors.grey300),
+//       borderRadius: pw.BorderRadius.circular(8),
+//       color: PdfColors.grey100,
+//     ),
+//     child: pw.Column(
+//       children: List.generate(rows.length * 2 - 1, (index) {
+//         if (index.isOdd) {
+//           return pw.Divider(height: 1, color: PdfColors.grey300);
+//         }
 
-        final row = rows[index ~/ 2];
-        return pw.Padding(
-          padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(row['label']!, style: const pw.TextStyle(fontSize: 12)),
-              pw.Text(
-                row['value']!,
-                style: pw.TextStyle(
-                  fontSize: 12,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        );
-      }),
-    ),
-  );
-}
+//         final row = rows[index ~/ 2];
+//         return pw.Padding(
+//           padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+//           child: pw.Row(
+//             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+//             children: [
+//               pw.Text(row['label']!, style: const pw.TextStyle(fontSize: 12)),
+//               pw.Text(
+//                 row['value']!,
+//                 style: pw.TextStyle(
+//                   fontSize: 12,
+//                   fontWeight: pw.FontWeight.bold,
+//                 ),
+//               ),
+//             ],
+//           ),
+//         );
+//       }),
+//     ),
+//   );
+// }
