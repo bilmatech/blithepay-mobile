@@ -5,8 +5,6 @@ import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/features/auth/data/models/auth_response_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -80,11 +78,11 @@ class ProfileView extends StatelessWidget {
                           label: 'Wallet',
                           onTap: () => context.push(AppRoutes.fundWallet),
                         ),
-                        _ProfileItem(
-                          icon: Icons.notifications_none_outlined,
-                          label: 'Notifications',
-                          onTap: () => context.push('/notifications'),
-                        ),
+                        // _ProfileItem(
+                        //   icon: Icons.notifications_none_outlined,
+                        //   label: 'Notifications',
+                        //   onTap: () => context.push('/notifications'),
+                        // ),
                         _ProfileItem(
                           icon: Icons.person,
                           label: 'Account',

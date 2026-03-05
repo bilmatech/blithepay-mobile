@@ -27,7 +27,7 @@ class _PayFeesViewState extends State<PayFeesView> {
   }
 
   late final PageController _pageController;
-  int _currentPage = 0;
+  int currentPage = 0;
 
   @override
   void dispose() {
@@ -118,7 +118,7 @@ class _PayFeesViewState extends State<PayFeesView> {
                   controller: _pageController,
                   onPageChanged: (index) {
                     setState(() {
-                      _currentPage = index;
+                      currentPage = index;
                     });
                   },
                   itemCount: students.length,
