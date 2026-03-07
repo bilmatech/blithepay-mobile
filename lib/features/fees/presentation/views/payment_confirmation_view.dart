@@ -3,6 +3,7 @@ import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/utils/helpers.dart';
 import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_bloc.dart';
 import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_event.dart';
+import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_state.dart';
 import 'package:blithepay/features/fees/presentation/views/widgets/pin_bottom_sheet_content.dart';
 import 'package:blithepay/features/students/data/models/view_invoice_model.dart';
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_bloc.dart';
@@ -13,11 +14,18 @@ import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class PaymentConfirmationView extends StatefulWidget {
   final String invoiceId;
+  final String studentId;
 
-  const PaymentConfirmationView({super.key, required this.invoiceId});
+  const PaymentConfirmationView({
+    super.key,
+    required this.invoiceId,
+    required this.studentId,
+  });
 
   @override
   State<PaymentConfirmationView> createState() =>
@@ -44,32 +52,71 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
+    return BlocListener<PaymentBloc, PaymentState>(
+      listener: (context, state) async {
+        if (state.status == PaymentStatus.onlineReady &&
+            state.paymentUrl != null) {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PaystackWebView(url: state.paymentUrl!),
+            ),
+          );
+
+          if (!mounted) return;
+
+          if (result == true) {
+            context.go('/linked-students');
+
+            context.read<InvoiceBloc>().add(
+              GetInvoiceEvent(studentId: widget.studentId, refresh: true),
+            );
+          }
+        }
+
+        if (state.status == PaymentStatus.success) {
+          if (!mounted) return;
+          context.go('/linked-students');
+
+          context.read<InvoiceBloc>().add(
+            GetInvoiceEvent(studentId: widget.studentId, refresh: true),
+          );
+        }
+
+        if (state.status == PaymentStatus.failure) {
+          if (!mounted) return;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message ?? 'Payment failed')),
+          );
+        }
+      },
+      child: AppScaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text('Pay Fees'),
+          centerTitle: true,
         ),
-        title: const Text('Pay Fees'),
-        centerTitle: true,
-      ),
-      body: BlocBuilder<InvoiceBloc, InvoiceState>(
-        builder: (context, state) {
-          if (state is InvoiceByIdLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        body: BlocBuilder<InvoiceBloc, InvoiceState>(
+          builder: (context, state) {
+            if (state is InvoiceByIdLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (state is InvoiceByIdViewLoaded) {
-            final invoice = state.invoice;
-            return _buildContent(context, invoice);
-          }
+            if (state is InvoiceByIdViewLoaded) {
+              return _buildContent(context, state.invoice);
+            }
 
-          if (state is InvoiceByIdError) {
-            return Center(child: Text(state.message));
-          }
+            if (state is InvoiceByIdError) {
+              return Center(child: Text(state.message));
+            }
 
-          return const SizedBox.shrink();
-        },
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
@@ -124,7 +171,7 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(item.name, style: AppTextStyles.bodyRegular),
+                Text(item.name ?? '', style: AppTextStyles.bodyRegular),
                 Text(item.amountFormatted, style: AppTextStyles.bodyRegular),
               ],
             ),
@@ -181,23 +228,38 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
   }
 
   Widget _payButton(ViewInvoiceModel invoice, String invoiceId) {
-    return PrimaryButton(
-      label: _method == PaymentMethod.wallet
-          ? 'Pay with Wallet'
-          : 'Continue to Card Payment',
-      isEnabled: _method != null,
-      onPressed: () {
-        if (_method == PaymentMethod.wallet) {
-          final feeIds = invoice.items.map((e) => invoiceId).toSet();
+    return BlocBuilder<PaymentBloc, PaymentState>(
+      builder: (context, paymentState) {
+        final feeIds = invoice.items
+            .map((e) => e.id)
+            .whereType<String>() // removes nulls
+            .toSet();
 
-          // Initialize PaymentBloc with correct data
-          context.read<PaymentBloc>().add(
-            InitializePayment(invoiceId: invoiceId, selectedFeeIds: feeIds),
-          );
+        return PrimaryButton(
+          label: _method == PaymentMethod.wallet
+              ? 'Pay with Wallet'
+              : 'Continue to Card Payment',
+          isEnabled: _method != null,
+          isLoading:
+              paymentState.status == PaymentStatus.onlineInitializing ||
+              paymentState.status == PaymentStatus.walletInProgress,
+          onPressed: () {
+            if (_method == PaymentMethod.wallet) {
+              context.read<PaymentBloc>().add(
+                InitializePayment(invoiceId: invoiceId, selectedFeeIds: feeIds),
+              );
 
-          // Open bottom sheet directly
-          _showPinBottomSheet(invoice);
-        }
+              _showPinBottomSheet(invoice);
+            } else {
+              context.read<PaymentBloc>().add(
+                InitializeOnlinePayment(
+                  invoiceId: invoiceId,
+                  selectedFeeIds: feeIds,
+                ),
+              );
+            }
+          },
+        );
       },
     );
   }
@@ -206,12 +268,16 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
     showModalBottomSheet(
       isScrollControlled: true,
       context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       builder: (_) => const PinBottomSheetContent(),
     );
   }
 
   bool _isLateFeeApplicable(ViewInvoiceModel invoice) {
-    return DateTime.now().isAfter(invoice.deadline);
+    if (invoice.deadline != null) {
+      return DateTime.now().isAfter(invoice.deadline!);
+    }
+    return false;
   }
 
   Widget _summaryRow(String label, double amount, {bool isBold = false}) {
@@ -222,6 +288,59 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
         Text(label, style: style),
         Text(Helpers.formatCurrency(amount), style: style),
       ],
+    );
+  }
+}
+
+class PaystackWebView extends StatefulWidget {
+  final String url;
+
+  const PaystackWebView({super.key, required this.url});
+
+  @override
+  State<PaystackWebView> createState() => _PaystackWebViewState();
+}
+
+class _PaystackWebViewState extends State<PaystackWebView> {
+  late final WebViewController controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onNavigationRequest: (request) {
+            final url = request.url;
+
+            // Detect payment completion redirect
+            if (url.contains('success') ||
+                url.contains('callback') ||
+                url.contains('payment-complete')) {
+              Navigator.pop(context, true);
+              return NavigationDecision.prevent;
+            }
+
+            // Detect cancel
+            if (url.contains('cancel')) {
+              Navigator.pop(context, false);
+              return NavigationDecision.prevent;
+            }
+
+            return NavigationDecision.navigate;
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(widget.url));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Complete Payment')),
+      body: WebViewWidget(controller: controller),
     );
   }
 }

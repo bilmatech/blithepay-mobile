@@ -60,6 +60,7 @@ class ApiEndpoints {
   static String getinvoicesByIdDownload(String id) => '/invoices/$id/download';
 
   static const String paywithWallet = '/invoices/pay_with_wallet';
+  static const String paywithPAystack = '/invoices/pay_online_mobile';
 
   // Payments
   static const String payments = '/payments';

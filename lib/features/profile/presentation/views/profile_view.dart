@@ -91,7 +91,10 @@ class ProfileView extends StatelessWidget {
                         _ProfileItem(
                           icon: Icons.lock,
                           label: 'Change Password',
-                          onTap: () => context.push(AppRoutes.changePassword),
+                          onTap: () => context.push(
+                            AppRoutes.forgotPassword,
+                            extra: {'email': user?.email, 'fromProfile': true},
+                          ),
                         ),
                         _ProfileItem(
                           icon: Icons.help_outline,

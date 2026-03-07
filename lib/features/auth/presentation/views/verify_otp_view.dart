@@ -18,8 +18,14 @@ import '../bloc/auth_state.dart';
 class VerifyOtpView extends StatefulWidget {
   final String email;
   final OtpFlow flow;
+  final bool fromProfile;
 
-  const VerifyOtpView({super.key, required this.email, required this.flow});
+  const VerifyOtpView({
+    super.key,
+    required this.email,
+    required this.flow,
+    this.fromProfile = false,
+  });
 
   @override
   State<VerifyOtpView> createState() => _VerifyOtpViewState();
@@ -146,14 +152,24 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                   message: AppStrings.anAccounthasbeen,
                   buttonLabel: AppStrings.setupPin,
                   nextRoute: AppRoutes.setupOtp,
-                  nextExtra: {'email': widget.email, 'flow': OtpFlow.signup},
+                  nextExtra: {
+                    'email': widget.email,
+                    'flow': OtpFlow.signup,
+                    'fromProfile': widget.fromProfile,
+                  },
                 ),
               );
 
               break;
 
             case OtpFlow.forgotPassword:
-              context.push(AppRoutes.resetPassword, extra: widget.email);
+              context.push(
+                AppRoutes.resetPassword,
+                extra: {
+                  'email': widget.email,
+                  'fromProfile': widget.fromProfile,
+                },
+              );
               break;
 
             case OtpFlow.verifyEmail:

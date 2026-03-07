@@ -18,6 +18,7 @@ class AppTextField extends StatefulWidget {
   final Widget? suffixIcon;
   final Widget? prefix;
   final FocusNode? focusNode;
+  final bool readOnly;
 
   const AppTextField({
     super.key,
@@ -36,6 +37,7 @@ class AppTextField extends StatefulWidget {
     this.suffixIcon,
     this.prefix,
     this.focusNode,
+    this.readOnly = false,
   });
 
   @override
@@ -70,6 +72,7 @@ class _AppTextFieldState extends State<AppTextField> {
           onChanged: widget.onChanged,
           textInputAction: widget.textInputAction,
           style: AppTextStyles.bodyRegular,
+          readOnly: widget.readOnly,
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: AppTextStyles.bodySmall.copyWith(

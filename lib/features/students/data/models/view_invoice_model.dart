@@ -2,109 +2,138 @@ import 'package:blithepay/features/students/data/models/verify_student_model.dar
 import 'package:intl/intl.dart';
 
 class ViewInvoiceModel {
+  final String id;
   final String invoiceNo;
-  final String schoolName;
-  final String schoolAddress;
-  final String schoolLogo;
 
-  final String billToName;
-  final String billToAddress;
+  final String? schoolName;
+  final String? schoolAddress;
+  final String? schoolLogo;
+
+  final String? billToName;
+  final String? billToAddress;
 
   final String childName;
-  final String className;
-  final String term;
-  final String session;
+  final String? childId;
+  final String childRegNo;
 
-  final DateTime deadline;
-  final String latePaymentFineRaw;
-  final DateTime createdOn;
+  final String? className;
+  final String? term;
+  final String? session;
+
+  final DateTime? deadline;
+
+  final String? latePaymentFineRaw;
+  final double? latePaymentFineValue;
+
+  final DateTime? createdOn;
 
   final String paymentStatus;
-  final String paymentLink;
+  final String? status;
+  final String? paymentLink;
 
   final List<InvoiceItemModel> items;
 
-  final String subtotalRaw;
-  final String vatPercent;
-  final String vatRaw;
-  final String totalRaw;
+  final String? subtotalRaw;
+  final String? vatPercent;
+  final String? vatRaw;
+  final double? vatValue;
+  final String? totalRaw;
 
   final DateTime? paidOn;
 
   const ViewInvoiceModel({
+    required this.id,
     required this.invoiceNo,
-    required this.schoolName,
-    required this.schoolAddress,
-    required this.schoolLogo,
-    required this.billToName,
-    required this.billToAddress,
+    this.schoolName,
+    this.schoolAddress,
+    this.schoolLogo,
+    this.billToName,
+    this.billToAddress,
     required this.childName,
-    required this.className,
-    required this.term,
-    required this.session,
-    required this.deadline,
-    required this.latePaymentFineRaw,
-    required this.createdOn,
+    this.childId,
+    required this.childRegNo,
+    this.className,
+    this.term,
+    this.session,
+    this.deadline,
+    this.latePaymentFineRaw,
+    this.latePaymentFineValue,
+    this.createdOn,
     required this.paymentStatus,
-    required this.paymentLink,
+    this.status,
+    this.paymentLink,
     required this.items,
-    required this.subtotalRaw,
-    required this.vatPercent,
-    required this.vatRaw,
-    required this.totalRaw,
+    this.subtotalRaw,
+    this.vatPercent,
+    this.vatRaw,
+    this.vatValue,
+    this.totalRaw,
     this.paidOn,
   });
 
   factory ViewInvoiceModel.fromJson(Map<String, dynamic> json) {
     return ViewInvoiceModel(
-      invoiceNo: json['invoiceNo'] as String,
-      schoolName: json['schoolName'] as String,
-      schoolAddress: json['schoolAddress'] as String,
-      schoolLogo: json['schoolLogo'] as String,
+      id: json['id'] ?? '',
+      invoiceNo: json['invoiceNo'] ?? '',
 
-      billToName: json['billToName'] as String,
-      billToAddress: json['billToAddress'] as String,
+      schoolName: json['schoolName'],
+      schoolAddress: json['schoolAddress'],
+      schoolLogo: json['schoolLogo'],
 
-      childName: json['childName'] as String,
-      className: json['className'] as String,
-      term: json['term'] as String,
-      session: json['session'] as String,
+      billToName: json['billToName'],
+      billToAddress: json['billToAddress'],
 
-      deadline: parseBackendDate(json['deadline']),
-      createdOn: parseBackendDate(json['createdOn']),
-      latePaymentFineRaw: json['latePaymentFine'] as String,
+      childName: json['childName'] ?? '',
+      childId: json['childId'],
+      childRegNo: json['childRegNo'],
 
-      paymentStatus: json['paymentStatus'] as String,
-      paymentLink: json['paymentLink'] as String,
+      className: json['className'],
+      term: json['term'],
+      session: json['session'],
 
-      items: (json['items'] as List<dynamic>)
+      deadline: json['deadline'] != null
+          ? parseBackendDate(json['deadline'])
+          : null,
+
+      latePaymentFineRaw: json['latePaymentFine'],
+      latePaymentFineValue: (json['latePaymentFineValue'] as num?)?.toDouble(),
+
+      createdOn: json['createdOn'] != null
+          ? parseBackendDate(json['createdOn'])
+          : null,
+
+      paymentStatus: json['paymentStatus'] ?? '',
+      status: json['status'],
+      paymentLink: json['paymentLink'],
+
+      items: (json['items'] as List<dynamic>? ?? [])
           .map((e) => InvoiceItemModel.fromJson(e))
           .toList(),
 
-      subtotalRaw: json['subtotal'] as String,
-      vatPercent: json['vatPercent'] as String,
-      vatRaw: json['vat'] as String,
-      totalRaw: json['total'] as String,
+      subtotalRaw: json['subtotal'],
+      vatPercent: json['vatPercent'],
+      vatRaw: json['vat'],
+      vatValue: (json['vatValue'] as num?)?.toDouble(),
+      totalRaw: json['total'],
 
-      paidOn: json['paidOn'] != null ? DateTime.parse(json['paidOn']) : null,
+      paidOn: json['paidOn'] != null ? parseBackendDate(json['paidOn']) : null,
     );
   }
-
-  /// Business helpers (VERY useful)
 
   bool get isPaid => paymentStatus.toLowerCase() == 'paid';
 
   bool get isOverdue {
-    if (isPaid) return false; // paid invoices are never overdue
+    if (isPaid || deadline == null) return false;
 
     final endOfDeadlineDay = DateTime(
-      deadline.year,
-      deadline.month,
-      deadline.day,
+      deadline!.year,
+      deadline!.month,
+      deadline!.day,
       23,
       59,
       59,
     );
+
     return DateTime.now().isAfter(endOfDeadlineDay);
   }
 
@@ -122,9 +151,9 @@ extension InvoiceStudentCardAdapter on ViewInvoiceModel {
     return StudentCardData(
       id: invoiceNo,
       fullName: childName,
-      regNumber: invoiceNo,
-      className: className,
-      schoolName: schoolName,
+      regNumber: childRegNo,
+      className: className ?? '',
+      schoolName: schoolName ?? '',
       status: _mapStatus(),
     );
   }
@@ -136,43 +165,55 @@ extension InvoiceStudentCardAdapter on ViewInvoiceModel {
       return isOverdue ? StudentCardStatus.overdue : StudentCardStatus.unpaid;
     }
 
-    // default for anything else
     return StudentCardStatus.pending;
   }
 }
 
 class InvoiceItemModel {
-  final String name;
-  final bool required;
-  final int quantity;
-  final String amountRaw;
+  final String? id;
+  final String? name;
+
+  final bool? required;
+  final bool? isRequired;
+
+  final int? quantity;
+
+  final String? amountRaw;
+  final double? amountValue;
 
   const InvoiceItemModel({
-    required this.name,
-    required this.required,
-    required this.quantity,
-    required this.amountRaw,
+    this.id,
+    this.name,
+    this.required,
+    this.isRequired,
+    this.quantity,
+    this.amountRaw,
+    this.amountValue,
   });
 
   factory InvoiceItemModel.fromJson(Map<String, dynamic> json) {
     return InvoiceItemModel(
-      name: json['name'] as String,
-      required: (json['required'] as String).toLowerCase() == 'yes',
-      quantity: json['quantity'] as int,
-      amountRaw: json['amount'] as String,
+      id: json['id'],
+      name: json['name'],
+      required: json['required']?.toString().toLowerCase() == 'yes',
+      isRequired: json['isRequired'],
+      quantity: json['quantity'],
+      amountRaw: json['amount'],
+      amountValue: (json['amountValue'] as num?)?.toDouble(),
     );
   }
 
-  double get amount => parseCurrency(amountRaw);
-  String get amountFormatted => amountRaw;
+  double get amount => amountValue ?? parseCurrency(amountRaw);
+
+  String get amountFormatted => amountRaw ?? '';
 }
 
-double parseCurrency(String value) {
+double parseCurrency(String? value) {
+  if (value == null) return 0;
   return double.tryParse(value.replaceAll(RegExp(r'[^\d.]'), '')) ?? 0;
 }
 
 DateTime parseBackendDate(String value) {
-  // Example: "Tue Apr 28 2026"
   final formatter = DateFormat('EEE MMM dd yyyy', 'en_US');
   return formatter.parse(value);
 }

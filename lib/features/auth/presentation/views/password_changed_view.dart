@@ -8,7 +8,8 @@ import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/layouts/app_scaffold.dart';
 
 class PasswordChangedView extends StatelessWidget {
-  const PasswordChangedView({super.key});
+  final bool fromProfile;
+  const PasswordChangedView({super.key, this.fromProfile = false});
 
   @override
   Widget build(BuildContext context) {
@@ -41,15 +42,19 @@ class PasswordChangedView extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  AppStrings.passwordChangedDesc,
+                Text(
+                  fromProfile
+                      ? 'You can now log in with your new details'
+                      : AppStrings.passwordChangedDesc,
                   style: AppTextStyles.bodyRegular,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 48),
                 PrimaryButton(
-                  label: AppStrings.returnToLogIn,
-                  onPressed: () => context.go(AppRoutes.login),
+                  label: fromProfile ? 'Go Back' : AppStrings.returnToLogIn,
+                  onPressed: () => fromProfile
+                      ? context.go(AppRoutes.profile)
+                      : context.go(AppRoutes.login),
                 ),
               ],
             ),

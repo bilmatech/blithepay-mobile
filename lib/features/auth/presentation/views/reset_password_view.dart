@@ -14,8 +14,13 @@ import '../bloc/auth_state.dart';
 
 class ResetPasswordView extends StatefulWidget {
   final String email;
+  final bool fromProfile;
 
-  const ResetPasswordView({super.key, required this.email});
+  const ResetPasswordView({
+    super.key,
+    required this.email,
+    this.fromProfile = false,
+  });
 
   @override
   State<ResetPasswordView> createState() => _ResetPasswordViewState();
@@ -60,7 +65,7 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.passwordReset) {
-          context.go(AppRoutes.passwordChanged);
+          context.go(AppRoutes.passwordChanged, extra: widget.fromProfile);
         }
       },
       child: AppScaffold(
@@ -75,8 +80,10 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                   child: Column(
                     children: [
                       const SizedBox(height: 40),
-                      const Text(
-                        AppStrings.resetPassword,
+                      Text(
+                        widget.fromProfile
+                            ? AppStrings.changePassword
+                            : AppStrings.resetPassword,
                         style: AppTextStyles.h2,
                       ),
                       const SizedBox(height: 24),

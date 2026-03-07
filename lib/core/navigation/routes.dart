@@ -14,16 +14,31 @@ class AppRouterConfig {
         ),
         GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginView()),
         GoRoute(path: AppRoutes.signup, builder: (_, __) => const SignupView()),
+        // GoRoute(
+        //   path: AppRoutes.forgotPassword,
+        //   builder: (_, __) => const ForgotPasswordView(),
+        // ),
         GoRoute(
           path: AppRoutes.forgotPassword,
-          builder: (_, __) => const ForgotPasswordView(),
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+
+            return ForgotPasswordView(
+              email: extra?['email'],
+              fromProfile: extra?['fromProfile'] ?? false,
+            );
+          },
         ),
         GoRoute(
           path: AppRoutes.verifyOtp,
           builder: (context, state) {
             final args = state.extra as Map<String, dynamic>;
 
-            return VerifyOtpView(email: args['email'], flow: args['flow']);
+            return VerifyOtpView(
+              email: args['email'],
+              flow: args['flow'],
+              fromProfile: args['fromProfile'],
+            );
           },
         ),
         GoRoute(
@@ -41,14 +56,25 @@ class AppRouterConfig {
         GoRoute(
           path: AppRoutes.resetPassword,
           builder: (context, state) {
-            final email = state.extra as String? ?? '';
-            return ResetPasswordView(email: email);
+            final args = state.extra as Map<String, dynamic>;
+
+            return ResetPasswordView(
+              email: args['email'],
+              fromProfile: args['fromProfile'],
+            );
           },
         ),
         GoRoute(
           path: AppRoutes.passwordChanged,
-          builder: (_, __) => const PasswordChangedView(),
+          builder: (context, state) {
+            final fromProfile = state.extra as bool? ?? false;
+            return PasswordChangedView(fromProfile: fromProfile);
+          },
         ),
+        // GoRoute(
+        //   path: AppRoutes.passwordChanged,
+        //   builder: (_, __) => const PasswordChangedView(),
+        // ),
         GoRoute(
           path: AppRoutes.changePassword,
           builder: (_, __) => const ChangePasswordView(),
@@ -128,9 +154,15 @@ class AppRouterConfig {
         GoRoute(
           path: AppRoutes.feeConfirmation,
           builder: (context, state) {
-            final invoiceId = state.extra as String;
+            final args = state.extra as Map<String, dynamic>;
 
-            return PaymentConfirmationView(invoiceId: invoiceId);
+            final invoiceId = args['invoiceId'] as String;
+            final studentId = args['studentId'] as String;
+
+            return PaymentConfirmationView(
+              invoiceId: invoiceId,
+              studentId: studentId,
+            );
           },
         ),
         GoRoute(
