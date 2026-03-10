@@ -37,7 +37,7 @@ class AppRouterConfig {
             return VerifyOtpView(
               email: args['email'],
               flow: args['flow'],
-              fromProfile: args['fromProfile'],
+              fromProfile: args['fromProfile'] ?? false,
             );
           },
         ),
