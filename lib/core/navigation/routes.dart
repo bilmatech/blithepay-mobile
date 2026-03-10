@@ -60,7 +60,7 @@ class AppRouterConfig {
 
             return ResetPasswordView(
               email: args['email'],
-              fromProfile: args['fromProfile'],
+              fromProfile: args['fromProfile'] ?? false,
             );
           },
         ),
