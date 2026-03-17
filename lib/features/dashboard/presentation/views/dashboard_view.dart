@@ -1,3 +1,6 @@
+import 'package:blithepay/core/storage/auth_local_storage.dart'
+    show AppLocalDataSource;
+import 'package:blithepay/features/auth/data/models/auth_response_model.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
@@ -78,10 +81,25 @@ class _HomeViewState extends State<HomeView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    DashboardHeader(
-                      greeting: state.dashboard.greeting,
-                      userName: state.dashboard.userName,
-                      avatarUrl: state.dashboard.avatarUrl,
+                    StreamBuilder<UserModel?>(
+                      stream: context.read<AppLocalDataSource>().userStream,
+                      builder: (context, snapshot) {
+                        final user = snapshot.data;
+
+                        final userName = user != null
+                            ? '${user.firstName ?? ''} ${user.lastName ?? ''}'
+                                  .trim()
+                            : state.dashboard.userName;
+
+                        final avatarUrl =
+                            user?.profileImage ?? state.dashboard.avatarUrl;
+
+                        return DashboardHeader(
+                          greeting: state.dashboard.greeting,
+                          userName: userName,
+                          avatarUrl: avatarUrl,
+                        );
+                      },
                     ),
                     const SizedBox(height: 24),
                     FinancialSummaryCard(
