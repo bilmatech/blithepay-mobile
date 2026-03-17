@@ -18,22 +18,26 @@ class StudentsLoaded extends StudentsState {
   final List<VerifiedStudentModel> students;
   final int nextPage;
   final Set<String> loadingStudentIds; // <-- track loading per student
+  final String? errorMessage;
 
   const StudentsLoaded({
     required this.students,
     required this.nextPage,
     this.loadingStudentIds = const {},
+    this.errorMessage,
   });
 
   StudentsLoaded copyWith({
     List<VerifiedStudentModel>? students,
     int? nextPage,
     Set<String>? loadingStudentIds,
+    String? errorMessage,
   }) {
     return StudentsLoaded(
       students: students ?? this.students,
       nextPage: nextPage ?? this.nextPage,
       loadingStudentIds: loadingStudentIds ?? this.loadingStudentIds,
+      errorMessage: errorMessage,
     );
   }
 }

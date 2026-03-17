@@ -139,7 +139,10 @@ class AppProviders {
         create: (context) =>
             PaymentBloc(repository: context.read<FeesRepository>()),
       ),
-      BlocProvider<ProfileBloc>(create: (_) => ProfileBloc()),
+      BlocProvider<ProfileBloc>(
+        create: (context) =>
+            ProfileBloc(context.read<AppLocalDataSourceImpl>()),
+      ),
     ];
   }
 }

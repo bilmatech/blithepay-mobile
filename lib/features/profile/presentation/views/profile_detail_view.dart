@@ -134,11 +134,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                   _buildEditableItem('Phone', phoneController),
                   const SizedBox(height: 12),
 
-                  _buildEditableItem(
-                    'Email',
-                    emailController,
-                    enabled: false, 
-                  ),
+                  _buildEditableItem('Email', emailController, enabled: false),
                 ],
               ),
             );
