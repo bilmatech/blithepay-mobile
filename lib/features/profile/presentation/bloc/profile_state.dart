@@ -23,3 +23,7 @@ class ProfileError extends ProfileState {
 class ProfileUpdated extends ProfileState {
   const ProfileUpdated();
 }
+
+class ProfileDeleted extends ProfileState {
+  const ProfileDeleted();
+}

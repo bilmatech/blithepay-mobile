@@ -71,4 +71,6 @@ class ApiEndpoints {
 
   // Receipts
   static const String receipts = '/receipts';
+
+  static const String accountupdate = '/accounts';
 }

@@ -31,7 +31,6 @@ class PaymentHistorySection extends StatelessWidget {
         bool isLoading = state is StudentsLoading;
         if (state is StudentTransactionLoaded) {
           transactions = state.studentTransaction.take(4).toList();
-          ;
           print("$transactions");
         }
 

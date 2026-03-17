@@ -30,6 +30,12 @@ abstract class AuthRepositoryInterface {
   Future<AuthResponseModel?> getSession();
   Future<bool> isOnboardingCompleted();
   Future<void> syncFcmToken(String token);
+
+  Future<void> deleteAccount();
+  Future<void> updateAccount({
+    required String fullName,
+    required String phoneNumber,
+  });
 }
 
 class AuthRepository implements AuthRepositoryInterface {
@@ -172,6 +178,26 @@ class AuthRepository implements AuthRepositoryInterface {
   @override
   Future<void> syncFcmToken(String token) async {
     await _dioClient.post(ApiEndpoints.synToken, data: {'token': token});
+  }
+
+  @override
+  Future<void> updateAccount({
+    required String fullName,
+    required String phoneNumber,
+  }) async {
+    await _dioClient.patch(
+      ApiEndpoints.accountupdate,
+      data: {
+        "fullName": fullName,
+        "phone": phoneNumber,
+        "isTermsAndPrivacyAccepted": true,
+      },
+    );
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    await _dioClient.delete(ApiEndpoints.accountupdate);
   }
 }
 
