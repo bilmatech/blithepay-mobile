@@ -225,6 +225,7 @@ class _FeeBreakDownViewState extends State<FeeBreakDownView> {
                   extra: {
                     'invoiceId': widget.invoice.id,
                     'studentId': widget.student.id,
+                    'feesItemIds':_selectedFeeIds
                   },
                 );
               },
