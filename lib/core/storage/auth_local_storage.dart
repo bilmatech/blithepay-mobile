@@ -8,6 +8,7 @@ abstract class AppLocalDataSource {
   Future<bool> isOnboardingCompleted();
   Future<void> saveTokens(AuthTokensModel token);
   Future<void> saveSession(AuthResponseModel session);
+  Future<void> updateSessionUser(UserModel updatedUser);
   Future<AuthResponseModel?> getSession();
   Future<String?> getAccessToken();
   Future<String?> getRefreshToken();
@@ -53,6 +54,19 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
       key: _userKey,
       value: jsonEncode(session.user?.toJson()),
     );
+  }
+
+  @override
+  Future<void> updateSessionUser(UserModel updatedUser) async {
+    final existing = await getSession();
+
+    final newSession = AuthResponseModel(
+      user: updatedUser,
+      tokens: existing?.tokens,
+      wallet: existing?.wallet,
+    );
+
+    await saveSession(newSession);
   }
 
   @override

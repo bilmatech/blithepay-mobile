@@ -53,10 +53,11 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     emit(const ProfileLoading());
 
     try {
-      await authRepository.updateAccount(
+      final updatedUser = await authRepository.updateAccount(
         fullName: event.name,
         phoneNumber: event.phone,
       );
+      await localDataSource.updateSessionUser(updatedUser);
 
       emit(const ProfileUpdated());
 
