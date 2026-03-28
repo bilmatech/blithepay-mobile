@@ -52,11 +52,11 @@ class StudentsBloc extends Bloc<StudentsEvent, StudentsState> {
         ),
       );
     } catch (e) {
-      emit(StudentsError(message: extractError(e)));
+      final errorMessage = extractError(e);
 
       // Re-emit old state to prevent screen clearing
       if (currentState is StudentsLoaded) {
-        emit(currentState);
+        emit(currentState.copyWith(errorMessage: errorMessage));
       }
     }
   }

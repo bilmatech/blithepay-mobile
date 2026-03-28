@@ -6,11 +6,10 @@ class GetProfileEvent extends ProfileEvent {
   const GetProfileEvent();
 }
 
-class UpdateProfileEvent extends ProfileEvent {
-  final Map<String, String> profileData;
-  const UpdateProfileEvent({required this.profileData});
-}
-
+// class UpdateProfileEvent extends ProfileEvent {
+//   final Map<String, String> profileData;
+//   const UpdateProfileEvent({required this.profileData});
+// }
 
 class ChangePasswordRequested extends ProfileEvent {
   final String oldPassword;
@@ -24,4 +23,15 @@ class ChangePasswordRequested extends ProfileEvent {
   });
 
   List<Object?> get props => [oldPassword, newPassword, confirmPassword];
+}
+
+class DeleteAccount extends ProfileEvent {
+  const DeleteAccount();
+}
+
+class UpdateProfileEvent extends ProfileEvent {
+  final String name;
+  final String phone;
+
+  const UpdateProfileEvent({required this.name, required this.phone});
 }

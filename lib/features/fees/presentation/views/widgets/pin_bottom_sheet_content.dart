@@ -1,6 +1,5 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_event.dart';
@@ -10,7 +9,6 @@ import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_s
 import 'package:blithepay/features/fees/presentation/views/widgets/nemeric_keyboard.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class PinBottomSheetContent extends StatefulWidget {
@@ -33,8 +31,12 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
 
   @override
   void dispose() {
-    for (final c in _controllers) c.dispose();
-    for (final f in _focusNodes) f.dispose();
+    for (final c in _controllers) {
+      c.dispose();
+    }
+    for (final f in _focusNodes) {
+      f.dispose();
+    }
     super.dispose();
   }
 

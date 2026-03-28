@@ -157,8 +157,8 @@ class _FeeBreakDownViewState extends State<FeeBreakDownView> {
                 itemCount: fees.length,
                 itemBuilder: (context, index) {
                   final fee = fees[index];
-                  final isSelected = _selectedFeeIds.contains(fee.id);
-
+                  final isSelected =
+                      fee.isRequired || _selectedFeeIds.contains(fee.id);
                   return Container(
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     padding: const EdgeInsets.all(12),

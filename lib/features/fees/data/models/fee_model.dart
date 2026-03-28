@@ -1,66 +1,93 @@
 import 'package:blithepay/features/students/data/models/invoice_model.dart';
 
-
 class Fee {
   final String id;
   final String name;
-  final DateTime dueAt;
-  final String latePaymentFee;
-  final String latePaymentFeeInNaira;
-  final bool isPublished;
-  final DateTime publishedAt;
-  final bool isDeleted;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? dueAt;
+
+  final String? latePaymentFee;
+  final String? latePaymentFeeInNaira;
+
+  final bool? isPublished;
+  final DateTime? publishedAt;
+
+  final bool? isDeleted;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   final List<FeeBreakdownModel> feeBreakdowns;
-  final ClassModel feeClass;
-  final TermModel term;
-  final AcademicSessionModel academicSession;
+
+  final ClassModel? feeClass;
+  final TermModel? term;
+  final AcademicSessionModel? academicSession;
 
   const Fee({
     required this.id,
     required this.name,
-    required this.dueAt,
-    required this.latePaymentFee,
-    required this.latePaymentFeeInNaira,
-    required this.isPublished,
-    required this.publishedAt,
-    required this.isDeleted,
-    required this.createdAt,
-    required this.updatedAt,
+    this.dueAt,
+    this.latePaymentFee,
+    this.latePaymentFeeInNaira,
+    this.isPublished,
+    this.publishedAt,
+    this.isDeleted,
+    this.createdAt,
+    this.updatedAt,
     required this.feeBreakdowns,
-    required this.feeClass,
-    required this.term,
-    required this.academicSession,
+    this.feeClass,
+    this.term,
+    this.academicSession,
   });
 
   factory Fee.fromJson(Map<String, dynamic> json) {
+    final breakdowns = json['feeBreakdowns'] as List?;
+
     return Fee(
-      id: json['id'],
-      name: json['name'],
-      dueAt: DateTime.parse(json['dueAt']),
-      latePaymentFee: json['latePaymentFee'],
-      latePaymentFeeInNaira: json['latePaymentFeeInNaira'],
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+
+      dueAt: json['dueAt'] != null ? DateTime.tryParse(json['dueAt']) : null,
+
+      latePaymentFee: json['latePaymentFee']?.toString(),
+      latePaymentFeeInNaira: json['latePaymentFeeInNaira']?.toString(),
+
       isPublished: json['isPublished'],
-      publishedAt: DateTime.parse(json['publishedAt']),
+      publishedAt: json['publishedAt'] != null
+          ? DateTime.tryParse(json['publishedAt'])
+          : null,
+
       isDeleted: json['isDeleted'],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      feeBreakdowns: (json['feeBreakdowns'] as List)
-          .map((e) => FeeBreakdownModel.fromJson(e))
-          .toList(),
-      feeClass: ClassModel.fromJson(json['class']),
-      term: TermModel.fromJson(json['term']),
-      academicSession:
-          AcademicSessionModel.fromJson(json['academicSession']),
+
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'])
+          : null,
+
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'])
+          : null,
+
+      feeBreakdowns: breakdowns == null
+          ? []
+          : breakdowns.map((e) => FeeBreakdownModel.fromJson(e)).toList(),
+
+      feeClass: json['class'] != null
+          ? ClassModel.fromJson(json['class'])
+          : null,
+
+      term: json['term'] != null ? TermModel.fromJson(json['term']) : null,
+
+      academicSession: json['academicSession'] != null
+          ? AcademicSessionModel.fromJson(json['academicSession'])
+          : null,
     );
   }
 
-  /// Useful computed property
-  int get totalAmount =>
-      feeBreakdowns.fold(0, (sum, f) => sum + f.amount);
+  /// Works with decimal amounts
+  // double get totalAmount => feeBreakdowns.fold(
+  //   0.0,
+  //   (sum, f) => sum + (double.tryParse(f.amount.toString()) ?? 0),
+  // );
 }
+
 class FeeModel {
   final String id;
   final String name;

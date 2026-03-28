@@ -6,7 +6,6 @@ import 'package:blithepay/features/wallet/presentation/widgets/fund_wallet_widge
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class FundWalletView extends StatefulWidget {
   const FundWalletView({super.key});

@@ -20,9 +20,7 @@ class FeesBloc extends Bloc<FeesEvent, FeesState> {
     final currentState = state;
 
     // Only show loading spinner if we don't already have data
-    if (currentState is! FeesByIdLoaded) {
-      emit(const FeesLoading());
-    }
+    emit(const FeesLoading());
 
     try {
       final fees = await repository.getFeesById(

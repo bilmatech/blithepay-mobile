@@ -72,7 +72,24 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
         title: const Text('Profile'),
         centerTitle: true,
       ),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
+      body: BlocConsumer<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileUpdated) {
+            setState(() {
+              isEditing = false;
+            });
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Profile updated successfully')),
+            );
+          }
+
+          if (state is ProfileError) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
+          }
+        },
         builder: (context, state) {
           if (state is ProfileLoading) {
             return const ShimmerProfileLoader();
@@ -81,7 +98,6 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
           if (state is ProfileLoaded) {
             final profile = state.profile;
 
-            // Apply API profile ONCE
             if (!_controllersInitialized) {
               nameController.text = profile['name'] ?? nameController.text;
               phoneController.text = profile['phone'] ?? phoneController.text;
@@ -89,67 +105,56 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
               _controllersInitialized = true;
             }
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Information:'),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            isEditing = !isEditing;
-                          });
-
-                          if (isEditing) {
-                            Future.microtask(
-                              () => nameFocusNode.requestFocus(),
-                            );
-                          } else {
-                            // SAVE here (name + phone only)
-                            // context.read<ProfileBloc>().add(
-                            //   UpdateProfileEvent(
-                            //     name: nameController.text.trim(),
-                            //     phone: phoneController.text.trim(),
-                            //   ),
-                            // );
-                          }
-                        },
-                        child: Text(isEditing ? 'Save' : 'Edit Profile'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  _buildEditableItem(
-                    'Guardian Name',
-                    nameController,
-                    focusNode: nameFocusNode,
-                  ),
-                  const SizedBox(height: 12),
-
-                  _buildEditableItem('Phone', phoneController),
-                  const SizedBox(height: 12),
-
-                  _buildEditableItem(
-                    'Email',
-                    emailController,
-                    enabled: false, 
-                  ),
-                ],
-              ),
-            );
-          }
-
-          if (state is ProfileError) {
-            return Center(child: Text(state.message));
+            return _buildContent(context);
           }
 
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Information:'),
+              ElevatedButton(
+                onPressed: () {
+                  if (isEditing) {
+                    context.read<ProfileBloc>().add(
+                      UpdateProfileEvent(
+                        name: nameController.text.trim(),
+                        phone: phoneController.text.trim(),
+                      ),
+                    );
+                  } else {
+                    setState(() => isEditing = true);
+                    Future.microtask(() => nameFocusNode.requestFocus());
+                  }
+                },
+                child: Text(isEditing ? 'Save' : 'Edit Profile'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          _buildEditableItem(
+            'Guardian Name',
+            nameController,
+            focusNode: nameFocusNode,
+          ),
+          const SizedBox(height: 12),
+
+          _buildEditableItem('Phone', phoneController),
+          const SizedBox(height: 12),
+
+          _buildEditableItem('Email', emailController, enabled: false),
+        ],
       ),
     );
   }

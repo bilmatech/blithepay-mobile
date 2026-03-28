@@ -3,7 +3,11 @@ import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/features/auth/data/models/auth_response_model.dart';
+import 'package:blithepay/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:blithepay/features/profile/presentation/bloc/profile_event.dart';
+import 'package:blithepay/features/profile/presentation/bloc/profile_state.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
 
 class ProfileView extends StatelessWidget {
@@ -101,6 +105,13 @@ class ProfileView extends StatelessWidget {
                           label: 'Help & Support',
                           onTap: () => context.push('/help-support'),
                         ),
+
+                        _ProfileItem(
+                          icon: Icons.delete,
+                          label: 'Delete My Account',
+                          isLogout: true,
+                          onTap: () => _showDeleteDialog(context),
+                        ),
                         _ProfileItem(
                           icon: Icons.logout_outlined,
                           label: 'Log Out',
@@ -148,6 +159,85 @@ class ProfileView extends StatelessWidget {
             child: const Text('Yes, Log Out'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Column(
+          children: [
+            const Icon(Icons.error_outline, color: AppColors.primary, size: 48),
+            const SizedBox(height: 16),
+            Text(
+              'Are you sure you want to proceed?',
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'If you continue, your account and all associated data will be permanently deleted.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 24),
+
+            BlocConsumer<ProfileBloc, ProfileState>(
+              listener: (context, state) {
+                if (state is ProfileDeleted) {
+                  Navigator.of(context).pop(); // close dialog
+
+                  context.go('/login'); // navigate
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Account deleted successfully'),
+                    ),
+                  );
+                }
+
+                if (state is ProfileError) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(state.message)));
+                }
+              },
+              builder: (context, state) {
+                return SizedBox(
+                  width: double.infinity,
+                  child: PrimaryButton(
+                    isLoading: state is ProfileLoading,
+                    label: 'Delete',
+                    backgroundColor: AppColors.primary,
+                    onPressed: () {
+                      context.read<ProfileBloc>().add(const DeleteAccount());
+                    },
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 12),
+
+            TextButton(
+              onPressed: () {
+                context.pop();
+              },
+              child: Text(
+                'Cancel',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(color: AppColors.primary),
+              ),
+            ),
+          ],
+        ),
+        actionsAlignment: MainAxisAlignment.center,
       ),
     );
   }

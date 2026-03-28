@@ -110,7 +110,7 @@ class AcademicSessionModel {
 class FeeBreakdownModel {
   final String id;
   final String name;
-  final int amount;
+  final num amount;
   final bool isRequired;
   final String? amountInNaira;
 
@@ -127,8 +127,8 @@ class FeeBreakdownModel {
       id: json['id'] as String,
       name: json['name'] as String,
       amount: json['amount'] is String
-          ? int.parse(json['amount'])
-          : json['amount'] as int,
+          ? num.parse(json['amount'])
+          : json['amount'] as num,
       isRequired: json['isRequired'] as bool,
       amountInNaira: json['amountInNaira'] as String?,
     );
