@@ -35,6 +35,8 @@ class StudentCardContainerWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
+                      //                       'Student ID: ${data.regNumber}',
+
                       'Student ID: ${student.studentId}',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.white,

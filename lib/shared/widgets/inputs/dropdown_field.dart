@@ -201,7 +201,8 @@ Future<void> showItemSelectionSheet<T>({
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
+    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+    // backgroundColor: Colors.transparent,
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setState) {

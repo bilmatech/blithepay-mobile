@@ -13,6 +13,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     on<PayWithWallet>(_onPayWithWallet);
     on<PaymentFailed>(_onPaymentFailed);
     on<ResetPayment>(_onReset);
+    on<InitializeOnlinePayment>(_onInitializeOnlinePayment);
   }
 
   void _onInitialize(InitializePayment event, Emitter<PaymentState> emit) {
@@ -78,5 +79,30 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
 
   void _onReset(ResetPayment event, Emitter<PaymentState> emit) {
     emit(const PaymentState());
+  }
+
+  Future<void> _onInitializeOnlinePayment(
+    InitializeOnlinePayment event,
+    Emitter<PaymentState> emit,
+  ) async {
+    emit(state.copyWith(status: PaymentStatus.onlineInitializing));
+
+    try {
+      final url = await repository.initializeInvoicePayment(
+        event.invoiceId,
+        event.selectedFeeIds.toList(),
+      );
+
+      emit(
+        state.copyWith(
+          status: PaymentStatus.onlineReady,
+          paymentUrl: url.authorizationUrl,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(status: PaymentStatus.failure, message: extractError(e)),
+      );
+    }
   }
 }

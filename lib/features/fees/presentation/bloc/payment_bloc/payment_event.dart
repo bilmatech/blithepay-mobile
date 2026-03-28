@@ -20,3 +20,13 @@ class PaymentFailed extends PaymentEvent {
 }
 
 class ResetPayment extends PaymentEvent {}
+
+class InitializeOnlinePayment extends PaymentEvent {
+  final String invoiceId;
+  final Set<String> selectedFeeIds;
+
+  InitializeOnlinePayment({
+    required this.invoiceId,
+    required this.selectedFeeIds,
+  });
+}

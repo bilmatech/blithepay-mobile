@@ -222,7 +222,10 @@ class _FeeBreakDownViewState extends State<FeeBreakDownView> {
               onPressed: () {
                 context.push(
                   AppRoutes.feeConfirmation,
-                  extra: widget.invoice.id,
+                  extra: {
+                    'invoiceId': widget.invoice.id,
+                    'studentId': widget.student.id,
+                  },
                 );
               },
             ),

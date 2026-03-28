@@ -14,7 +14,10 @@ import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 
 class ForgotPasswordView extends StatefulWidget {
-  const ForgotPasswordView({super.key});
+  final String? email;
+  final bool fromProfile;
+
+  const ForgotPasswordView({super.key, this.email, this.fromProfile = false});
 
   @override
   State<ForgotPasswordView> createState() => _ForgotPasswordViewState();
@@ -27,7 +30,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   @override
   void initState() {
     super.initState();
-    _emailController = TextEditingController();
+    _emailController = TextEditingController(text: widget.email ?? '');
   }
 
   @override
@@ -54,12 +57,13 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
             extra: {
               'email': _emailController.text,
               'flow': OtpFlow.forgotPassword,
+              'fromProfile': widget.fromProfile,
             },
           );
-        } 
+        }
       },
       child: AppScaffold(
-        showBackButton: false,
+        showBackButton: widget.fromProfile ? true : false,
         body: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             return SafeArea(
@@ -70,8 +74,10 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                   child: Column(
                     children: [
                       const SizedBox(height: 40),
-                      const Text(
-                        AppStrings.forgotPassword,
+                      Text(
+                        widget.fromProfile
+                            ? 'Change Password'
+                            : AppStrings.forgotPassword,
                         style: AppTextStyles.h2,
                       ),
                       const SizedBox(height: 8),
@@ -86,6 +92,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         validator: Validators.validateEmail,
+                        readOnly: widget.fromProfile,
                       ),
                       const SizedBox(height: 48),
                       PrimaryButton(
@@ -95,12 +102,15 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                         isEnabled: state.status != AuthStatus.loading,
                       ),
                       const SizedBox(height: 16),
-                      Center(
-                        child: SecondaryButton(
-                          label: 'Back To Log In',
-                          onPressed: () => Navigator.pop(context),
+                      if (!widget.fromProfile) ...[
+                        const SizedBox(height: 16),
+                        Center(
+                          child: SecondaryButton(
+                            label: 'Back To Log In',
+                            onPressed: () => Navigator.pop(context),
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),

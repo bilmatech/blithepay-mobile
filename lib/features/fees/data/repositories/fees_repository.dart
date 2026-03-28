@@ -15,6 +15,10 @@ abstract class FeesRepository {
     String invoiceId,
     List<String> feeItemIds,
   );
+  Future<PaymentLink> initializeInvoicePayment(
+    String invoiceId,
+    List<String> feeItemIds,
+  );
   Future<LinkedStudentModel> linkStudent(String studentId, String studentCode);
   Future<void> unlinkStudent(String studentId, String studentCode);
   Future<void> verifyGuardian(String phoneNumber, String otp);
@@ -27,7 +31,6 @@ abstract class FeesRepository {
     int page = 1,
     int limit = 20,
   });
-
 }
 
 class FeesRepositoryImpl implements FeesRepository {
@@ -159,4 +162,19 @@ class FeesRepositoryImpl implements FeesRepository {
     );
   }
 
+@override
+Future<PaymentLink> initializeInvoicePayment(
+  String invoiceId,
+  List<String> feeItemIds,
+) async {
+  final response = await _dioClient.post(
+    ApiEndpoints.paywithPAystack,
+    data: {
+      "invoiceId": invoiceId,
+      "feeItemIds": feeItemIds,
+    },
+  );
+
+  return PaymentLink.fromJson(response.data['data']['paymentLink']);
+}
 }

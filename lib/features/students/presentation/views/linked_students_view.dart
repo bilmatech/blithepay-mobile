@@ -1,3 +1,5 @@
+import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_bloc.dart';
+import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_event.dart';
 import 'package:blithepay/features/students/presentation/bloc/students_event.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student/components/empty_state.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student_view/linked_student_appbar.dart';
@@ -18,9 +20,21 @@ class LinkedStudentsView extends StatelessWidget {
       appBar: const LinkedStudentsAppBar(),
       body: RefreshIndicator(
         onRefresh: () async {
-          context.read<StudentsBloc>().add(
-            const GetLinkedStudentsEvent(refresh: true),
+          final studentsBloc = context.read<StudentsBloc>();
+
+          studentsBloc.add(const GetLinkedStudentsEvent(refresh: true));
+
+          await studentsBloc.stream.firstWhere(
+            (state) => state is StudentsLoaded,
           );
+
+          final loaded = studentsBloc.state as StudentsLoaded;
+
+          for (final student in loaded.students) {
+            context.read<InvoiceBloc>().add(
+              GetInvoiceEvent(studentId: student.id, refresh: true),
+            );
+          }
         },
         child: BlocBuilder<StudentsBloc, StudentsState>(
           builder: (context, state) {
@@ -60,6 +74,7 @@ class LinkedStudentsView extends StatelessWidget {
     );
   }
 }
+
 // class LinkedStudentsView extends StatefulWidget {
 //   const LinkedStudentsView({super.key});
 
