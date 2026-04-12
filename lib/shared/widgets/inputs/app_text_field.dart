@@ -60,60 +60,72 @@ class _AppTextFieldState extends State<AppTextField> {
       children: [
         Text(widget.label, style: AppTextStyles.bodyLarge),
         const SizedBox(height: 8),
-        TextFormField(
-          focusNode: widget.focusNode,
-          controller: widget.controller,
-          validator: widget.validator,
-          keyboardType: widget.keyboardType,
-          obscureText: _obscureText,
-          maxLines: _obscureText ? 1 : widget.maxLines,
-          minLines: widget.minLines,
-          enabled: widget.enabled,
-          onChanged: widget.onChanged,
-          textInputAction: widget.textInputAction,
-          style: AppTextStyles.bodyRegular,
-          readOnly: widget.readOnly,
-          decoration: InputDecoration(
-            hintText: widget.hint,
-            hintStyle: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textTertiary,
-            ),
+        SizedBox(
+          height: widget.maxLines! > 1 ? 120 : null,
+          child: TextFormField(
+            focusNode: widget.focusNode,
+            controller: widget.controller,
+            validator: widget.validator,
+            keyboardType: widget.maxLines! > 1
+                ? TextInputType.multiline
+                : widget.keyboardType,
+            obscureText: _obscureText,
+            maxLines: _obscureText ? 1 : widget.maxLines,
+            minLines: widget.minLines,
+            enabled: widget.enabled,
+            onChanged: widget.onChanged,
+            textInputAction: widget.maxLines! > 1
+                ? TextInputAction.newline
+                : widget.textInputAction,
+            style: AppTextStyles.bodyRegular,
+            readOnly: widget.readOnly,
+            decoration: InputDecoration(
+              hintText: widget.hint,
+              hintStyle: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textTertiary,
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: widget.maxLines! > 1 ? 16 : 12,
+              ),
 
-            prefixIcon: widget.prefix,
-            prefixIconConstraints: const BoxConstraints(
-              minWidth: 0,
-              minHeight: 0,
-            ),
+              alignLabelWithHint: widget.maxLines! > 1,
+              prefixIcon: widget.prefix,
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 0,
+                minHeight: 0,
+              ),
 
-            suffixIcon: widget.showPasswordToggle
-                ? GestureDetector(
-                    onTap: () => setState(() => _obscureText = !_obscureText),
-                    child: Icon(
-                      _obscureText
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      color: AppColors.textSecondary,
-                    ),
-                  )
-                : widget.suffixIcon,
+              suffixIcon: widget.showPasswordToggle
+                  ? GestureDetector(
+                      onTap: () => setState(() => _obscureText = !_obscureText),
+                      child: Icon(
+                        _obscureText
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: AppColors.textSecondary,
+                      ),
+                    )
+                  : widget.suffixIcon,
+            ),
+            // InputDecoration(
+            //   hintText: widget.hint,
+            //   hintStyle: AppTextStyles.bodySmall.copyWith(
+            //     color: AppColors.textTertiary,
+            //   ),
+            //   suffixIcon: widget.showPasswordToggle
+            //       ? GestureDetector(
+            //           onTap: () => setState(() => _obscureText = !_obscureText),
+            //           child: Icon(
+            //             _obscureText
+            //                 ? Icons.visibility_off_outlined
+            //                 : Icons.visibility_outlined,
+            //             color: AppColors.textSecondary,
+            //           ),
+            //         )
+            //       : widget.suffixIcon,
+            // ),
           ),
-          // InputDecoration(
-          //   hintText: widget.hint,
-          //   hintStyle: AppTextStyles.bodySmall.copyWith(
-          //     color: AppColors.textTertiary,
-          //   ),
-          //   suffixIcon: widget.showPasswordToggle
-          //       ? GestureDetector(
-          //           onTap: () => setState(() => _obscureText = !_obscureText),
-          //           child: Icon(
-          //             _obscureText
-          //                 ? Icons.visibility_off_outlined
-          //                 : Icons.visibility_outlined,
-          //             color: AppColors.textSecondary,
-          //           ),
-          //         )
-          //       : widget.suffixIcon,
-          // ),
         ),
       ],
     );

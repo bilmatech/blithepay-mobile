@@ -46,6 +46,6 @@ abstract class AppRoutes {
   static const String studentLinkedSuccess = '/student-link-Success';
   static const String feeSelection = '/fee-selection';
   static const String feeConfirmation = '/fee-confirmation';
-  static const String feeSuccess = '/fee-success';
+  // static const String feeSuccess = '/fee-success';
   static const String studentTransactionDetail = '/student-transaction-detail';
 }

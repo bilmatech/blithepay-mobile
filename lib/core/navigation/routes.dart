@@ -158,26 +158,30 @@ class AppRouterConfig {
 
             final invoiceId = args['invoiceId'] as String;
             final studentId = args['studentId'] as String;
+            final feesItemIds = args['feesItemIds'] as Set<String>;
 
             return PaymentConfirmationView(
               invoiceId: invoiceId,
               studentId: studentId,
+              feesItemIds: feesItemIds,
             );
           },
         ),
-        GoRoute(
-          path: AppRoutes.feeSuccess,
-          builder: (context, state) {
-            final extraData = state.extra as Map<String, dynamic>;
-            final invoice = extraData['invoice'] as ViewInvoiceModel;
-            final paymentData = extraData['paymentData'] as WalletPaymentData;
+        // GoRoute(
+        //   path: AppRoutes.feeSuccess,
+        //   builder: (context, state) {
+        //     final extraData = state.extra as Map<String, dynamic>;
+        //     final invoice = extraData['invoice'] as ViewInvoiceModel;
+        //     final paymentData = extraData['paymentData'] as WalletPaymentData;
+        //     final feesItemIds = extraData['feesItemIds'] as Set<String>;
 
-            return PaymentSuccessView(
-              invoice: invoice,
-              paymentData: paymentData,
-            );
-          },
-        ),
+        //     return PaymentSuccessView(
+        //       invoice: invoice,
+        //       paymentData: paymentData,
+        //       feesItemIds: feesItemIds,
+        //     );
+        //   },
+        // ),
         GoRoute(
           path: AppRoutes.editSchools,
           builder: (_, __) => const EditSchoolsView(),

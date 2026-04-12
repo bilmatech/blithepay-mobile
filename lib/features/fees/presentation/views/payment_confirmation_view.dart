@@ -20,11 +20,13 @@ import 'package:webview_flutter/webview_flutter.dart';
 class PaymentConfirmationView extends StatefulWidget {
   final String invoiceId;
   final String studentId;
+  final Set<String> feesItemIds;
 
   const PaymentConfirmationView({
     super.key,
     required this.invoiceId,
     required this.studentId,
+    required this.feesItemIds,
   });
 
   @override
@@ -41,7 +43,10 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
 
     // Load invoice as before
     context.read<InvoiceBloc>().add(
-      GetInvoiceByIdViewEvent(invoiceId: widget.invoiceId),
+      GetInvoiceByIdViewEvent(
+        invoiceId: widget.invoiceId,
+        feesItemIds: widget.feesItemIds,
+      ),
     );
 
     // Initialize PaymentBloc with empty selection until user chooses fees

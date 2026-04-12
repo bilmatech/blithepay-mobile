@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:blithepay/features/auth/data/models/auth_response_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:rxdart/subjects.dart';
 
 abstract class AppLocalDataSource {
   Future<void> setOnboardingCompleted();
@@ -14,12 +15,22 @@ abstract class AppLocalDataSource {
   Future<String?> getRefreshToken();
 
   Future<void> clearSession();
+  Stream<UserModel?> get userStream;
 }
 
 class AppLocalDataSourceImpl implements AppLocalDataSource {
   final FlutterSecureStorage _storage;
+  final BehaviorSubject<AuthResponseModel?> _sessionController =
+      BehaviorSubject<AuthResponseModel?>();
 
-  AppLocalDataSourceImpl(this._storage);
+  AppLocalDataSourceImpl(this._storage) {
+    // Emit initial session on startup
+    getSession().then((session) => _sessionController.add(session));
+  }
+
+  @override
+  Stream<UserModel?> get userStream =>
+      _sessionController.stream.map((session) => session?.user);
 
   static const _onboardingKey = 'onboarding_completed';
   static const _accessTokenKey = 'access_token';
@@ -54,6 +65,7 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
       key: _userKey,
       value: jsonEncode(session.user?.toJson()),
     );
+    _sessionController.add(session);
   }
 
   @override
@@ -88,7 +100,7 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
     final expiresAtRaw = await _storage.read(key: _expiresAtKey);
     final userRaw = await _storage.read(key: _userKey);
 
-    return AuthResponseModel(
+    final session = AuthResponseModel(
       tokens: AuthTokensModel(
         accessToken: accessToken,
         refreshToken: refreshToken,
@@ -96,6 +108,8 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
       ),
       user: userRaw != null ? UserModel.fromJson(jsonDecode(userRaw)) : null,
     );
+    _sessionController.add(session);
+    return session;
   }
 
   @override
@@ -104,5 +118,6 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
     await _storage.delete(key: _refreshTokenKey);
     await _storage.delete(key: _expiresAtKey);
     await _storage.delete(key: _userKey);
+    _sessionController.add(null);
   }
 }

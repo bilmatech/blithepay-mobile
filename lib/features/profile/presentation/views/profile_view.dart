@@ -15,17 +15,16 @@ class ProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localDataSource = context.read<AppLocalDataSource>();
 
     return AppScaffold(
       appBar: AppBar(title: const Text('Profile'), centerTitle: true),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: FutureBuilder<AuthResponseModel?>(
-            future: localDataSource.getSession(),
+          child: StreamBuilder<UserModel?>(
+            stream: context.read<AppLocalDataSource>().userStream,
             builder: (context, snapshot) {
-              final user = snapshot.data?.user;
+              final user = snapshot.data;
               final firstName = user?.firstName ?? '';
               final lastName = user?.lastName ?? '';
 

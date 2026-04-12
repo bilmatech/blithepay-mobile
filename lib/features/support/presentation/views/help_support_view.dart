@@ -61,7 +61,6 @@ class _HelpSupportViewState extends State<HelpSupportView> {
         ),
         title: const Text('Help & Support'),
         centerTitle: true,
-        
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -74,15 +73,17 @@ class _HelpSupportViewState extends State<HelpSupportView> {
                 'Contact Support:',
                 style: Theme.of(context).textTheme.labelLarge,
               ),
+              //  const SizedBox(height: 12),
+              // const AppTextField(label: 'Your Name', hint: 'Type here'),
+              // const SizedBox(height: 12),
+              // const AppTextField(label: 'Email', hint: '@gmail.com'),
               const SizedBox(height: 12),
-              const AppTextField(label: 'Your Name', hint: 'Type here'),
-              const SizedBox(height: 12),
-              const AppTextField(label: 'Email', hint: '@gmail.com'),
-              const SizedBox(height: 12),
+
               const AppTextField(
                 label: 'Your Message',
                 hint: 'Type here',
                 maxLines: 4,
+                minLines: 4,
               ),
               const SizedBox(height: 16),
               PrimaryButton(label: 'Send Message', onPressed: () {}),
@@ -93,24 +94,24 @@ class _HelpSupportViewState extends State<HelpSupportView> {
                 'Contact Information:',
                 style: Theme.of(context).textTheme.labelLarge,
               ),
-              const SizedBox(height: 12),
-              _buildContactCard(
-                icon: Icons.headset_mic,
-                title: 'Contact Live Support',
-                subtitle: 'Available 24/7',
-              ),
+              // const SizedBox(height: 12),
+              // _buildContactCard(
+              //   icon: Icons.headset_mic,
+              //   title: 'Contact Live Support',
+              //   subtitle: 'Available 24/7',
+              // ),
               const SizedBox(height: 12),
               _buildContactCard(
                 icon: Icons.phone,
                 title: 'Call Us',
                 subtitle: '+2347098784567',
               ),
-              const SizedBox(height: 12),
-              _buildContactCard(
-                icon: Icons.event,
-                title: 'Book A Demo',
-                subtitle: '1 on 1 call with a member of our team',
-              ),
+              // const SizedBox(height: 12),
+              // _buildContactCard(
+              //   icon: Icons.event,
+              //   title: 'Book A Demo',
+              //   subtitle: '1 on 1 call with a member of our team',
+              // ),
               const SizedBox(height: 24),
 
               // FAQs
