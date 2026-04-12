@@ -18,19 +18,19 @@ class GetInvoiceEvent extends InvoiceEvent {
   List<Object?> get props => [studentId, page, limit, refresh];
 }
 
-
 class GetInvoiceByIdEvent extends InvoiceEvent {
   final String invoiceId;
 
   GetInvoiceByIdEvent({required this.invoiceId});
 }
 
-
 class GetInvoiceByIdViewEvent extends InvoiceEvent {
   final String invoiceId;
+  final Set<String>? feesItemIds;
 
-  GetInvoiceByIdViewEvent({required this.invoiceId});
+  GetInvoiceByIdViewEvent({required this.invoiceId, this.feesItemIds});
 }
+
 class GetInvoiceByIdDownloadEvent extends InvoiceEvent {
   final String invoiceId;
 

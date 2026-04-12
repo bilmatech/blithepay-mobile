@@ -45,7 +45,7 @@ abstract class StudentsRepository {
     String studentId = '',
   });
 
-  Future<ViewInvoiceModel> getInvoiceView(String id);
+  Future<ViewInvoiceModel> getInvoiceView(String id, Set<String> feesItemIds);
   Future<Uint8List> downloadInvoice(String invoiceId);
 }
 
@@ -272,11 +272,16 @@ class StudentsRepositoryImpl implements StudentsRepository {
   }
 
   @override
-  Future<ViewInvoiceModel> getInvoiceView(String id) async {
-    var response = await _dioClient.get(ApiEndpoints.getinvoicesByIdView(id));
+  Future<ViewInvoiceModel> getInvoiceView(
+    String id,
+    Set<String> feesItemIds,
+  ) async {
+    var response = await _dioClient.get(
+      ApiEndpoints.getinvoicesByIdView(id),
+      queryParameters: {"feesItemIds": feesItemIds.toList()},
+    );
     return ViewInvoiceModel.fromJson(response.data['data']);
   }
-
 
   @override
   Future<Uint8List> downloadInvoice(String invoiceId) async {

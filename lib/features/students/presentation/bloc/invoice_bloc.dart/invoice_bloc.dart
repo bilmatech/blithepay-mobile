@@ -107,7 +107,10 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     emit(InvoiceByIdLoading(existingInvoices: existingInvoices));
 
     try {
-      final invoice = await repository.getInvoiceView(event.invoiceId);
+      final invoice = await repository.getInvoiceView(
+        event.invoiceId,
+        event.feesItemIds!,
+      );
 
       emit(
         InvoiceByIdViewLoaded(

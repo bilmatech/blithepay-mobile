@@ -67,7 +67,10 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            context.read<AppLocalDataSource>().getSession();
+            context.pop();
+          },
         ),
         title: const Text('Profile'),
         centerTitle: true,
