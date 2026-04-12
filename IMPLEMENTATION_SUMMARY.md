@@ -1,10 +1,11 @@
-# BÜTHE School Fee Management App - Complete Implementation
+# BlithePay School Fee Management App - Complete Implementation
 
 ## Architecture Overview
 
 This Flutter application follows **Clean Architecture** with **BLoC state management** and **GoRouter** for navigation.
 
 ### Folder Structure
+
 ```
 lib/
 ├── core/
@@ -32,6 +33,7 @@ lib/
 ## Key Features Implemented
 
 ### Authentication
+
 - Onboarding slides with skip option
 - Email/password login with validation
 - User registration with complete form
@@ -41,6 +43,7 @@ lib/
 - Success states for all flows
 
 ### Dashboard & Navigation
+
 - Financial summary cards showing:
   - Total outstanding fees
   - Next due date
@@ -52,6 +55,7 @@ lib/
 - Hamburger drawer with full menu
 
 ### Schools Management
+
 - Add new schools with code and name
 - View added schools with edit options
 - Edit school details
@@ -59,6 +63,7 @@ lib/
 - School search functionality
 
 ### Students & Fees
+
 - Link multiple students to schools
 - View linked students with carousel
 - Student details and fee status
@@ -72,6 +77,7 @@ lib/
 - Pay individual student fees
 
 ### Wallet Management
+
 - View wallet balance with date
 - Fund wallet with multiple payment methods:
   - Card payment form
@@ -87,6 +93,7 @@ lib/
   - Note and action buttons
 
 ### Payments
+
 - Complete payment flow with validation
 - Student and fee selection
 - Add notes to payments
@@ -97,6 +104,7 @@ lib/
 - Retry and contact support options
 
 ### Notifications & Support
+
 - Notification list with search and filter
 - Notification details
 - Help & support form with:
@@ -109,6 +117,7 @@ lib/
 - FAQ section with expandable items
 
 ### Profile & Settings
+
 - View profile information:
   - Profile image
   - Guardian name
@@ -122,6 +131,7 @@ lib/
 ## Loading States
 
 All data-loading sections include shimmer animations:
+
 - **ShimmerDashboardLoader** - Dashboard content skeleton
 - **ShimmerLoadingCard** - Card-based content
 - **ShimmerTransactionLoader** - Transaction list animation
@@ -134,64 +144,76 @@ All data-loading sections include shimmer animations:
 ## State Management (BLoC)
 
 ### Auth BLoC
+
 - Login, Signup, Forgot Password, OTP Verification, Password Reset
 - Email validation and error handling
 - Session management
 
 ### Dashboard BLoC
+
 - Fetch dashboard data (summary, transactions)
 - Manage child/student selection
 - Handle errors and loading states
 
 ### Wallet BLoC
+
 - Fund wallet operations
 - Transaction history
 - Balance management
 - Payment processing
 
 ### Fees BLoC
+
 - Fetch fee data
 - Process fee payments
 - Invoice management
 
 ### Support BLoC
+
 - Send support messages
 - Handle contact submissions
 
 ### Theme Cubit
+
 - Light/dark mode toggle
 - Theme persistence
 
 ## Dialogs & Modals
 
 ### Confirmation Dialogs
+
 - Delete school confirmation
 - Logout confirmation
 - Generic confirmation with danger state
 
 ### Payment Result Dialogs
+
 - Success with amount and receipt button
 - Failure with retry and support options
 - Insufficient balance with fund wallet option
 
 ### Search Modal
+
 - Generic searchable list
 - Filter and search functionality
 - Item selection callback
 
 ### Invoice Detail Dialog
+
 - Fee breakdown with itemized costs
 - Invoice number and dates
 - Total amount calculation
 - Close and pay buttons
 
 ### Wallet Update Dialog
+
 - Success notification for wallet funding
 - Amount and receipt viewing
 
 ## Routing Configuration
 
 All routes configured in `lib/core/navigation/app_routes.dart` with GoRouter:
+
 - Auth routes with OTP email/ID passing
 - Feature routes with parameters
 - Proper route hierarchy
@@ -200,12 +222,14 @@ All routes configured in `lib/core/navigation/app_routes.dart` with GoRouter:
 ## UI/UX Features
 
 ### Design System
+
 - Primary color: #1E3A8A (Dark Blue)
 - Secondary colors: Grays, whites, accents
 - Shimmer highlight colors for loading states
 - Consistent spacing and typography
 
 ### Components
+
 - Custom buttons (Primary, Secondary, with icons)
 - Text input fields with validation
 - Dropdown selectors
@@ -215,6 +239,7 @@ All routes configured in `lib/core/navigation/app_routes.dart` with GoRouter:
 - Loading indicators and skeletons
 
 ### Navigation
+
 - Smooth transitions between screens
 - Back navigation support
 - Deep linking ready
@@ -226,17 +251,20 @@ All routes configured in `lib/core/navigation/app_routes.dart` with GoRouter:
 
 1. Ensure Flutter is installed (v3.0+)
 2. Install dependencies:
+
    ```bash
    flutter pub get
    ```
 
 3. Build launcher icons and splash screen:
+
    ```bash
    dart run flutter_launcher_icons:main
    dart run flutter_native_splash:create
    ```
 
 4. Run the app:
+
    ```bash
    flutter run
    ```
@@ -250,7 +278,9 @@ All routes configured in `lib/core/navigation/app_routes.dart` with GoRouter:
 ## Configuration Files
 
 ### pubspec.yaml
+
 Key dependencies:
+
 - `flutter_bloc` - State management
 - `go_router` - Navigation
 - `dio` - API calls
@@ -262,6 +292,7 @@ Key dependencies:
 - `flutter_launcher_icons` - App icons
 
 ### Environment Setup
+
 - Development environment variables in `.env.dev`
 - Production variables in `.env.prod`
 - API base URLs and keys in `AppConfig`
