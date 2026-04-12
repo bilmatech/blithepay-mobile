@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:313986921733:android:14bbc1a46ffc09f627336c",
+        "mobilesdk_app_id": "1:313986921733:android:bf1fe9156db1f4e727336c",
         "android_client_info": {
-          "package_name": "com.bilmatech.blithepay"
+          "package_name": "com.bilmatech.blithepayapp"
         }
       },
       "oauth_client": [],
