@@ -1,9 +1,9 @@
-import 'package:blithepay/core/network/dio_error_mapper.dart';
-import 'package:blithepay/services/firebase_notifications.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/repositories/auth_repository.dart';
+import 'package:blithepay/core/network/dio_error_mapper.dart';
+import 'package:blithepay/services/firebase_notifications.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepositoryInterface _authRepository;
@@ -22,10 +22,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<ResetPasswordRequested>(_onResetPasswordRequested);
   }
 
-  Future<void> _onSignupRequested(
-    SignupRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onSignupRequested(SignupRequested event, Emitter<AuthState> emit) async {
     emit(const AuthState.loading());
 
     try {
@@ -39,15 +36,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         fcmToken,
       );
 
-      // Also sync token explicitly after signup
-      if (fcmToken.isNotEmpty) {
-        await _authRepository.syncFcmToken(fcmToken);
-      }
-
       emit(
-        AuthState.signupSuccess(
-          SignupPayload(userId: result.id ?? '', email: result.email ?? ''),
-        ),
+        AuthState.signupSuccess(SignupPayload(userId: result.id ?? '', email: result.email ?? '')),
       );
     } catch (e) {
       emit(AuthState.error(extractError(e)));
@@ -57,21 +47,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<String> getFcmToken() async {
     try {
       final firebaseNotifications = FirebaseNotifications();
-      final fcmToken = await firebaseNotifications.getFcmToken();
-      await _authRepository.syncFcmToken(fcmToken);
-
-      print('FCM Token: $fcmToken');
-      return fcmToken;
+      return await firebaseNotifications.getFcmToken();
     } catch (e) {
-      print('Error fetching FCM token: $e');
       return '';
     }
   }
 
-  Future<void> _onLoginRequested(
-    LoginRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onLoginRequested(LoginRequested event, Emitter<AuthState> emit) async {
     emit(const AuthState.loading());
 
     try {
@@ -85,7 +67,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       // Persist session
       await _authRepository.persistSession(result);
 
-      // Get FCM token and sync it
+      // Sync FCM token on login to handle device changes
       final fcmToken = await getFcmToken();
       if (fcmToken.isNotEmpty) {
         await _authRepository.syncFcmToken(fcmToken);
@@ -110,10 +92,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onVerifyOtpRequested(
-    VerifyOtpRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onVerifyOtpRequested(VerifyOtpRequested event, Emitter<AuthState> emit) async {
     emit(const AuthState.loading());
     try {
       var result = await _authRepository.verifyOtp(event.code);
@@ -125,10 +104,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onResendOtpRequested(
-    ResendOtpRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onResendOtpRequested(ResendOtpRequested event, Emitter<AuthState> emit) async {
     emit(const AuthState.loading());
     try {
       await _authRepository.resendOtp(event.email);
@@ -138,10 +114,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onSetupPinRequested(
-    SetupPinRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onSetupPinRequested(SetupPinRequested event, Emitter<AuthState> emit) async {
     emit(const AuthState.loading());
     try {
       await _authRepository.setupPin(event.email, event.code);
