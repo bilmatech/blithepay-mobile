@@ -1,13 +1,12 @@
-// invoice_bloc.dart
 import 'dart:io';
-
+import 'package:bloc/bloc.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:media_store_plus/media_store_plus.dart';
 import 'package:blithepay/features/students/data/models/invoice_model.dart';
 import 'package:blithepay/features/students/data/repositories/students_repository.dart';
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_event.dart';
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_state.dart';
-import 'package:bloc/bloc.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+// invoice_bloc.dart
 
 class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
   final StudentsRepository repository;
@@ -22,23 +21,14 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     on<GetInvoiceByIdDownloadEvent>(_onGetInvoiceByIdDownload);
   }
 
-  Future<void> _onGetInvoices(
-    GetInvoiceEvent event,
-    Emitter<InvoiceState> emit,
-  ) async {
+  Future<void> _onGetInvoices(GetInvoiceEvent event, Emitter<InvoiceState> emit) async {
     final studentId = event.studentId;
 
     if (_loadingStudents.contains(studentId)) return;
 
     final existing = _cache[studentId] ?? [];
     if (!event.refresh && existing.isNotEmpty && event.page == 1) {
-      emit(
-        InvoiceLoaded(
-          studentId: studentId,
-          invoice: existing,
-          nextPage: _nextPage[studentId],
-        ),
-      );
+      emit(InvoiceLoaded(studentId: studentId, invoice: existing, nextPage: _nextPage[studentId]));
       return;
     }
 
@@ -48,26 +38,14 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     }
 
     try {
-      final result = await repository.getInvoices(
-        studentId,
-        page: event.page,
-        limit: event.limit,
-      );
+      final result = await repository.getInvoices(studentId, page: event.page, limit: event.limit);
 
-      final updated = event.refresh
-          ? result.invoices
-          : [...existing, ...result.invoices];
+      final updated = event.refresh ? result.invoices : [...existing, ...result.invoices];
 
       _cache[studentId] = updated;
       _nextPage[studentId] = result.nextPage;
 
-      emit(
-        InvoiceLoaded(
-          studentId: studentId,
-          invoice: updated,
-          nextPage: result.nextPage,
-        ),
-      );
+      emit(InvoiceLoaded(studentId: studentId, invoice: updated, nextPage: result.nextPage));
     } catch (e) {
       emit(InvoiceError(studentId: studentId, message: e.toString()));
     } finally {
@@ -75,10 +53,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     }
   }
 
-  Future<void> _onGetInvoiceById(
-    GetInvoiceByIdEvent event,
-    Emitter<InvoiceState> emit,
-  ) async {
+  Future<void> _onGetInvoiceById(GetInvoiceByIdEvent event, Emitter<InvoiceState> emit) async {
     emit(const InvoiceByIdLoading());
 
     try {
@@ -107,10 +82,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     emit(InvoiceByIdLoading(existingInvoices: existingInvoices));
 
     try {
-      final invoice = await repository.getInvoiceView(
-        event.invoiceId,
-        event.feesItemIds!,
-      );
+      final invoice = await repository.getInvoiceView(event.invoiceId, event.feesItemIds!);
 
       emit(
         InvoiceByIdViewLoaded(
@@ -156,34 +128,36 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     );
 
     try {
-      if (Platform.isAndroid) {
-        final status = await Permission.manageExternalStorage.request();
-        if (!status.isGranted) {
-          emit(
-            InvoiceDownloadState(
-              invoice: currentInvoice,
-              downloadStatus: InvoiceDownloadStatus.failure,
-              errorMessage: 'Storage permission denied',
-            ),
-          );
-          return;
-        }
-      }
-
       final bytes = await repository.downloadInvoice(event.invoiceId);
+      final fileName = 'invoice_${event.invoiceId}.pdf';
 
       String filePath;
       if (Platform.isAndroid) {
-        final dir = Directory('/storage/emulated/0/Download');
-        if (!await dir.exists()) await dir.create(recursive: true);
-        filePath = '${dir.path}/invoice_${event.invoiceId}.pdf';
+        // Write to temp file first, then save via MediaStore (no MANAGE_EXTERNAL_STORAGE needed)
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File('${tempDir.path}/$fileName');
+        await tempFile.writeAsBytes(bytes, flush: true);
+
+        final mediaStore = MediaStore();
+        final saveInfo = await mediaStore.saveFile(
+          tempFilePath: tempFile.path,
+          dirType: DirType.download,
+          dirName: DirName.download,
+        );
+
+        if (saveInfo == null) {
+          throw Exception('Failed to save invoice to Downloads');
+        }
+
+        filePath =
+            await mediaStore.getFilePathFromUri(uriString: saveInfo.uri.toString()) ??
+            '/storage/emulated/0/Download/$fileName';
       } else {
         final dir = await getApplicationDocumentsDirectory();
-        filePath = '${dir.path}/invoice_${event.invoiceId}.pdf';
+        filePath = '${dir.path}/$fileName';
+        final file = File(filePath);
+        await file.writeAsBytes(bytes, flush: true);
       }
-
-      final file = File(filePath);
-      await file.writeAsBytes(bytes, flush: true);
 
       emit(
         InvoiceDownloadState(

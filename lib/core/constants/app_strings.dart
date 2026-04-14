@@ -34,15 +34,14 @@ class AppStrings {
   static const String phoneNumber = 'Phone Number';
 
   // Placeholders
-  static const String enterEmail = '@gmail.com';
-  static const String enterPassword = '••••••••';
+  static const String enterEmail = 'example@gmail.com';
+  static const String enterPassword = 'Password';
   static const String enterPhoneNumber = '+234';
 
   // Error Messages
   static const String passwordMismatch = 'Password mismatch';
   static const String invalidEmail = 'Please enter a valid email';
-  static const String passwordTooShort =
-      'Password must be at least 6 characters';
+  static const String passwordTooShort = 'Password must be at least 6 characters';
   static const String fieldRequired = 'This field is required';
 
   // Success Messages
@@ -60,16 +59,14 @@ class AppStrings {
   //set up pin
 
   static const String setupDigitPin = 'Set Up 4 Digit Pin';
-  static const String setup =
-      'Set up a 4 digit pin for carrying out transactions on BlithePay';
+  static const String setup = 'Set up a 4 digit pin for carrying out transactions on BlithePay';
   static const String continueS = 'Continue';
 
   // Onboarding
   static const String paySecurely = 'Pay School Fees Securely & Efficiently.';
   static const String paySecurelyDesc =
       'Make fast, secure school fee payments without stress, delays, or unnecessary paperwork.';
-  static const String manageMultiple =
-      'Manage Multiple Children/Students Easily.';
+  static const String manageMultiple = 'Manage Multiple Children/Students Easily.';
   static const String manageMultipleDesc =
       'Track, organize, and manage payments for multiple children or students from one dashboard.';
   static const String getReminders = 'Get Reminders, Receipts & Transparency.';

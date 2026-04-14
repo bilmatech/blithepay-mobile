@@ -1,13 +1,15 @@
-import 'package:blithepay/core/storage/auth_local_storage.dart';
-import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'package:blithepay/shared/widgets/index.dart';
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/navigation/app_routes.dart';
+import '../../../../core/constants/app_text_styles.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/core/storage/auth_local_storage.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
+import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 
 class OnboardingView extends StatefulWidget {
   const OnboardingView({super.key});
@@ -60,6 +62,16 @@ class _OnboardingViewState extends State<OnboardingView> {
     }
   }
 
+  void _goToLogin() async {
+    final appLocalDataSource = context.read<AppLocalDataSource>();
+
+    await appLocalDataSource.setOnboardingCompleted();
+
+    if (mounted) {
+      context.go(AppRoutes.login);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
@@ -83,11 +95,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Image.asset(
-                          page.image,
-                          fit: BoxFit.contain,
-                          width: double.infinity,
-                        ),
+                        child: Image.asset(page.image, fit: BoxFit.contain, width: double.infinity),
                       ),
 
                       // Top-left clickable area
@@ -99,8 +107,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                           child: Container(
                             width: 80,
                             height: 40,
-                            color:
-                                Colors.transparent, // invisible tappable area
+                            color: Colors.transparent, // invisible tappable area
                           ),
                         ),
                       ),
@@ -124,9 +131,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                         width: _currentIndex == index ? 12 : 8,
                         height: 8,
                         decoration: BoxDecoration(
-                          color: _currentIndex == index
-                              ? AppColors.primary
-                              : AppColors.border,
+                          color: _currentIndex == index ? AppColors.primary : AppColors.border,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -135,10 +140,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                   const SizedBox(height: 24),
                   Text(_pages[_currentIndex].title, style: AppTextStyles.h2),
                   const SizedBox(height: 12),
-                  Text(
-                    _pages[_currentIndex].description,
-                    style: AppTextStyles.bodyRegular,
-                  ),
+                  Text(_pages[_currentIndex].description, style: AppTextStyles.bodyRegular),
                   const SizedBox(height: 40),
                   PrimaryButton(
                     label: _currentIndex == _pages.length - 1
@@ -155,6 +157,11 @@ class _OnboardingViewState extends State<OnboardingView> {
                       }
                     },
                   ),
+                  const SizedBox(height: 15),
+                  SizedBox(
+                    width: double.infinity,
+                    child: SecondaryOutlinedButton(label: AppStrings.logIn, onPressed: _goToLogin),
+                  ),
                 ],
               ),
             ),
@@ -170,9 +177,5 @@ class OnboardingPage {
   final String title;
   final String description;
 
-  OnboardingPage({
-    required this.image,
-    required this.title,
-    required this.description,
-  });
+  OnboardingPage({required this.image, required this.title, required this.description});
 }

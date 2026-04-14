@@ -1,13 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/loaders/shimmer_table_loader.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 import 'package:blithepay/features/students/presentation/bloc/transaction_bloc.dart/transaction_bloc.dart';
 import 'package:blithepay/features/students/presentation/bloc/transaction_bloc.dart/transaction_event.dart';
 import 'package:blithepay/features/students/presentation/bloc/transaction_bloc.dart/transaction_state.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student_view/payment_history_section.dart';
-import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/loaders/shimmer_table_loader.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 class FeesTransactionsView extends StatefulWidget {
   const FeesTransactionsView({super.key, required this.student});

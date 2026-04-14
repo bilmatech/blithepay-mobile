@@ -1,5 +1,5 @@
-import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:blithepay/core/constants/app_colors.dart';
 
 class SecondaryOutlinedButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -9,6 +9,7 @@ class SecondaryOutlinedButton extends StatelessWidget {
   final double borderRadius;
   final Color? borderColor;
   final TextStyle? textStyle;
+  final Widget? leading;
 
   const SecondaryOutlinedButton({
     super.key,
@@ -19,6 +20,7 @@ class SecondaryOutlinedButton extends StatelessWidget {
     this.borderRadius = 6,
     this.borderColor,
     this.textStyle,
+    this.leading,
   });
 
   @override
@@ -32,7 +34,13 @@ class SecondaryOutlinedButton extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       onPressed: onPressed,
-      child: Text(label),
+      child: leading != null
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [leading!, const SizedBox(width: 8), Text(label)],
+            )
+          : Text(label),
     );
   }
 }

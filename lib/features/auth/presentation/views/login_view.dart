@@ -1,20 +1,20 @@
-import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
-import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/constants/app_text_styles.dart';
-import '../../../../core/navigation/app_routes.dart';
-import '../../../../core/utils/validators.dart';
-import '../../../../shared/widgets/buttons/primary_button.dart';
-import '../../../../shared/widgets/buttons/secondary_button.dart';
-import '../../../../shared/widgets/inputs/app_text_field.dart';
-import '../../../../shared/layouts/app_scaffold.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/utils/validators.dart';
+import '../../../../core/constants/app_strings.dart';
+import '../../../../core/navigation/app_routes.dart';
+import '../../../../shared/layouts/app_scaffold.dart';
+import '../../../../core/constants/app_text_styles.dart';
+import '../../../../shared/widgets/inputs/app_text_field.dart';
+import '../../../../shared/widgets/buttons/primary_button.dart';
+import '../../../../shared/widgets/buttons/secondary_button.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -35,8 +35,8 @@ class _LoginViewState extends State<LoginView> {
     _passwordController = TextEditingController();
 
     if (kDebugMode) {
-      _emailController.text = 'toyabdul345@gmail.com';
-      _passwordController.text = '1Password@';
+      _emailController.text = '';
+      _passwordController.text = '';
     }
   }
 

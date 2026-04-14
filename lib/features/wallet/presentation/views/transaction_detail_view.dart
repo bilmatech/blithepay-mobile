@@ -1,20 +1,26 @@
 import 'dart:typed_data';
-
-import 'package:blithepay/core/constants/app_colors.dart';
-import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/core/utils/helpers.dart';
-import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
-import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
-import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
+import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:blithepay/core/utils/helpers.dart';
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
+import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
 
-class TransactionDetailView extends StatelessWidget {
+class TransactionDetailView extends StatefulWidget {
   final WalletTransactionModel transaction;
 
   const TransactionDetailView({super.key, required this.transaction});
+
+  @override
+  State<TransactionDetailView> createState() => _TransactionDetailViewState();
+}
+
+class _TransactionDetailViewState extends State<TransactionDetailView> {
+  bool _isDownloading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +38,9 @@ class TransactionDetailView extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              transaction.status.toUpperCase(),
+              widget.transaction.status.toUpperCase(),
               style: TextStyle(
-                color: transaction.status.toLowerCase() == 'success'
+                color: widget.transaction.status.toLowerCase() == 'success'
                     ? AppColors.success
                     : AppColors.error,
                 fontWeight: FontWeight.w600,
@@ -43,14 +49,11 @@ class TransactionDetailView extends StatelessWidget {
             const SizedBox(height: 8),
 
             Text(
-              Helpers.formattedAmount(
-                transaction.amount,
-                flow: transaction.flow,
-              ),
+              Helpers.formattedAmount(widget.transaction.amount, flow: widget.transaction.flow),
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: transaction.flow.toLowerCase() == 'inflow'
+                color: widget.transaction.flow.toLowerCase() == 'inflow'
                     ? AppColors.success
                     : AppColors.error,
               ),
@@ -58,7 +61,7 @@ class TransactionDetailView extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            _buildDetailsCard(transaction),
+            _buildDetailsCard(widget.transaction),
 
             const SizedBox(height: 32),
 
@@ -66,19 +69,17 @@ class TransactionDetailView extends StatelessWidget {
               children: [
                 Expanded(
                   child: SecondaryOutlinedButton(
-                    onPressed: () => _downloadReceipt(context),
-                    label: 'Download Receipt',
+                    onPressed: _isDownloading ? null : () => _downloadReceipt(context),
+                    label: _isDownloading ? 'Preparing...' : 'Download Receipt',
+                    leading: _isDownloading
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : null,
                   ),
                 ),
-                // const SizedBox(width: 12),
-                // Expanded(
-                //   child: ElevatedButton(
-                //     onPressed: () {
-                //       context.go('/home');
-                //     },
-                //     child: const Text('Done'),
-                //   ),
-                // ),
               ],
             ),
           ],
@@ -88,95 +89,86 @@ class TransactionDetailView extends StatelessWidget {
   }
 
   Future<void> _downloadReceipt(BuildContext context) async {
-    final pdf = pw.Document();
+    setState(() => _isDownloading = true);
+    try {
+      final pdf = pw.Document();
 
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(32),
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              // Header
-              pw.Text(
-                'Transaction Receipt',
-                style: pw.TextStyle(
-                  fontSize: 26,
-                  fontWeight: pw.FontWeight.bold,
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(32),
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // Header
+                pw.Text(
+                  'Transaction Receipt',
+                  style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold),
                 ),
-              ),
-              pw.SizedBox(height: 12),
-              pw.Divider(color: PdfColors.grey, thickness: 1.5),
-              pw.SizedBox(height: 20),
+                pw.SizedBox(height: 12),
+                pw.Divider(color: PdfColors.grey, thickness: 1.5),
+                pw.SizedBox(height: 20),
 
-              // Transaction Summary Box
-              pw.Container(
-                padding: const pw.EdgeInsets.all(16),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.grey300),
-                  //  borderRadius: 8,
-                  color: PdfColors.grey100,
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    _pdfRow('Status', transaction.status),
-                    _pdfRow('Type', transaction.type),
-                    _pdfRow(
-                      'Date',
-                      Helpers.formattedDateTime(transaction.transactionAt),
-                    ),
-                    _pdfRow('Reference', transaction.reference),
-                  ],
-                ),
-              ),
-              pw.SizedBox(height: 20),
-
-              // Amount Section
-              pw.Container(
-                padding: const pw.EdgeInsets.all(16),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.grey300),
-                  //borderRadius: BorderRadiusGeometry.all()
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    _pdfRowBold('Amount', 'N${transaction.amount}'),
-                    if (transaction.fees.isNotEmpty)
-                      _pdfRow('Fees', 'N${transaction.fees}'),
-                    _pdfRowBold('Net Amount', 'N${transaction.netAmount}'),
-                  ],
-                ),
-              ),
-
-              pw.Spacer(),
-
-              // Footer
-              pw.Center(
-                child: pw.Text(
-                  'Thank you for using BilthePay',
-                  style: pw.TextStyle(
-                    fontSize: 14,
-                    color: PdfColors.grey700,
-                    fontStyle: pw.FontStyle.italic,
+                // Transaction Summary Box
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(16),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.grey300),
+                    color: PdfColors.grey100,
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      _pdfRow('Status', widget.transaction.status),
+                      _pdfRow('Type', widget.transaction.type),
+                      _pdfRow('Date', Helpers.formattedDateTime(widget.transaction.transactionAt)),
+                      _pdfRow('Reference', widget.transaction.reference),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-    // Save PDF to device with a custom name
-    final Uint8List pdfBytes = await pdf.save();
+                pw.SizedBox(height: 20),
 
-    final filename =
-        'blithepay_transaction_recipient_${transaction.reference}.pdf';
+                // Amount Section
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(16),
+                  decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey300)),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      _pdfRowBold('Amount', 'N${widget.transaction.amount}'),
+                      if (widget.transaction.fees.isNotEmpty)
+                        _pdfRow('Fees', 'N${widget.transaction.fees}'),
+                      _pdfRowBold('Net Amount', 'N${widget.transaction.netAmount}'),
+                    ],
+                  ),
+                ),
 
-    await Printing.sharePdf(bytes: pdfBytes, filename: filename);
-    // await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+                pw.Spacer(),
+
+                // Footer
+                pw.Center(
+                  child: pw.Text(
+                    'Thank you for using BilthePay',
+                    style: pw.TextStyle(
+                      fontSize: 14,
+                      color: PdfColors.grey700,
+                      fontStyle: pw.FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+
+      final Uint8List pdfBytes = await pdf.save();
+      final filename = 'blithepay_transaction_recipient_${widget.transaction.reference}.pdf';
+      await Printing.sharePdf(bytes: pdfBytes, filename: filename);
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
+    }
   }
 
   pw.Widget _pdfRow(String label, String value) {
@@ -198,14 +190,8 @@ class TransactionDetailView extends StatelessWidget {
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text(
-            label,
-            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-          ),
-          pw.Text(
-            value,
-            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-          ),
+          pw.Text(label, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+          pw.Text(value, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
         ],
       ),
     );
@@ -216,17 +202,11 @@ Widget _buildDetailsCard(WalletTransactionModel transaction) {
   final details = [
     {'label': 'Transaction Type', 'value': transaction.type},
     {'label': 'Method', 'value': 'Fees'},
-    {
-      'label': 'Date',
-      'value': Helpers.formattedDateTime(transaction.transactionAt),
-    },
+    {'label': 'Date', 'value': Helpers.formattedDateTime(transaction.transactionAt)},
     {'label': 'Reference', 'value': transaction.reference},
     {'label': 'Amount', 'value': Helpers.formattedAmount(transaction.amount)},
     {'label': 'Fees', 'value': Helpers.formattedAmount(transaction.fees)},
-    {
-      'label': 'Net Amount',
-      'value': Helpers.formattedAmount(transaction.netAmount),
-    },
+    {'label': 'Net Amount', 'value': Helpers.formattedAmount(transaction.netAmount)},
     {'label': 'Description', 'value': transaction.description ?? '-'},
   ];
 
@@ -251,18 +231,14 @@ Widget _buildDetailsCard(WalletTransactionModel transaction) {
             children: [
               Text(
                 item['label']!,
-                style: AppTextStyles.bodyRegular.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                style: AppTextStyles.bodyRegular.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   item['value']!,
                   textAlign: TextAlign.right,
-                  style: AppTextStyles.bodyRegular.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.bodyRegular.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
             ],

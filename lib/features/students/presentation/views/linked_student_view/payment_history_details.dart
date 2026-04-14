@@ -1,20 +1,26 @@
 import 'dart:typed_data';
-
-import 'package:blithepay/core/constants/app_colors.dart';
-import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/core/utils/helpers.dart';
-import 'package:blithepay/features/students/data/models/student_transaction_model.dart';
-import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
-import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
+import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:blithepay/core/utils/helpers.dart';
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
+import 'package:blithepay/features/students/data/models/student_transaction_model.dart';
 
-class PaymentHistoryDetailView extends StatelessWidget {
+class PaymentHistoryDetailView extends StatefulWidget {
   final StudentTransactionModel transaction;
 
   const PaymentHistoryDetailView({super.key, required this.transaction});
+
+  @override
+  State<PaymentHistoryDetailView> createState() => _PaymentHistoryDetailViewState();
+}
+
+class _PaymentHistoryDetailViewState extends State<PaymentHistoryDetailView> {
+  bool _isDownloading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +38,9 @@ class PaymentHistoryDetailView extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              transaction.status.toUpperCase(),
+              widget.transaction.status.toUpperCase(),
               style: TextStyle(
-                color: transaction.status.toLowerCase() == 'success'
+                color: widget.transaction.status.toLowerCase() == 'success'
                     ? AppColors.success
                     : AppColors.error,
                 fontWeight: FontWeight.w600,
@@ -43,15 +49,22 @@ class PaymentHistoryDetailView extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            _buildDetailsCard(transaction),
+            _buildDetailsCard(widget.transaction),
             const SizedBox(height: 32),
 
             Row(
               children: [
                 Expanded(
                   child: SecondaryOutlinedButton(
-                    onPressed: () => _downloadReceipt(context),
-                    label: 'Download Receipt',
+                    onPressed: _isDownloading ? null : () => _downloadReceipt(context),
+                    label: _isDownloading ? 'Preparing...' : 'Download Receipt',
+                    leading: _isDownloading
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : null,
                   ),
                 ),
               ],
@@ -63,95 +76,85 @@ class PaymentHistoryDetailView extends StatelessWidget {
   }
 
   Future<void> _downloadReceipt(BuildContext context) async {
-    final pdf = pw.Document();
+    setState(() => _isDownloading = true);
+    try {
+      final pdf = pw.Document();
 
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(32),
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              // Header
-              pw.Text(
-                'Transaction Receipt',
-                style: pw.TextStyle(
-                  fontSize: 26,
-                  fontWeight: pw.FontWeight.bold,
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(32),
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // Header
+                pw.Text(
+                  'Transaction Receipt',
+                  style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold),
                 ),
-              ),
-              pw.SizedBox(height: 12),
-              pw.Divider(color: PdfColors.grey, thickness: 1.5),
-              pw.SizedBox(height: 20),
+                pw.SizedBox(height: 12),
+                pw.Divider(color: PdfColors.grey, thickness: 1.5),
+                pw.SizedBox(height: 20),
 
-              // Transaction Summary Box
-              pw.Container(
-                padding: const pw.EdgeInsets.all(16),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.grey300),
-                  //  borderRadius: 8,
-                  color: PdfColors.grey100,
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    _pdfRow('Status', transaction.status),
-                    _pdfRow(
-                      'Date',
-                      Helpers.formatDate(transaction.transactionAt),
-                    ),
-                    _pdfRow('Reference', transaction.reference),
-                  ],
-                ),
-              ),
-              pw.SizedBox(height: 20),
-
-              // Amount Section
-              pw.Container(
-                padding: const pw.EdgeInsets.all(16),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.grey300),
-                  //borderRadius: BorderRadiusGeometry.all()
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    _pdfRowBold('Amount', 'N${transaction.amount}'),
-                    if (transaction.latePaymentFee.isNotEmpty)
-                      _pdfRow(
-                        'Late Payment Fees',
-                        'N${transaction.latePaymentFee}',
-                      ),
-                    _pdfRowBold('Vat Amount', 'N${transaction.vatAmount}'),
-                  ],
-                ),
-              ),
-
-              pw.Spacer(),
-
-              // Footer
-              pw.Center(
-                child: pw.Text(
-                  'Thank you for using BilthePay',
-                  style: pw.TextStyle(
-                    fontSize: 14,
-                    color: PdfColors.grey700,
-                    fontStyle: pw.FontStyle.italic,
+                // Transaction Summary Box
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(16),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.grey300),
+                    color: PdfColors.grey100,
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      _pdfRow('Status', widget.transaction.status),
+                      _pdfRow('Date', Helpers.formatDate(widget.transaction.transactionAt)),
+                      _pdfRow('Reference', widget.transaction.reference),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-    // Save PDF to device with a custom name
-    final Uint8List pdfBytes = await pdf.save();
+                pw.SizedBox(height: 20),
 
-    final filename = 'blithepay_payment_recipient_${transaction.reference}.pdf';
+                // Amount Section
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(16),
+                  decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey300)),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      _pdfRowBold('Amount', 'N${widget.transaction.amount}'),
+                      if (widget.transaction.latePaymentFee.isNotEmpty)
+                        _pdfRow('Late Payment Fees', 'N${widget.transaction.latePaymentFee}'),
+                      _pdfRowBold('Vat Amount', 'N${widget.transaction.vatAmount}'),
+                    ],
+                  ),
+                ),
 
-    await Printing.sharePdf(bytes: pdfBytes, filename: filename);
+                pw.Spacer(),
+
+                // Footer
+                pw.Center(
+                  child: pw.Text(
+                    'Thank you for using BilthePay',
+                    style: pw.TextStyle(
+                      fontSize: 14,
+                      color: PdfColors.grey700,
+                      fontStyle: pw.FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+
+      final Uint8List pdfBytes = await pdf.save();
+      final filename = 'blithepay_payment_recipient_${widget.transaction.reference}.pdf';
+      await Printing.sharePdf(bytes: pdfBytes, filename: filename);
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
+    }
   }
 
   pw.Widget _pdfRow(String label, String value) {
@@ -173,14 +176,8 @@ class PaymentHistoryDetailView extends StatelessWidget {
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text(
-            label,
-            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-          ),
-          pw.Text(
-            value,
-            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-          ),
+          pw.Text(label, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+          pw.Text(value, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
         ],
       ),
     );
@@ -192,14 +189,8 @@ Widget _buildDetailsCard(StudentTransactionModel transaction) {
     {'label': 'Date', 'value': Helpers.formatDate(transaction.transactionAt)},
     {'label': 'Reference', 'value': transaction.reference},
     {'label': 'Amount', 'value': Helpers.formattedAmount(transaction.amount)},
-    {
-      'label': 'Late Payment Fees',
-      'value': Helpers.formattedAmount(transaction.latePaymentFee),
-    },
-    {
-      'label': 'Vat Amount',
-      'value': Helpers.formattedAmount(transaction.vatAmount),
-    },
+    {'label': 'Late Payment Fees', 'value': Helpers.formattedAmount(transaction.latePaymentFee)},
+    {'label': 'Vat Amount', 'value': Helpers.formattedAmount(transaction.vatAmount)},
     {'label': 'Description', 'value': transaction.description},
   ];
 
@@ -224,18 +215,14 @@ Widget _buildDetailsCard(StudentTransactionModel transaction) {
             children: [
               Text(
                 item['label']!,
-                style: AppTextStyles.bodyRegular.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                style: AppTextStyles.bodyRegular.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   item['value']!,
                   textAlign: TextAlign.right,
-                  style: AppTextStyles.bodyRegular.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.bodyRegular.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
             ],

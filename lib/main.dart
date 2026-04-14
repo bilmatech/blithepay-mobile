@@ -4,10 +4,13 @@ import 'package:blithepay/providers.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:blithepay/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:media_store_plus/media_store_plus.dart';
 import 'package:blithepay/services/local_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await MediaStore.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
@@ -17,10 +20,7 @@ void main() async {
   runApp(
     MultiRepositoryProvider(
       providers: AppProviders.repositories(),
-      child: MultiBlocProvider(
-        providers: AppProviders.blocs(),
-        child: const MyApp(),
-      ),
+      child: MultiBlocProvider(providers: AppProviders.blocs(), child: const MyApp()),
     ),
   );
 }
