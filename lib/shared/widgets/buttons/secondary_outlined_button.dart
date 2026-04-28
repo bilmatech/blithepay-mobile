@@ -27,20 +27,34 @@ class SecondaryOutlinedButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        minimumSize: const Size(0, 32),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+        minimumSize: const Size(0, 56),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        side: const BorderSide(color: AppColors.border),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        side: BorderSide(color: borderColor ?? AppColors.border),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(borderRadius),
+        ),
       ),
       onPressed: onPressed,
       child: leading != null
           ? Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
-              children: [leading!, const SizedBox(width: 8), Text(label)],
+              children: [
+                leading!,
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style:
+                      textStyle ??
+                      const TextStyle(color: AppColors.textPrimary),
+                ),
+              ],
             )
-          : Text(label),
+          : Text(
+              label,
+              style: textStyle ?? const TextStyle(color: AppColors.textPrimary),
+            ),
     );
   }
 }

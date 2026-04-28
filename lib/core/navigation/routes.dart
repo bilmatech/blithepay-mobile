@@ -1,6 +1,6 @@
 import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/features/auth/presentation/views/biometric_auth_view.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
-import 'package:blithepay/features/students/data/models/view_invoice_model.dart';
 
 class AppRouterConfig {
   static GoRouter createRouter() {
@@ -70,6 +70,10 @@ class AppRouterConfig {
             final fromProfile = state.extra as bool? ?? false;
             return PasswordChangedView(fromProfile: fromProfile);
           },
+        ),
+        GoRoute(
+          path: AppRoutes.biometric,
+          builder: (_, __) => const BiometricAuthView(),
         ),
         // GoRoute(
         //   path: AppRoutes.passwordChanged,
@@ -298,6 +302,7 @@ class AppRouterConfig {
               buttonLabel: args.buttonLabel,
               nextRoute: args.nextRoute,
               nextExtra: args.nextExtra,
+              useAuthBackground: args.useAuthBackground,
             );
           },
         ),

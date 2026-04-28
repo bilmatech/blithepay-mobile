@@ -1,22 +1,3 @@
-import 'package:blithepay/core/constants/app_colors.dart';
-import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/core/utils/helpers.dart';
-import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
-import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
-import 'package:blithepay/features/fees/data/models/payment_data.dart';
-import 'package:blithepay/features/students/data/models/view_invoice_model.dart';
-import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_bloc.dart';
-import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_event.dart';
-import 'package:blithepay/features/students/presentation/views/linked_student_view/linked_student_body.dart';
-import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
-import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:pdf/pdf.dart';
-import 'package:printing/printing.dart';
-import 'package:pdf/widgets.dart' as pw;
 
 // class PaymentSuccessView extends StatelessWidget {
 //   final ViewInvoiceModel invoice;

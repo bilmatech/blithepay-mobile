@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -24,19 +25,14 @@ class _OnboardingViewState extends State<OnboardingView> {
 
   final List<OnboardingPage> _pages = [
     OnboardingPage(
-      image: 'assets/images/onboarding_1.png',
+      image: 'assets/images/Icon.png',
       title: AppStrings.paySecurely,
       description: AppStrings.paySecurelyDesc,
     ),
     OnboardingPage(
-      image: 'assets/images/onboarding_2.png',
+      image: 'assets/images/Icon.png',
       title: AppStrings.manageMultiple,
       description: AppStrings.manageMultipleDesc,
-    ),
-    OnboardingPage(
-      image: 'assets/images/onboarding_3.png',
-      title: AppStrings.getReminders,
-      description: AppStrings.getRemindersDesc,
     ),
   ];
 
@@ -75,92 +71,188 @@ class _OnboardingViewState extends State<OnboardingView> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      body: SafeArea(
-        child: Column(
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/onboarding.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Stack(
           children: [
-            // Only the image changes here
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                onPageChanged: (index) => setState(() => _currentIndex = index),
-                itemCount: _pages.length,
-                itemBuilder: (context, index) {
-                  final page = _pages[index];
-                  return Stack(
-                    children: [
-                      // Image
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Image.asset(page.image, fit: BoxFit.contain, width: double.infinity),
-                      ),
-
-                      // Top-left clickable area
-                      Positioned(
-                        top: 40,
-                        right: 40,
-                        child: GestureDetector(
-                          onTap: _goToCreateAccount,
-                          child: Container(
-                            width: 80,
-                            height: 40,
-                            color: Colors.transparent, // invisible tappable area
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+            // Pattern overlay
+            Container(color: Colors.black.withOpacity(0.2)),
+            // Glass effect
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+              child: Container(color: Colors.black.withOpacity(0.1)),
             ),
-
-            // Fixed section: dots, title, description, button
-            Container(
-              padding: const EdgeInsets.only(right: 24, left: 24, bottom: 24),
+            SafeArea(
               child: Column(
                 children: [
-                  // Dots indicator
-                  Row(
-                    children: List.generate(
-                      _pages.length,
-                      (index) => Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: _currentIndex == index ? 12 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: _currentIndex == index ? AppColors.primary : AppColors.border,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _pageController,
+                      onPageChanged: (index) =>
+                          setState(() => _currentIndex = index),
+                      itemCount: _pages.length,
+                      itemBuilder: (context, index) {
+                        final page = _pages[index];
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 280,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(28),
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(
+                                    sigmaX: 10,
+                                    sigmaY: 10,
+                                  ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: AppColors.white.withOpacity(0.15),
+                                      border: Border.all(
+                                        color: AppColors.white.withOpacity(0.2),
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(28),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 10),
+                                        ),
+                                      ],
+                                    ),
+                                    padding: const EdgeInsets.all(28),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        Container(
+                                          width: 84,
+                                          height: 84,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.white,
+                                            borderRadius: BorderRadius.circular(
+                                              24,
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              page.image,
+                                              width: 48,
+                                              height: 48,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 28),
+                                        Text(
+                                          page.title,
+                                          style: AppTextStyles.h3.copyWith(
+                                            color: AppColors.white,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          page.description,
+                                          style: AppTextStyles.bodyRegularBlack
+                                              .copyWith(
+                                                color: AppColors.white
+                                                    .withOpacity(0.9),
+                                              ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Text(_pages[_currentIndex].title, style: AppTextStyles.h2),
-                  const SizedBox(height: 12),
-                  Text(_pages[_currentIndex].description, style: AppTextStyles.bodyRegular),
-                  const SizedBox(height: 40),
-                  PrimaryButton(
-                    label: _currentIndex == _pages.length - 1
-                        ? AppStrings.createAccount
-                        : AppStrings.next,
-                    onPressed: () {
-                      if (_currentIndex == _pages.length - 1) {
-                        _goToCreateAccount();
-                      } else {
-                        _pageController.nextPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 15),
-                  SizedBox(
-                    width: double.infinity,
-                    child: SecondaryOutlinedButton(label: AppStrings.logIn, onPressed: _goToLogin),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 24,
+                      right: 24,
+                      bottom: 20,
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            _pages.length,
+                            (index) => Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: _currentIndex == index
+                                    ? AppColors.white
+                                    : AppColors.white.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        PrimaryButton(
+                          label: AppStrings.getStarted,
+                          onPressed: _goToCreateAccount,
+                        ),
+                        const SizedBox(height: 14),
+                        SizedBox(
+                          width: double.infinity,
+                          child: SecondaryOutlinedButton(
+                            label: AppStrings.logIn,
+                            onPressed: _goToLogin,
+                            borderColor: AppColors.white,
+                            textStyle: AppTextStyles.button.copyWith(
+                              color: AppColors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        Text.rich(
+                          TextSpan(
+                            text: AppStrings.byRegisteringYourAccount,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.white.withOpacity(0.8),
+                            ),
+                            children: [
+                              TextSpan(
+                                text: AppStrings.termsAndConditions,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              TextSpan(
+                                text: ' and ',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.white.withOpacity(0.8),
+                                ),
+                              ),
+                              TextSpan(
+                                text: AppStrings.privacyPolicy,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -177,5 +269,9 @@ class OnboardingPage {
   final String title;
   final String description;
 
-  OnboardingPage({required this.image, required this.title, required this.description});
+  OnboardingPage({
+    required this.image,
+    required this.title,
+    required this.description,
+  });
 }

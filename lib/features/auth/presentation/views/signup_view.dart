@@ -8,6 +8,7 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../shared/widgets/background/auth_flow_background.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
 import '../../../../shared/layouts/app_scaffold.dart';
@@ -74,6 +75,13 @@ class _SignupViewState extends State<SignupView> {
         );
         return;
       }
+      // if (kDebugMode) {
+      //   context.push(
+      //     AppRoutes.verifyOtp,
+      //     extra: {'email': _emailController.text, 'flow': OtpFlow.signup},
+      //   );
+      //   return;
+      // }
       context.read<AuthBloc>().add(
         SignupRequested(
           email: _emailController.text,
@@ -98,149 +106,206 @@ class _SignupViewState extends State<SignupView> {
       },
       child: AppScaffold(
         showBackButton: false,
-        centerTitle: true,
-        title: AppStrings.createAccount,
-        body: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            return SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Form(
-                  key: _formKey,
+        // background: const AuthFlowBackground(),
+        body: AuthBackgroundWrapper(
+          child: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              return SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AppTextField(
-                        label: AppStrings.fullName,
-                        controller: _nameController,
-                        validator: Validators.validateFullName,
-                      ),
-                      const SizedBox(height: 16),
-                      AppTextField(
-                        label: AppStrings.email,
-                        hint: AppStrings.enterEmail,
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: Validators.validateEmail,
-                      ),
-                      const SizedBox(height: 16),
-                      AppTextField(
-                        label: AppStrings.phoneNumber,
-                        controller: _phoneController,
-                        keyboardType: TextInputType.phone,
-                        validator: Validators.validatePhoneNumber,
-                        prefix: GestureDetector(
-                          onTap: () {
-                            showCountryPicker(
-                              context: context,
-                              showPhoneCode: true,
-                              onSelect: (Country country) {
-                                setState(() => _selectedCountry = country);
-                              },
-                            );
-                          },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SizedBox(width: 12),
-                              Text(
-                                _selectedCountry.flagEmoji,
-                                style: const TextStyle(fontSize: 18),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                '+${_selectedCountry.phoneCode}',
-                                style: AppTextStyles.bodyRegular,
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                height: 24,
-                                width: 1,
-                                color: AppColors.textTertiary,
-                              ),
-                              const SizedBox(width: 8),
-                            ],
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Step 1 of 3',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
+                          Text(
+                            AppStrings.personalInfo,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      AppTextField(
-                        label: AppStrings.password,
-                        hint: AppStrings.enterPassword,
-                        controller: _passwordController,
-                        obscureText: true,
-                        showPasswordToggle: true,
-                        validator: Validators.validatePassword,
-                      ),
-                      const SizedBox(height: 16),
-                      AppTextField(
-                        label: AppStrings.confirmPassword,
-                        hint: AppStrings.enterPassword,
-                        controller: _confirmPasswordController,
-                        obscureText: true,
-                        showPasswordToggle: true,
-                        validator: (value) => Validators.validatePasswordMatch(
-                          _passwordController.text,
-                          value,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       Row(
                         children: [
-                          Checkbox(
-                            value: _agreedToTerms,
-                            onChanged: (value) =>
-                                setState(() => _agreedToTerms = value ?? false),
-                          ),
                           Expanded(
-                            child: Text.rich(
-                              TextSpan(
-                                text:
-                                    'By registering your school, you accept the ',
-                                style: AppTextStyles.bodySmall,
-                                children: [
-                                  TextSpan(
-                                    text: 'Terms and Conditions',
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      color: AppColors.primary,
-                                      // decoration: TextDecoration.underline,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = () {
-                                        // Navigate or open link
-                                        // Example:
-                                        // Navigator.push(context, MaterialPageRoute(...));
-                                        // or launchUrl(...)
-                                      },
-                                  ),
-                                ],
+                            child: Container(
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Container(
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Container(
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
+                      const Text(
+                        AppStrings.createAccountTitle,
+                        style: AppTextStyles.h2,
+                      ),
+                      const SizedBox(height: 24),
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AppTextField(
+                              label: AppStrings.fullName,
+                              controller: _nameController,
+                              validator: Validators.validateFullName,
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              label: AppStrings.email,
+                              hint: AppStrings.enterEmail,
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              validator: Validators.validateEmail,
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              label: AppStrings.phoneNumber,
+                              controller: _phoneController,
+                              keyboardType: TextInputType.phone,
+                              validator: Validators.validatePhoneNumber,
+                              prefix: GestureDetector(
+                                onTap: () {
+                                  showCountryPicker(
+                                    context: context,
+                                    showPhoneCode: true,
+                                    onSelect: (Country country) {
+                                      setState(
+                                        () => _selectedCountry = country,
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      _selectedCountry.flagEmoji,
+                                      style: const TextStyle(fontSize: 18),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '+${_selectedCountry.phoneCode}',
+                                      style: AppTextStyles.bodyRegular,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      height: 24,
+                                      width: 1,
+                                      color: AppColors.textTertiary,
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              label: AppStrings.password,
+                              hint: AppStrings.enterPassword,
+                              controller: _passwordController,
+                              obscureText: true,
+                              showPasswordToggle: true,
+                              validator: Validators.validatePassword,
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              label: AppStrings.confirmPassword,
+                              hint: AppStrings.enterPassword,
+                              controller: _confirmPasswordController,
+                              obscureText: true,
+                              showPasswordToggle: true,
+                              validator: (value) =>
+                                  Validators.validatePasswordMatch(
+                                    _passwordController.text,
+                                    value,
+                                  ),
+                            ),
+                            const SizedBox(height: 18),
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: _agreedToTerms,
+                                  onChanged: (value) => setState(
+                                    () => _agreedToTerms = value ?? false,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text.rich(
+                                    TextSpan(
+                                      text:
+                                          'By registering your account, you accept the ',
+                                      style: AppTextStyles.bodySmall,
+                                      children: [
+                                        TextSpan(
+                                          text: AppStrings.termsAndConditions,
+                                          style: AppTextStyles.bodySmall
+                                              .copyWith(
+                                                color: AppColors.primary,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 28),
                       PrimaryButton(
                         label: AppStrings.createAccount,
                         onPressed: _handleSignup,
                         isLoading: state.status == AuthStatus.loading,
                         isEnabled: state.status != AuthStatus.loading,
                       ),
-                      const SizedBox(height: 16),
-
+                      const SizedBox(height: 18),
                       Center(
                         child: Text.rich(
                           TextSpan(
                             text: AppStrings.alreadyhaveAnAccount,
-                            style: AppTextStyles.bodySmall,
+                            style: AppTextStyles.bodyRegular,
                             children: [
                               TextSpan(
                                 text: AppStrings.signIn,
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: AppTextStyles.link,
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
                                     context.go(AppRoutes.login);
@@ -253,9 +318,9 @@ class _SignupViewState extends State<SignupView> {
                     ],
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

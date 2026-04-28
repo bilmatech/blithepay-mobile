@@ -1,3 +1,6 @@
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -41,6 +44,18 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
 
   void _handleForgotPassword() {
     if (_formKey.currentState!.validate()) {
+      // if (kDebugMode) {
+      //   context.push(
+      //     AppRoutes.verifyOtp,
+      //     extra: {
+      //       'email': _emailController.text,
+      //       'flow': OtpFlow.forgotPassword,
+      //       'fromProfile': widget.fromProfile,
+      //     },
+      //   );
+      //   return;
+      // }
+
       context.read<AuthBloc>().add(
         ForgotPasswordRequested(email: _emailController.text),
       );
@@ -63,60 +78,83 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
         }
       },
       child: AppScaffold(
-        showBackButton: widget.fromProfile ? true : false,
-        body: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            return SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 40),
-                      Text(
-                        widget.fromProfile
-                            ? 'Change Password'
-                            : AppStrings.forgotPassword,
-                        style: AppTextStyles.h2,
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Follow these steps to change your account password.',
-                        style: AppTextStyles.bodyRegular,
-                      ),
-                      const SizedBox(height: 32),
-                      AppTextField(
-                        label: AppStrings.email,
-                        hint: AppStrings.enterEmail,
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: Validators.validateEmail,
-                        readOnly: widget.fromProfile,
-                      ),
-                      const SizedBox(height: 48),
-                      PrimaryButton(
-                        label: AppStrings.changePassword,
-                        onPressed: _handleForgotPassword,
-                        isLoading: state.status == AuthStatus.loading,
-                        isEnabled: state.status != AuthStatus.loading,
-                      ),
-                      const SizedBox(height: 16),
-                      if (!widget.fromProfile) ...[
-                        const SizedBox(height: 16),
-                        Center(
-                          child: SecondaryButton(
-                            label: 'Back To Log In',
-                            onPressed: () => Navigator.pop(context),
+        showBackButton: false,
+        //   background: const AuthFlowBackground(),
+        body: AuthBackgroundWrapper(
+          child: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              return SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        const BackArrowButtonIcon(),
+                        const SizedBox(height: 12),
+                        Container(
+                          width: 128,
+                          height: 128,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                          child: Center(
+                            child: Image.asset(
+                              'assets/images/secure.png',
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
+                        const SizedBox(height: 28),
+                        Text(
+                          widget.fromProfile
+                              ? 'Change Password'
+                              : AppStrings.forgotPassword,
+                          style: AppTextStyles.h2,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          AppStrings.forgotPasswordSubtitle,
+                          style: AppTextStyles.bodyRegular,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 32),
+                        AppTextField(
+                          label: AppStrings.email,
+                          hint: AppStrings.enterEmail,
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: Validators.validateEmail,
+                          readOnly: widget.fromProfile,
+                        ),
+                        const SizedBox(height: 40),
+
+                        if (!widget.fromProfile) ...[
+                          const SizedBox(height: 16),
+                          Center(
+                            child: SecondaryButton(
+                              label: 'Back To Log In',
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                          ),
+                        ],
+                        PrimaryButton(
+                          label: AppStrings.changePassword,
+                          onPressed: _handleForgotPassword,
+                          isLoading: state.status == AuthStatus.loading,
+                          isEnabled: state.status != AuthStatus.loading,
+                        ),
                       ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

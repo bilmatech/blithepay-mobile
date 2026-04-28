@@ -1,4 +1,6 @@
+import 'package:blithepay/features/common/data/success_args_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -11,6 +13,7 @@ class SuccessView extends StatelessWidget {
   final String buttonLabel;
   final String nextRoute;
   final Object? nextExtra;
+  final bool useAuthBackground;
 
   const SuccessView({
     super.key,
@@ -19,50 +22,60 @@ class SuccessView extends StatelessWidget {
     this.buttonLabel = 'My Dashboard',
     required this.nextRoute,
     this.nextExtra,
+    this.useAuthBackground = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: const BoxDecoration(
-                    color: Colors.green,
-                    shape: BoxShape.circle,
+      //  background: useAuthBackground ? const AuthFlowBackground() : null,
+      body: AuthBackgroundWrapper(
+        child: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryLight,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Image.asset(
+                        'assets/images/success.png',
+                        width: 64,
+                        height: 64,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.check,
-                    color: AppColors.white,
-                    size: 30,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(title,
+                  const SizedBox(height: 24),
+                  Text(
+                    title,
                     style: AppTextStyles.headingLarge,
-                    textAlign: TextAlign.center),
-                const SizedBox(height: 12),
-                Text(
-                  message,
-                  style: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.textSecondary),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                PrimaryButton(
-                  label: buttonLabel,
-                  onPressed: () {
-                    context.go(nextRoute, extra: nextExtra);
-                  },
-                ),
-              ],
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    message,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  PrimaryButton(
+                    label: buttonLabel,
+                    onPressed: () {
+                      context.go(nextRoute, extra: nextExtra);
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),

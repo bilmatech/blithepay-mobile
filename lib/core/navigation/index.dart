@@ -32,6 +32,7 @@ export '../../features/auth/presentation/views/forgot_password_view.dart';
 export '../../features/auth/presentation/views/verify_otp_view.dart';
 export '../../features/auth/presentation/views/reset_password_view.dart';
 export '../../features/auth/presentation/views/password_changed_view.dart';
+export '../../features/auth/presentation/views/biometric_auth_view.dart';
 export '../../features/auth/presentation/views/onboarding_view.dart';
 export '../../features/dashboard/presentation/views/dashboard_view.dart';
 export '../../features/schools/presentation/views/confirm_school_view.dart';
