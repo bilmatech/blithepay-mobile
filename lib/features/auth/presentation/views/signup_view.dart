@@ -1,20 +1,25 @@
+import 'dart:io';
+
 import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/core/constants/app_strings.dart';
+import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/core/navigation/app_routes.dart';
+import 'package:blithepay/core/utils/validators.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:blithepay/features/auth/presentation/bloc/auth_event.dart';
+import 'package:blithepay/features/auth/presentation/bloc/auth_state.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
+import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
+import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
+import 'package:blithepay/shared/widgets/buttons/social_auth_button.dart';
+import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/constants/app_text_styles.dart';
-import '../../../../core/navigation/app_routes.dart';
-import '../../../../core/utils/validators.dart';
-import '../../../../shared/widgets/background/auth_flow_background.dart';
-import '../../../../shared/widgets/buttons/primary_button.dart';
-import '../../../../shared/widgets/inputs/app_text_field.dart';
-import '../../../../shared/layouts/app_scaffold.dart';
-import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
-import '../bloc/auth_state.dart';
 
 class SignupView extends StatefulWidget {
   const SignupView({super.key});
@@ -102,6 +107,15 @@ class _SignupViewState extends State<SignupView> {
             AppRoutes.verifyOtp,
             extra: {'email': _emailController.text, 'flow': OtpFlow.signup},
           );
+        }
+
+        if (state.status == AuthStatus.otpSent) {
+          context.push(AppRoutes.verifyOtp, extra: {'flow': OtpFlow.signup});
+        }
+
+        if (state.status == AuthStatus.authenticated) {
+          context.go(AppRoutes.home);
+          context.read<DashboardBloc>().add(const FetchDashboardData());
         }
       },
       child: AppScaffold(
@@ -257,6 +271,50 @@ class _SignupViewState extends State<SignupView> {
                                   ),
                             ),
                             const SizedBox(height: 18),
+                            Row(
+                              children: [
+                                const Expanded(
+                                  child: Divider(color: AppColors.border),
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  AppStrings.orContinueWith,
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: Divider(color: AppColors.border),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 18),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                // Social Login Section
+                                SocialAuthButton(
+                                  iconPath: 'assets/images/google.svg',
+                                  onPressed: () => context.read<AuthBloc>().add(
+                                    const GoogleSignInRequested(),
+                                  ),
+                                  isLoading: state.status == AuthStatus.loading,
+                                ),
+                                const SizedBox(width: 12),
+                                SocialAuthButton(
+                                  iconPath: 'assets/images/apple.svg',
+                                  onPressed: () => context.read<AuthBloc>().add(
+                                    const AppleSignInRequested(),
+                                  ),
+                                  isLoading: state.status == AuthStatus.loading,
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 24),
+
                             Row(
                               children: [
                                 Checkbox(

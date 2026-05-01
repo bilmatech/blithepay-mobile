@@ -1,5 +1,8 @@
 import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/core/constants/app_spacing.dart';
+import 'package:blithepay/core/constants/app_typography.dart';
 import 'package:blithepay/core/navigation/app_routes.dart';
+import 'package:blithepay/shared/widgets/layouts/spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,23 +24,28 @@ class BottomNavigationWidget extends StatelessWidget {
       onTap: (index) => _navigate(context, index),
       items: [
         _buildItem(
-          icon: Icons.wallet_outlined,
-          activeIcon: Icons.wallet_outlined,
-          label: 'Wallet',
+          icon: Icons.home_outlined,
+          activeIcon: Icons.home,
+          label: 'Home',
           isActive: currentIndex == 0,
         ),
         _buildItem(
-          icon: Icons.school_outlined,
-          activeIcon: Icons.school_outlined,
-          label: 'Link Child',
+          icon: Icons.grid_view,
+          activeIcon: Icons.grid_view,
+          label: 'Services',
           isActive: currentIndex == 1,
         ),
-
+        _buildItem(
+          icon: Icons.receipt,
+          activeIcon: Icons.receipt,
+          label: 'Transactions',
+          isActive: currentIndex == 2,
+        ),
         _buildItem(
           icon: Icons.person_outline,
           activeIcon: Icons.person,
           label: 'Profile',
-          isActive: currentIndex == 2,
+          isActive: currentIndex == 3,
         ),
       ],
     );
@@ -50,33 +58,55 @@ class BottomNavigationWidget extends StatelessWidget {
     required bool isActive,
   }) {
     return BottomNavigationBarItem(
-      label: label,
-      icon: _navIcon(icon, isActive),
-      activeIcon: _navIcon(activeIcon, true),
+      label: "",
+      icon: _navIcon(icon, isActive, label),
+      activeIcon: _navIcon(activeIcon, true, label),
     );
   }
 
-  Widget _navIcon(IconData icon, bool isActive) {
+  Widget _navIcon(IconData icon, bool isActive, String label) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: isActive
-          ? const BoxDecoration(
+          ? BoxDecoration(
               color: AppColors.primary,
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusRound),
             )
           : null,
-      child: Icon(
-        icon,
-        color: isActive ? AppColors.white : AppColors.textSecondary,
+      child: Row(
+        mainAxisSize: MainAxisSize.min, // IMPORTANT
+        children: [
+          Icon(
+            icon,
+            color: isActive ? AppColors.white : AppColors.textSecondary,
+            size: 20, // keep consistent size
+          ),
+
+          if (isActive) ...[
+            const HSpaceXs(),
+
+            // THIS FIXES OVERFLOW
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: AppTypography.bodyXs.copyWith(color: AppColors.white),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
 
   int _getCurrentIndex() {
     if (currentRoute.startsWith(AppRoutes.home)) return 0;
-    if (currentRoute.startsWith(AppRoutes.linkedStudents)) return 1;
-    if (currentRoute.startsWith(AppRoutes.profile)) return 2;
-    return 1; // Link Child default
+    if (currentRoute.startsWith(AppRoutes.service)) return 1;
+    if (currentRoute.startsWith(AppRoutes.transactions)) return 2;
+    if (currentRoute.startsWith(AppRoutes.profile)) return 3;
+    return 0; // Home default
   }
 
   void _navigate(BuildContext context, int index) {
@@ -85,9 +115,12 @@ class BottomNavigationWidget extends StatelessWidget {
         context.go(AppRoutes.home);
         break;
       case 1:
-        context.go(AppRoutes.linkedStudents);
+        context.go(AppRoutes.service);
         break;
       case 2:
+        context.go(AppRoutes.transactions);
+        break;
+      case 3:
         context.go(AppRoutes.profile);
         break;
     }

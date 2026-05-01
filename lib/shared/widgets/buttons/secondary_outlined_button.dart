@@ -4,7 +4,7 @@ import 'package:blithepay/core/constants/app_colors.dart';
 class SecondaryOutlinedButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String label;
-  final double iconSize;
+  final double height; // ADD THIS
   final EdgeInsetsGeometry padding;
   final double borderRadius;
   final Color? borderColor;
@@ -15,8 +15,8 @@ class SecondaryOutlinedButton extends StatelessWidget {
     super.key,
     required this.label,
     this.onPressed,
-    this.iconSize = 18,
-    this.padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    this.height = 40, // DEFAULT 40
+    this.padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     this.borderRadius = 6,
     this.borderColor,
     this.textStyle,
@@ -25,36 +25,44 @@ class SecondaryOutlinedButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
-        minimumSize: const Size(0, 56),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        side: BorderSide(color: borderColor ?? AppColors.border),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
+    return SizedBox(
+      height: height, // CONTROL HEIGHT HERE
+      child: OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          padding: padding,
+          minimumSize: Size.zero, // IMPORTANT FIX
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          side: BorderSide(color: borderColor ?? AppColors.border),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
         ),
+        onPressed: onPressed,
+        child: leading != null
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  leading!,
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      label,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          textStyle ??
+                          const TextStyle(color: AppColors.textPrimary),
+                    ),
+                  ),
+                ],
+              )
+            : Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style:
+                    textStyle ?? const TextStyle(color: AppColors.textPrimary),
+              ),
       ),
-      onPressed: onPressed,
-      child: leading != null
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                leading!,
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style:
-                      textStyle ??
-                      const TextStyle(color: AppColors.textPrimary),
-                ),
-              ],
-            )
-          : Text(
-              label,
-              style: textStyle ?? const TextStyle(color: AppColors.textPrimary),
-            ),
     );
   }
 }

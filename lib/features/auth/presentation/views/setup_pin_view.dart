@@ -117,7 +117,7 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                 title: AppStrings.successful,
                 message: AppStrings.anAccounthasbeen,
                 buttonLabel: AppStrings.gotToHome,
-                nextRoute: AppRoutes.linkedStudents,
+                nextRoute: AppRoutes.home,
                 useAuthBackground: true,
               ),
             );

@@ -34,6 +34,9 @@ class PrimaryButton extends StatelessWidget {
       child: ElevatedButton.icon(
         onPressed: isEnabled && !isLoading ? onPressed : null,
         style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 12), // reduce
+          minimumSize: Size.zero, // ADD THIS
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           backgroundColor: backgroundColor ?? AppColors.primary,
           disabledBackgroundColor: AppColors.disabled,
           shape: RoundedRectangleBorder(

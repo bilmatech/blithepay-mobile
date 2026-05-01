@@ -1,3 +1,6 @@
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/core/constants/app_spacing.dart';
+import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/core/storage/auth_local_storage.dart'
     show AppLocalDataSource;
 import 'package:blithepay/features/auth/data/models/auth_response_model.dart';
@@ -6,19 +9,19 @@ import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.d
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:blithepay/features/dashboard/presentation/widgets/dashboard_header.dart';
 import 'package:blithepay/features/dashboard/presentation/widgets/financial_summary_card.dart';
-import 'package:blithepay/features/dashboard/presentation/widgets/quick_action_buttons.dart';
-import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
 import 'package:blithepay/features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'package:blithepay/features/transaction/presentation/bloc/transaction_event.dart';
-import 'package:blithepay/features/transaction/presentation/bloc/transaction_state.dart';
 import 'package:blithepay/features/wallet/presentation/bloc/wallet_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:blithepay/features/wallet/presentation/bloc/wallet_event.dart';
+import 'package:blithepay/shared/widgets/layouts/app_button.dart';
+import 'package:blithepay/shared/widgets/layouts/app_text.dart';
 
 import 'package:blithepay/shared/widgets/layouts/bottom_navigation.dart';
+import 'package:blithepay/shared/widgets/layouts/spacing.dart';
 import 'package:blithepay/shared/widgets/loaders/shimmer_dashboard_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 class DashboardView extends StatelessWidget {
@@ -108,32 +111,66 @@ class _HomeViewState extends State<HomeView> {
                       walletBalance: state.dashboard.walletBalance,
                       selectedChild: state.dashboard.selectedChildName,
                     ),
-                    const SizedBox(height: 24),
-                    const QuickActionButtons(),
-                    const SizedBox(height: 24),
-
-                    // Transactions section using WalletTransactionBloc
-                    BlocBuilder<WalletTransactionBloc, WalletTransactionState>(
-                      builder: (context, walletState) {
-                        if (walletState is WalletTransactionLoading) {
-                          return const RecentTransactionsShimmer();
-                        }
-                        if (walletState is WalletTransactionError) {
-                          return Center(
-                            child: Text('Error: ${walletState.message}'),
-                          );
-                        }
-                        if (walletState is WalletTransactionLoaded) {
-                          if (walletState.transactions.isEmpty) {
-                            return const Text('No transactions yet.');
-                          }
-                          return RecentTransactions(
-                            transactions: walletState.transactions,
-                          );
-                        }
-                        return const SizedBox();
-                      },
+                    // Quick Services Section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const HeadingMd('Quick Services'),
+                        AppTextButton(
+                          label: 'See All',
+                          onPressed: () => context.push(AppRoutes.service),
+                          foregroundColor: AppColors.primaryDark,
+                        ),
+                      ],
                     ),
+                    const VSpaceBase(),
+                    SizedBox(height: 100, child: _buildServicesList(context)),
+                    const VSpaceXl(),
+
+                    // Activity Section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const HeadingMd('Activity'),
+                        AppTextButton(
+                          label: 'See History',
+                          onPressed: () {},
+                          foregroundColor: AppColors.primaryDark,
+                        ),
+                      ],
+                    ),
+                    const VSpaceBase(),
+
+                    // Empty state
+                    const Center(
+                      child: BodyMd(
+                        'No activity yet',
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const VSpaceXxl(),
+                    // Transactions section using WalletTransactionBloc
+                    // BlocBuilder<WalletTransactionBloc, WalletTransactionState>(
+                    //   builder: (context, walletState) {
+                    //     if (walletState is WalletTransactionLoading) {
+                    //       return const RecentTransactionsShimmer();
+                    //     }
+                    //     if (walletState is WalletTransactionError) {
+                    //       return Center(
+                    //         child: Text('Error: ${walletState.message}'),
+                    //       );
+                    //     }
+                    //     if (walletState is WalletTransactionLoaded) {
+                    //       if (walletState.transactions.isEmpty) {
+                    //         return const Text('No transactions yet.');
+                    //       }
+                    //       return RecentTransactions(
+                    //         transactions: walletState.transactions,
+                    //       );
+                    //     }
+                    //     return const SizedBox();
+                    //   },
+                    // ),
                   ],
                 ),
               ),
@@ -145,6 +182,49 @@ class _HomeViewState extends State<HomeView> {
       },
     );
   }
+}
+
+Widget _buildServicesList(BuildContext context) {
+  final services = [
+    ('Airtime', Icons.phone_android, AppRoutes.airtimeService),
+    ('Data', Icons.wifi, AppRoutes.dataService),
+    ('Cable/TV', Icons.tv, AppRoutes.cableTvService),
+    ('Electricity', Icons.flash_on, AppRoutes.electricityService),
+  ];
+
+  return Row(
+    children: services.map((service) {
+      return Expanded(
+        child: _buildServiceCard(context, service.$1, service.$2, service.$3),
+      );
+    }).toList(),
+  );
+}
+
+Widget _buildServiceCard(
+  BuildContext context,
+  String name,
+  IconData icon,
+  String route,
+) {
+  return GestureDetector(
+    onTap: () => GoRouter.of(context).push(route),
+    child: Column(
+      children: [
+        Container(
+          width: AppSpacing.huge,
+          height: AppSpacing.huge,
+          decoration: BoxDecoration(
+            color: AppColors.warning.withValues(alpha: .1),
+            borderRadius: BorderRadius.circular(AppSpacing.lg),
+          ),
+          child: Icon(icon, color: AppColors.primary, size: AppSpacing.iconXs),
+        ),
+        const VSpaceBase(),
+        BodyMd(name, color: AppColors.textPrimary, textAlign: TextAlign.center),
+      ],
+    ),
+  );
 }
 
 class RecentTransactionsShimmer extends StatelessWidget {

@@ -2,7 +2,9 @@ import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class BackArrowButtonIcon extends StatelessWidget {
-  const BackArrowButtonIcon({super.key});
+  const BackArrowButtonIcon({super.key, this.onPressed});
+
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +23,7 @@ class BackArrowButtonIcon extends StatelessWidget {
             color: AppColors.textPrimary,
             size: 18,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: onPressed ?? () => Navigator.pop(context),
         ),
       ),
     );

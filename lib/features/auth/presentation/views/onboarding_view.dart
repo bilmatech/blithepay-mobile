@@ -229,11 +229,9 @@ class _OnboardingViewState extends State<OnboardingView> {
                               color: AppColors.white.withOpacity(0.8),
                             ),
                             children: [
-                              TextSpan(
+                              const TextSpan(
                                 text: AppStrings.termsAndConditions,
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.primary,
-                                ),
+                                style: AppTextStyles.link,
                               ),
                               TextSpan(
                                 text: ' and ',
@@ -241,11 +239,9 @@ class _OnboardingViewState extends State<OnboardingView> {
                                   color: AppColors.white.withOpacity(0.8),
                                 ),
                               ),
-                              TextSpan(
+                              const TextSpan(
                                 text: AppStrings.privacyPolicy,
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.primary,
-                                ),
+                                style: AppTextStyles.link,
                               ),
                             ],
                           ),

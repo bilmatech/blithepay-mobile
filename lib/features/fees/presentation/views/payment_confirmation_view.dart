@@ -11,6 +11,7 @@ import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_state.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student_view/linked_student_body.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -98,10 +99,7 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
       },
       child: AppScaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios),
-            onPressed: () => Navigator.pop(context),
-          ),
+          leading: const BackArrowButtonIcon(),
           title: const Text('Pay Fees'),
           centerTitle: true,
         ),
@@ -273,7 +271,7 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
     showModalBottomSheet(
       isScrollControlled: true,
       context: context,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.transparent,
       builder: (_) => const PinBottomSheetContent(),
     );
   }

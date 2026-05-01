@@ -67,18 +67,6 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       emit(ProfileError(message: e.toString()));
     }
   }
-  // Future<void> _onUpdateProfile(
-  //   UpdateProfileEvent event,
-  //   Emitter<ProfileState> emit,
-  // ) async {
-  //   emit(const ProfileLoading());
-  //   try {
-  //     await Future.delayed(const Duration(seconds: 1));
-  //     emit(const ProfileUpdated());
-  //   } catch (e) {
-  //     emit(ProfileError(message: e.toString()));
-  //   }
-  // }
 
   Future<void> _onChangePasswordRequested(
     ChangePasswordRequested event,

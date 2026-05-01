@@ -55,3 +55,8 @@ export '../../features/wallet/presentation/views/wallet_management_view.dart';
 export '../../features/wallet/presentation/views/transaction_detail_view.dart';
 export '../../features/fees/presentation/views/pay_fees_view.dart';
 export '../../features/support/presentation/views/help_support_view.dart';
+export 'package:blithepay/features/services/presentation/views/service_view.dart';
+export 'package:blithepay/features/services/presentation/views/airtime_service_view.dart';
+export 'package:blithepay/features/services/presentation/views/data_service_view.dart';
+export 'package:blithepay/features/services/presentation/views/cable_tv_service_view.dart';
+export 'package:blithepay/features/services/presentation/views/electricity_service_view.dart';

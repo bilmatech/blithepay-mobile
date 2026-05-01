@@ -1,12 +1,15 @@
 import 'auth_event.dart';
 import 'auth_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/models/auth_response_model.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'package:blithepay/core/network/dio_error_mapper.dart';
 import 'package:blithepay/services/firebase_notifications.dart';
+import 'package:blithepay/services/firebase_auth_service.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepositoryInterface _authRepository;
+  final FirebaseAuthService _firebaseAuthService = FirebaseAuthService();
 
   AuthBloc({required AuthRepositoryInterface authRepository})
     : _authRepository = authRepository,
@@ -20,9 +23,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<ResendForgotPasswordOtpRequested>(_onResendForgotPasswordOtpRequested);
     on<SetupPinRequested>(_onSetupPinRequested);
     on<ResetPasswordRequested>(_onResetPasswordRequested);
+    on<GoogleSignInRequested>(_onGoogleSignInRequested);
+    on<AppleSignInRequested>(_onAppleSignInRequested);
   }
 
-  Future<void> _onSignupRequested(SignupRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onSignupRequested(
+    SignupRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthState.loading());
 
     try {
@@ -37,7 +45,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       emit(
-        AuthState.signupSuccess(SignupPayload(userId: result.id ?? '', email: result.email ?? '')),
+        AuthState.signupSuccess(
+          SignupPayload(userId: result.id ?? '', email: result.email ?? ''),
+        ),
       );
     } catch (e) {
       emit(AuthState.error(extractError(e)));
@@ -53,7 +63,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onLoginRequested(LoginRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onLoginRequested(
+    LoginRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthState.loading());
 
     try {
@@ -92,7 +105,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onVerifyOtpRequested(VerifyOtpRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onVerifyOtpRequested(
+    VerifyOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthState.loading());
     try {
       var result = await _authRepository.verifyOtp(event.code);
@@ -104,7 +120,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onResendOtpRequested(ResendOtpRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onResendOtpRequested(
+    ResendOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthState.loading());
     try {
       await _authRepository.resendOtp(event.email);
@@ -114,7 +133,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onSetupPinRequested(SetupPinRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onSetupPinRequested(
+    SetupPinRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthState.loading());
     try {
       await _authRepository.setupPin(event.email, event.code);
@@ -159,6 +181,70 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       await _authRepository.resendOtp(event.email);
       emit(const AuthState.otpSent());
+    } catch (e) {
+      emit(AuthState.error(extractError(e)));
+    }
+  }
+
+  Future<void> _onGoogleSignInRequested(
+    GoogleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      final userCredential = await _firebaseAuthService.signInWithGoogle();
+
+      if (userCredential.user == null) {
+        emit(const AuthState.error('Google sign-in failed.'));
+        return;
+      }
+
+      emit(
+        AuthState.authenticated(
+          AuthResponseModel(
+            user: UserModel(
+              id: userCredential.user?.uid,
+              email: userCredential.user?.email,
+              firstName: userCredential.user?.displayName?.split(' ').first,
+              lastName: userCredential.user?.displayName?.split(' ').last,
+              profileImage: userCredential.user?.photoURL,
+            ),
+            message: 'Logged in with Google',
+          ),
+        ),
+      );
+    } catch (e) {
+      emit(AuthState.error(extractError(e)));
+    }
+  }
+
+  Future<void> _onAppleSignInRequested(
+    AppleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      final userCredential = await _firebaseAuthService.signInWithApple();
+
+      if (userCredential.user == null) {
+        emit(const AuthState.error('Apple sign-in failed.'));
+        return;
+      }
+
+      emit(
+        AuthState.authenticated(
+          AuthResponseModel(
+            user: UserModel(
+              id: userCredential.user?.uid,
+              email: userCredential.user?.email,
+              firstName: userCredential.user?.displayName?.split(' ').first,
+              lastName: userCredential.user?.displayName?.split(' ').last,
+              profileImage: userCredential.user?.photoURL,
+            ),
+            message: 'Logged in with Apple',
+          ),
+        ),
+      );
     } catch (e) {
       emit(AuthState.error(extractError(e)));
     }

@@ -1,4 +1,7 @@
+import 'package:blithepay/core/constants/app_spacing.dart';
 import 'package:blithepay/core/navigation/app_routes.dart';
+import 'package:blithepay/shared/widgets/layouts/app_text.dart';
+import 'package:blithepay/shared/widgets/layouts/spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -33,169 +36,55 @@ class _FinancialSummaryCardState extends State<FinancialSummaryCard> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
       ),
-      child: Stack(
+      padding: const EdgeInsets.all(AppSpacing.base),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
+          Row(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Spacer(),
-                  IconButton(
-                    icon: Icon(
-                      _balanceVisible ? Icons.visibility : Icons.visibility_off,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    onPressed: () =>
-                        setState(() => _balanceVisible = !_balanceVisible),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              Text(
-                _balanceVisible ? widget.walletBalance : '•••••••••',
-                style: const TextStyle(
+              BodyMd('TOTAL BALANCE', color: AppColors.white.withOpacity(0.7)),
+              const Spacer(),
+              IconButton(
+                icon: Icon(
+                  _balanceVisible ? Icons.visibility : Icons.visibility_off,
                   color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
+                  size: 20,
                 ),
+                onPressed: () =>
+                    setState(() => _balanceVisible = !_balanceVisible),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
-
-              const Text(
-                'Current Balance',
-                style: TextStyle(color: Colors.white, fontSize: 12),
-              ),
-              const SizedBox(height: 8),
-
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(
-                    alpha: 0.1,
-                  ), // semi-transparent glass color
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                  ),
-                  onPressed: () {
-                    context.push(AppRoutes.fundWallet);
-                  },
-                  icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('Fund Wallet'),
-                ),
-              ),
-
-              const SizedBox(height: 16),
             ],
           ),
-
-          // Bottom-right image
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Image.asset(
-              'assets/images/dashboard.png',
-              width: 80,
-              fit: BoxFit.contain,
+          const VSpaceSm(),
+          DisplayMedium(
+            _balanceVisible ? widget.walletBalance : '•••••••••',
+            color: AppColors.white,
+          ),
+          const VSpaceXl(),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(
+                alpha: 0.3,
+              ), // semi-transparent glass color
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+              ),
+              onPressed: () {
+                context.push(AppRoutes.fundWallet);
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Add Money'),
             ),
           ),
         ],
       ),
-      // Column(
-      //   crossAxisAlignment: CrossAxisAlignment.start,
-      //   children: [
-      //     Row(
-      //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //       children: [
-      //         Column(
-      //           crossAxisAlignment: CrossAxisAlignment.start,
-      //           children: [
-      //             Text(
-      //               'Total Outstanding Fees:',
-      //               style: AppTextStyles.bodySmall.copyWith(
-      //                 color: AppColors.white,
-      //               ),
-      //             ),
-      //             const SizedBox(height: 8),
-      //             Text(
-      //               totalOutstanding,
-      //               style: AppTextStyles.headingMedium.copyWith(
-      //                 color: AppColors.white,
-      //               ),
-      //             ),
-      //           ],
-      //         ),
-      //         Column(
-      //           crossAxisAlignment: CrossAxisAlignment.start,
-      //           children: [
-      //             Text(
-      //               'Next Due Date:',
-      //               style: AppTextStyles.bodySmall.copyWith(
-      //                 color: AppColors.white,
-      //               ),
-      //             ),
-      //             const SizedBox(height: 8),
-      //             Text(
-      //               nextDueDate,
-      //               style: AppTextStyles.headingSmall.copyWith(
-      //                 color: AppColors.white,
-      //               ),
-      //             ),
-      //           ],
-      //         ),
-      //       ],
-      //     ),
-      //     const SizedBox(height: 24),
-      //     Row(
-      //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //       children: [
-      //         Column(
-      //           crossAxisAlignment: CrossAxisAlignment.start,
-      //           children: [
-      //             Text(
-      //               'Wallet Balance:',
-      //               style: AppTextStyles.bodySmall.copyWith(
-      //                 color: AppColors.white,
-      //               ),
-      //             ),
-      //             const SizedBox(height: 8),
-      //             Text(
-      //               walletBalance,
-      //               style: AppTextStyles.headingSmall.copyWith(
-      //                 color: AppColors.white,
-      //               ),
-      //             ),
-      //           ],
-      //         ),
-      //         Column(
-      //           crossAxisAlignment: CrossAxisAlignment.start,
-      //           children: [
-      //             Text(
-      //               'Select Child:',
-      //               style: AppTextStyles.bodySmall.copyWith(
-      //                 color: AppColors.white,
-      //               ),
-      //             ),
-      //             const SizedBox(height: 8),
-      //             Text(
-      //               selectedChild,
-      //               style: AppTextStyles.bodyMedium.copyWith(
-      //                 color: AppColors.white,
-      //               ),
-      //             ),
-      //           ],
-      //         ),
-      //       ],
-      //     ),
-      //   ],
-      // ),
     );
   }
 }

@@ -33,10 +33,16 @@ abstract class AppRoutes {
   static const String invoicedetail = '/invoicedetail';
 
   static const String profile = '/profile';
+  static const String service = '/service';
+  static const String airtimeService = '/service/airtime';
+  static const String dataService = '/service/data';
+  static const String cableTvService = '/service/cable-tv';
+  static const String electricityService = '/service/electricity';
   static const String profileDetail = '/profile-detail';
   static const String walletManagement = '/wallet-management';
   static const String payFees = '/pay-fees';
   static const String helpSupport = '/help-support';
+  static const String wallettransactionDetail = '/wallet-transaction-detail';
   static const String transactionDetail = '/transaction-detail';
   static const String editSchools = '/edit-schools';
   static const String editSchoolDetail = '/edit-school/:id';

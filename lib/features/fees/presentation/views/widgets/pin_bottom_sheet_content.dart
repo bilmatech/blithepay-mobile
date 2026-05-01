@@ -7,6 +7,7 @@ import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_b
 import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_event.dart';
 import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_state.dart';
 import 'package:blithepay/features/fees/presentation/views/widgets/nemeric_keyboard.dart';
+import 'package:blithepay/shared/widgets/bottom_sheets/bottom_sheet_container.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -62,113 +63,109 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 20),
-          Text(
-            'Enter Payment PIN',
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(
-              4,
-              (index) => SizedBox(
-                width: 60,
-                height: 60,
-                child: TextField(
-                  controller: _controllers[index],
-                  focusNode: _focusNodes[index],
-                  readOnly: true,
-                  showCursor: false,
-                  textAlign: TextAlign.center,
-                  maxLength: 1,
-                  obscureText: true,
-                  style: AppTextStyles.h3,
-                  decoration: InputDecoration(
-                    counter: const Offstage(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+    return BottomSheetContainer(
+      title: 'Enter Payment PIN',
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(
+                4,
+                (index) => SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: TextField(
+                    controller: _controllers[index],
+                    focusNode: _focusNodes[index],
+                    readOnly: true,
+                    showCursor: false,
+                    textAlign: TextAlign.center,
+                    maxLength: 1,
+                    obscureText: true,
+                    style: AppTextStyles.h3,
+                    decoration: InputDecoration(
+                      counter: const Offstage(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          GestureDetector(
-            onTap: () async {
-              final userSession = await AppLocalDataSourceImpl(
-                const FlutterSecureStorage(),
-              ).getSession();
+            const SizedBox(height: 16),
+            Center(
+              child: GestureDetector(
+                onTap: () async {
+                  final userSession = await AppLocalDataSourceImpl(
+                    const FlutterSecureStorage(),
+                  ).getSession();
 
-              Navigator.pop(context); // close bottom sheet
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                context.push(
-                  AppRoutes.setupOtp,
-                  extra: {
-                    'email': userSession?.user?.email ?? '',
-                    'flow': OtpFlow.forgotPassword,
-                    'pop': true,
-                  },
-                );
-              });
-            },
-            child: Text(
-              'Forgot PIN? Reset',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.success,
-                fontWeight: FontWeight.w600,
+                  Navigator.pop(context); // close bottom sheet
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    context.push(
+                      AppRoutes.setupOtp,
+                      extra: {
+                        'email': userSession?.user?.email ?? '',
+                        'flow': OtpFlow.forgotPassword,
+                        'pop': true,
+                      },
+                    );
+                  });
+                },
+                child: Text(
+                  'Forgot PIN? Reset',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.success,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          NumericKeypad(onKeyTap: _onKeyPressed, onDelete: _onDeletePressed),
-          const SizedBox(height: 24),
-          BlocListener<PaymentBloc, PaymentState>(
-            listener: (context, state) {
-              if (state.status == PaymentStatus.success) {
-                Navigator.pop(context); // CLOSE SHEET
-              }
+            const SizedBox(height: 18),
+            NumericKeypad(onKeyTap: _onKeyPressed, onDelete: _onDeletePressed),
+            const SizedBox(height: 24),
+            BlocListener<PaymentBloc, PaymentState>(
+              listener: (context, state) {
+                if (state.status == PaymentStatus.success) {
+                  Navigator.pop(context); // CLOSE SHEET
+                }
 
-              if (state.status == PaymentStatus.failure &&
-                  state.message != null) {
-                Navigator.pop(context); // CLOSE SHEET
+                if (state.status == PaymentStatus.failure &&
+                    state.message != null) {
+                  Navigator.pop(context); // CLOSE SHEET
 
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.message!)));
-              }
-            },
-            child: BlocBuilder<PaymentBloc, PaymentState>(
-              builder: (context, state) {
-                return PrimaryButton(
-                  label: 'Confirm Payment',
-                  isLoading:
-                      state.status == PaymentStatus.pinVerifying ||
-                      state.status == PaymentStatus.walletInProgress,
-                  onPressed: () {
-                    final pin = _controllers.map((c) => c.text).join();
-                    if (pin.length == 4) {
-                      context.read<PaymentBloc>().add(VerifyPin(pin));
-                    }
-                  },
-                );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(state.message!)));
+                }
               },
+              child: BlocBuilder<PaymentBloc, PaymentState>(
+                builder: (context, state) {
+                  return PrimaryButton(
+                    label: 'Confirm Payment',
+                    isLoading:
+                        state.status == PaymentStatus.pinVerifying ||
+                        state.status == PaymentStatus.walletInProgress,
+                    onPressed: () {
+                      final pin = _controllers.map((c) => c.text).join();
+                      if (pin.length == 4) {
+                        context.read<PaymentBloc>().add(VerifyPin(pin));
+                      }
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

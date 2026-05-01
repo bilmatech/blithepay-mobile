@@ -1,6 +1,7 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
+import 'package:blithepay/shared/widgets/buttons/social_auth_button.dart';
 import 'package:flutter/foundation.dart';
 
 import '../bloc/auth_bloc.dart';
@@ -39,8 +40,8 @@ class _LoginViewState extends State<LoginView> {
     _passwordController = TextEditingController();
 
     if (kDebugMode) {
-      _emailController.text = '';
-      _passwordController.text = '';
+      _emailController.text = 'toyabdul345@gmail.com';
+      _passwordController.text = '1Password@';
     }
   }
 
@@ -73,7 +74,7 @@ class _LoginViewState extends State<LoginView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.authenticated) {
-          context.go(AppRoutes.linkedStudents);
+          context.go(AppRoutes.home);
 
           context.read<DashboardBloc>().add(const FetchDashboardData());
         } else if (state.status == AuthStatus.error &&
@@ -169,7 +170,27 @@ class _LoginViewState extends State<LoginView> {
                           isLoading: state.status == AuthStatus.loading,
                           isEnabled: state.status != AuthStatus.loading,
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 40),
+
+                        SizedBox(
+                          width: double.infinity,
+                          child: SecondaryOutlinedButton(
+                            label: AppStrings.biometricSignIn,
+                            textStyle: AppTextStyles.bodySmall.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: AppColors.borderDark,
+                            ),
+                            onPressed: () => context.push(AppRoutes.biometric),
+                            // borderColor: AppColors.primary,
+                            leading: const Icon(
+                              Icons.fingerprint,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+
                         Center(
                           child: GestureDetector(
                             onTap: () => context.push(AppRoutes.signup),
@@ -187,7 +208,7 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 60),
+                        const SizedBox(height: 40),
                         Row(
                           children: [
                             const Expanded(
@@ -207,24 +228,30 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 42),
-                        SizedBox(
-                          width: double.infinity,
-                          child: SecondaryOutlinedButton(
-                            label: AppStrings.biometricSignIn,
-                            textStyle: AppTextStyles.bodySmall.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              color: AppColors.borderDark,
+                        const SizedBox(height: 20),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Social Login Section
+                            SocialAuthButton(
+                              iconPath: 'assets/images/google.svg',
+                              onPressed: () => context.read<AuthBloc>().add(
+                                const GoogleSignInRequested(),
+                              ),
+                              isLoading: state.status == AuthStatus.loading,
                             ),
-                            onPressed: () => context.push(AppRoutes.biometric),
-                            // borderColor: AppColors.primary,
-                            leading: const Icon(
-                              Icons.fingerprint,
-                              color: AppColors.primary,
+                            const SizedBox(width: 12),
+                            SocialAuthButton(
+                              iconPath: 'assets/images/apple.svg',
+                              onPressed: () => context.read<AuthBloc>().add(
+                                const AppleSignInRequested(),
+                              ),
+                              isLoading: state.status == AuthStatus.loading,
                             ),
-                          ),
+                          ],
                         ),
+                        const SizedBox(height: 42),
                       ],
                     ),
                   ),

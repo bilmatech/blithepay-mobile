@@ -54,40 +54,30 @@ class RecentTransactions extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Wallet Activity:',
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
+              'Recent Activity',
+              style: AppTextStyles.headingSmall.copyWith(
+                fontWeight: FontWeight.w700,
               ),
             ),
             GestureDetector(
               onTap: () {
                 context.push(AppRoutes.transactions);
               },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.primary),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      'See All',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.arrow_forward,
+              child: Row(
+                children: [
+                  Text(
+                    'See All',
+                    style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.primary,
-                      size: 16,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.arrow_forward,
+                    color: AppColors.primary,
+                    size: 16,
+                  ),
+                ],
               ),
             ),
           ],
@@ -117,7 +107,7 @@ class TransactionContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.push(AppRoutes.transactionDetail, extra: transaction);
+        context.push(AppRoutes.wallettransactionDetail, extra: transaction);
       },
       behavior: HitTestBehavior.opaque,
       child: Container(
