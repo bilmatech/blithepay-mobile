@@ -48,12 +48,20 @@ Widget _buildServicesGrid(BuildContext context) {
     mainAxisSpacing: AppSpacing.lg,
     childAspectRatio: 1.15,
     children: services
-        .map((service) => _buildServiceCard(context, service.$1, service.$2, service.$3))
+        .map(
+          (service) =>
+              _buildServiceCard(context, service.$1, service.$2, service.$3),
+        )
         .toList(),
   );
 }
 
-Widget _buildServiceCard(BuildContext context, String name, IconData icon, String route) {
+Widget _buildServiceCard(
+  BuildContext context,
+  String name,
+  IconData icon,
+  String route,
+) {
   return AppCard(
     backgroundColor: AppColors.surfaceOrange,
     onTap: () => GoRouter.of(context).push(route),

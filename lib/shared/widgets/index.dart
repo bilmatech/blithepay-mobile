@@ -1,7 +1,6 @@
 export 'buttons/primary_button.dart';
 export 'buttons/secondary_button.dart';
 export 'buttons/social_auth_button.dart';
-export 'buttons/social_auth_button.dart';
 export 'inputs/app_text_field.dart';
 export 'inputs/dropdown_field.dart';
 export 'bottom_sheets/bottom_sheet_container.dart';

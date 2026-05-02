@@ -33,10 +33,16 @@ class DashboardView extends StatelessWidget {
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
 
+    // Hide bottom nav only for individual service screens (e.g., /service/airtime, /service/data)
+    // Keep bottom nav visible for the main services screen (/service)
+    final hideBottomNavigation = location.contains('/service/');
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(child: child),
-      bottomNavigationBar: BottomNavigationWidget(currentRoute: location),
+      bottomNavigationBar: hideBottomNavigation
+          ? null
+          : BottomNavigationWidget(currentRoute: location),
     );
   }
 }
@@ -104,7 +110,7 @@ class _HomeViewState extends State<HomeView> {
                         );
                       },
                     ),
-                    const SizedBox(height: 24),
+                    const VSpaceXl(),
                     FinancialSummaryCard(
                       totalOutstanding: state.dashboard.totalOutstanding,
                       nextDueDate: state.dashboard.nextDueDate,
@@ -252,14 +258,14 @@ class RecentTransactionsShimmer extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const VSpaceBase(),
 
         // Transaction list shimmer
         ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: 4,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          separatorBuilder: (_, __) => const VSpaceMd(),
           itemBuilder: (_, __) {
             return Shimmer.fromColors(
               baseColor: shimmerBaseColor,
@@ -292,7 +298,7 @@ class RecentTransactionsShimmer extends StatelessWidget {
                               width: 120,
                               color: Colors.white,
                             ),
-                            const SizedBox(height: 6),
+                            const VSpaceXs(),
                             Container(
                               height: 12,
                               width: 80,

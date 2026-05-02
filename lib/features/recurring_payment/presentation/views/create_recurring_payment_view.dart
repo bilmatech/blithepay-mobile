@@ -61,6 +61,8 @@ class _CreateRecurringPaymentViewState extends State<CreateRecurringPaymentView>
   void _showPaymentDetailsBottomSheet() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: false,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -82,6 +84,8 @@ class _CreateRecurringPaymentViewState extends State<CreateRecurringPaymentView>
   void _showPaymentPinBottomSheet() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: false,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -97,6 +101,8 @@ class _CreateRecurringPaymentViewState extends State<CreateRecurringPaymentView>
   void _showSuccessBottomSheet() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: false,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -324,7 +330,7 @@ class PaymentDetailsBottomSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
+          const Text(
             'Review Payment Details',
             style: AppTextStyles.h3,
             textAlign: TextAlign.center,
@@ -361,7 +367,7 @@ class PaymentDetailsBottomSheet extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           // Payment Method
-          Text('Payment Method', style: AppTextStyles.bodyLarge),
+          const Text('Payment Method', style: AppTextStyles.bodyLarge),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
@@ -377,7 +383,10 @@ class PaymentDetailsBottomSheet extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Wallet Balance', style: AppTextStyles.bodyMedium),
+                      const Text(
+                        'Wallet Balance',
+                        style: AppTextStyles.bodyMedium,
+                      ),
                       Text(
                         '₦5,000.00',
                         style: AppTextStyles.bodySmall.copyWith(
@@ -463,7 +472,7 @@ class _PaymentPinBottomSheetState extends State<PaymentPinBottomSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
+          const Text(
             'Enter Payment PIN',
             style: AppTextStyles.h3,
             textAlign: TextAlign.center,
@@ -520,7 +529,7 @@ class PaymentSuccessBottomSheet extends StatelessWidget {
           Container(
             width: 80,
             height: 80,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.success,
               shape: BoxShape.circle,
             ),
@@ -528,7 +537,7 @@ class PaymentSuccessBottomSheet extends StatelessWidget {
             child: const Icon(Icons.check, color: AppColors.white, size: 48),
           ),
           const SizedBox(height: 24),
-          Text(
+          const Text(
             'Payment Successful!',
             style: AppTextStyles.h3,
             textAlign: TextAlign.center,

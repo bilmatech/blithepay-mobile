@@ -1,5 +1,6 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/core/utils/helpers.dart';
 import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_bloc.dart';
 import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_event.dart';
@@ -267,12 +268,25 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
     );
   }
 
-  void _showPinBottomSheet(ViewInvoiceModel invoice) {
-    showModalBottomSheet(
-      isScrollControlled: true,
+  void _showPinBottomSheet(ViewInvoiceModel invoice) async {
+    await showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const PinBottomSheetContent(),
+      builder: (_) {
+        return BlocBuilder<PaymentBloc, PaymentState>(
+          builder: (context, state) {
+            return PinBottomSheetContent(
+              isLoading: state.status == PaymentStatus.pinVerifying,
+              errorMessage: state.message,
+              onSubmit: (pin) async {
+                context.read<PaymentBloc>().add(VerifyPin(pin));
+              },
+              onForgotPin: () {
+                context.push(AppRoutes.setupOtp);
+              },
+            );
+          },
+        );
+      },
     );
   }
 
