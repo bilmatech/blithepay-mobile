@@ -27,33 +27,27 @@ String sha256ofString(String input) {
 
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   /// Sign in with Google
-  Future<UserCredential> signInWithGoogle() async {
+
+  Future<UserCredential?> signInWithGoogle() async {
     try {
-      // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      final GoogleSignInAccount? googleUser = await _googleSignIn
+          .authenticate();
 
-      if (googleUser == null) {
-        throw FirebaseAuthException(
-          code: 'google-sign-in-cancelled',
-          message: 'Google sign-in was cancelled by user',
-        );
-      }
+      if (googleUser == null) return null;
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
-      // Create a new credential
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
+      // Create the credential for Firebase
+      final AuthCredential credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
       );
 
-      // Once signed in, return the UserCredential
-      return await _auth.signInWithCredential(credential);
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(credential);
+
+      return userCredential;
     } catch (e) {
       rethrow;
     }

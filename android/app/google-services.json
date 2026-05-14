@@ -12,7 +12,12 @@
           "package_name": "com.bilmatech.blithepayapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "313986921733-tk50b3nbm29hgo2oraptfvkjske5pm7o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBrQ29dYllBl_Wzk3QzlhNcH3i2E_SGYw0"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "313986921733-tk50b3nbm29hgo2oraptfvkjske5pm7o.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "313986921733-bti13i8l8dqajik7cebdmr4q8h2u25ht.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.bilmatech.blithepay"
+              }
+            }
+          ]
         }
       }
     }

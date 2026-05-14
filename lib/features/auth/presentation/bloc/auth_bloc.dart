@@ -67,8 +67,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     LoginRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthState.loading());
-
+    emit(
+      state.copyWith(
+        status: AuthStatus.loading,
+        loadingType: LoadingType.email,
+      ),
+    );
     try {
       final result = await _authRepository.login(event.email, event.password);
 
@@ -190,11 +194,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     GoogleSignInRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthState.loading());
+    emit(
+      state.copyWith(
+        status: AuthStatus.loading,
+        loadingType: LoadingType.google,
+      ),
+    );
     try {
       final userCredential = await _firebaseAuthService.signInWithGoogle();
 
-      if (userCredential.user == null) {
+      if (userCredential?.user == null) {
         emit(const AuthState.error('Google sign-in failed.'));
         return;
       }
@@ -203,11 +212,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         AuthState.authenticated(
           AuthResponseModel(
             user: UserModel(
-              id: userCredential.user?.uid,
-              email: userCredential.user?.email,
-              firstName: userCredential.user?.displayName?.split(' ').first,
-              lastName: userCredential.user?.displayName?.split(' ').last,
-              profileImage: userCredential.user?.photoURL,
+              id: userCredential?.user?.uid,
+              email: userCredential?.user?.email,
+              firstName: userCredential?.user?.displayName?.split(' ').first,
+              lastName: userCredential?.user?.displayName?.split(' ').last,
+              profileImage: userCredential?.user?.photoURL,
             ),
             message: 'Logged in with Google',
           ),
@@ -222,7 +231,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AppleSignInRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthState.loading());
+    emit(
+      state.copyWith(
+        status: AuthStatus.loading,
+        loadingType: LoadingType.apple,
+      ),
+    );
     try {
       final userCredential = await _firebaseAuthService.signInWithApple();
 

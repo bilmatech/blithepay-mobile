@@ -167,7 +167,9 @@ class _LoginViewState extends State<LoginView> {
                         PrimaryButton(
                           label: AppStrings.logIn,
                           onPressed: _handleLogin,
-                          isLoading: state.status == AuthStatus.loading,
+                          isLoading:
+                              state.status == AuthStatus.loading &&
+                              state.loadingType == LoadingType.email,
                           isEnabled: state.status != AuthStatus.loading,
                         ),
                         const SizedBox(height: 40),
@@ -239,7 +241,8 @@ class _LoginViewState extends State<LoginView> {
                               onPressed: () => context.read<AuthBloc>().add(
                                 const GoogleSignInRequested(),
                               ),
-                              isLoading: state.status == AuthStatus.loading,
+                              isLoading:
+                                  state.loadingType == LoadingType.google,
                             ),
                             const SizedBox(width: 12),
                             SocialAuthButton(
@@ -247,7 +250,7 @@ class _LoginViewState extends State<LoginView> {
                               onPressed: () => context.read<AuthBloc>().add(
                                 const AppleSignInRequested(),
                               ),
-                              isLoading: state.status == AuthStatus.loading,
+                              isLoading: state.loadingType == LoadingType.apple,
                             ),
                           ],
                         ),
