@@ -81,11 +81,11 @@ class _OnboardingViewState extends State<OnboardingView> {
         child: Stack(
           children: [
             // Pattern overlay
-            Container(color: Colors.black.withOpacity(0.2)),
+            Container(color: Colors.black.withValues(alpha: 0.2)),
             // Glass effect
             BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-              child: Container(color: Colors.black.withOpacity(0.1)),
+              child: Container(color: Colors.black.withValues(alpha: 0.1)),
             ),
             SafeArea(
               child: Column(
@@ -113,15 +113,21 @@ class _OnboardingViewState extends State<OnboardingView> {
                                   ),
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      color: AppColors.white.withOpacity(0.15),
+                                      color: AppColors.white.withValues(
+                                        alpha: 0.15,
+                                      ),
                                       border: Border.all(
-                                        color: AppColors.white.withOpacity(0.2),
+                                        color: AppColors.white.withValues(
+                                          alpha: 0.2,
+                                        ),
                                         width: 1,
                                       ),
                                       borderRadius: BorderRadius.circular(28),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
+                                          color: Colors.black.withValues(
+                                            alpha: 0.1,
+                                          ),
                                           blurRadius: 20,
                                           offset: const Offset(0, 10),
                                         ),
@@ -164,7 +170,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                                           style: AppTextStyles.bodyRegularBlack
                                               .copyWith(
                                                 color: AppColors.white
-                                                    .withOpacity(0.9),
+                                                    .withValues(alpha: 0.9),
                                               ),
                                           textAlign: TextAlign.center,
                                         ),
@@ -198,7 +204,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                               decoration: BoxDecoration(
                                 color: _currentIndex == index
                                     ? AppColors.white
-                                    : AppColors.white.withOpacity(0.5),
+                                    : AppColors.white.withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
@@ -214,6 +220,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                           width: double.infinity,
                           child: SecondaryOutlinedButton(
                             label: AppStrings.logIn,
+                            height: 48,
                             onPressed: _goToLogin,
                             borderColor: AppColors.white,
                             textStyle: AppTextStyles.button.copyWith(
@@ -226,7 +233,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                           TextSpan(
                             text: AppStrings.byRegisteringYourAccount,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.white.withOpacity(0.8),
+                              color: AppColors.white.withValues(alpha: 0.8),
                             ),
                             children: [
                               const TextSpan(
@@ -236,7 +243,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                               TextSpan(
                                 text: ' and ',
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.white.withOpacity(0.8),
+                                  color: AppColors.white.withValues(alpha: 0.8),
                                 ),
                               ),
                               const TextSpan(

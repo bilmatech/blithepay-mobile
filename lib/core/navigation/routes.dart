@@ -1,8 +1,5 @@
 import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
-import 'package:blithepay/features/transaction/data/model/transaction_model.dart';
-import 'package:blithepay/features/transaction/presentation/views/transaction_details_view.dart';
-import 'package:blithepay/features/transaction/presentation/views/transaction_view.dart';
 
 class AppRouterConfig {
   static GoRouter createRouter() {
@@ -127,6 +124,10 @@ class AppRouterConfig {
               builder: (context, state) => const ProfileView(),
             ),
           ],
+        ),
+        GoRoute(
+          path: AppRoutes.linkedStudents,
+          builder: (_, __) => const LinkedStudentsView(),
         ),
         GoRoute(
           path: AppRoutes.walletManagement,
@@ -329,6 +330,44 @@ class AppRouterConfig {
             return const ServicesScreen();
           },
         ),
+
+        //reccuring payment
+        GoRoute(
+          path: AppRoutes.reocurringPayment,
+          builder: (context, state) {
+            return const RecurringPaymentsScreen();
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.createReocurringPayment,
+          builder: (context, state) {
+            return const CreateRecurringPaymentView();
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.recurringPaymentDetails,
+          builder: (context, state) {
+            final args = state.extra as Map<String, dynamic>;
+
+            return RecurringPaymentDetailView(recurringPayments: args);
+          },
+        ),
+        GoRoute(
+          path: '/service/review',
+          builder: (context, state) {
+            final bloc = state.extra as ServiceBloc;
+
+            return BlocProvider.value(
+              value: bloc,
+              child: const ServiceReviewView(),
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.betting,
+          builder: (_, __) => const BettingServiceView(),
+        ),
+
         GoRoute(
           path: AppRoutes.success,
           builder: (context, state) {

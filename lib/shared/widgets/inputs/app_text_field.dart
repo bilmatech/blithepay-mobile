@@ -85,7 +85,7 @@ class _AppTextFieldState extends State<AppTextField> {
                 color: AppColors.textTertiary,
               ),
               filled: true,
-              fillColor: AppColors.white,
+              fillColor: AppColors.grey.withValues(alpha: 0.05),
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: widget.maxLines! > 1 ? 16 : 18,

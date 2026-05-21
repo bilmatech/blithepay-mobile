@@ -16,6 +16,7 @@ class AppColors {
   static const Color borderColor = Color(0xFFE5E7EB);
   static const Color lightBackground = Color(0xFFF3F4F6);
   static const Color lightBack = Color(0xFF1A73E8);
+  static const Color placeholder = Color(0xFFB0B0B0);
 
   // Semantic
   static const Color success = Color(0xFF10B981);
@@ -65,12 +66,9 @@ class AppColors {
 
   static const Color surfaceOrange = Color(0xFFF8F3EB);
 
-
-  // Text Colors
-  // static const Color textPrimary = Color(0xFF1A1A1A);
-  // static const Color textSecondary = Color(0xFF666666);
-  // static const Color textTertiary = Color(0xFF999999);
   static const Color textHint = Color(0xFFBDBDBD);
+
+  static const Color more = Color(0xFF8D6E63);
 
   // Gradient Colors
   static const List<Color> balanceGradient = [

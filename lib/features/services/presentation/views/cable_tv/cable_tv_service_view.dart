@@ -1,7 +1,10 @@
 import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+// ignore: unused_import
+import 'package:blithepay/shared/widgets/app_bar.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/service_bloc/service_bloc.dart';
@@ -45,7 +48,16 @@ class CableTvServiceView extends StatelessWidget {
           availableBalanceKobo: 9455272,
         ),
       ),
-      child: const _CableTvServiceScreen(),
+      child: AppScaffold(
+        appBar: AppBar(
+          leading: const BackArrowButtonIcon(),
+          title: const Text('Services'),
+          centerTitle: true,
+        ),
+        body: const Center(child: Text('TV Subscription')),
+      ),
+
+      // child: const _CableTvServiceScreen(),
     );
   }
 }
@@ -105,7 +117,8 @@ class CableTvServiceForm extends StatefulWidget {
   final TextEditingController smartcardController;
   final TextEditingController amountController;
 
-  const CableTvServiceForm({super.key, 
+  const CableTvServiceForm({
+    super.key,
     required this.state,
     required this.smartcardController,
     required this.amountController,
@@ -286,7 +299,7 @@ class _CableTvServiceFormState extends State<CableTvServiceForm> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppColors.primary.withOpacity(0.1)
+                      ? AppColors.primary.withValues(alpha: 0.1)
                       : AppColors.white,
                   border: Border.all(
                     color: isSelected

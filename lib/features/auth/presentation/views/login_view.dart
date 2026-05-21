@@ -172,12 +172,12 @@ class _LoginViewState extends State<LoginView> {
                               state.loadingType == LoadingType.email,
                           isEnabled: state.status != AuthStatus.loading,
                         ),
-                        const SizedBox(height: 40),
-
+                        const SizedBox(height: 28),
                         SizedBox(
                           width: double.infinity,
                           child: SecondaryOutlinedButton(
                             label: AppStrings.biometricSignIn,
+                            height: 48,
                             textStyle: AppTextStyles.bodySmall.copyWith(
                               fontWeight: FontWeight.w600,
                               fontSize: 16,

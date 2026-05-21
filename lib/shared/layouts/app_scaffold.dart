@@ -11,6 +11,7 @@ class AppScaffold extends StatelessWidget {
   final FloatingActionButtonLocation? floatingActionButtonLocation;
   final bool? centerTitle;
   final Widget? background;
+  final Widget? bottomNavigationBar;
   const AppScaffold({
     super.key,
     this.title,
@@ -22,6 +23,7 @@ class AppScaffold extends StatelessWidget {
     this.floatingActionButtonLocation,
     this.centerTitle,
     this.background,
+    this.bottomNavigationBar,
   });
 
   @override
@@ -51,6 +53,7 @@ class AppScaffold extends StatelessWidget {
       body: background != null ? Stack(children: [background!, body]) : body,
       floatingActionButton: floatingActionButton,
       floatingActionButtonLocation: floatingActionButtonLocation,
+      bottomNavigationBar: bottomNavigationBar,
     );
   }
 }

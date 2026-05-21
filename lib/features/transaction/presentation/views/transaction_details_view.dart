@@ -57,10 +57,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
             const SizedBox(height: 8),
             Center(
               child: Text(
-                Helpers.formattedAmount(
-                  widget.transaction.amount,
-                  flow: widget.transaction.flow.name,
-                ),
+                widget.transaction.amount,              
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -262,21 +259,17 @@ Widget _buildDetailsCard(TransactionModel transaction) {
     {'label': 'Description', 'value': transaction.desc.toString()},
   ];
 
-  return Container(
-    decoration: BoxDecoration(
-      border: Border.all(color: AppColors.border),
-      borderRadius: BorderRadius.circular(8),
-      color: AppColors.surface,
-    ),
-    child: Column(
-      children: List.generate(details.length * 2 - 1, (index) {
-        if (index.isOdd) {
-          return const Divider(height: 1);
-        }
+  return Column(
+    children: List.generate(details.length * 2 - 1, (index) {
+      if (index.isOdd) {
+        return const SizedBox();
+      }
 
-        final item = details[index ~/ 2];
+      final item = details[index ~/ 2];
 
-        return Padding(
+      return Container(
+        color: (index ~/ 2).isEven ? AppColors.surface : Colors.transparent,
+        child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -299,8 +292,9 @@ Widget _buildDetailsCard(TransactionModel transaction) {
               ),
             ],
           ),
-        );
-      }),
-    ),
+        ),
+      );
+      ;
+    }),
   );
 }

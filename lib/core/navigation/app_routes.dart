@@ -55,4 +55,10 @@ abstract class AppRoutes {
   static const String feeConfirmation = '/fee-confirmation';
   // static const String feeSuccess = '/fee-success';
   static const String studentTransactionDetail = '/student-transaction-detail';
+  static const String recurringPaymentDetails = '/recurring-payment-details';
+  static const String reocurringPayment = '/reoccurring-payment';
+  static const String createReocurringPayment = '/create-recurring-payment';
+  static const String serviceReview = '/service/review';
+    static const String betting = '/service/betting';
+
 }

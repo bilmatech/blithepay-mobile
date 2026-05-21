@@ -1,13 +1,10 @@
 import 'package:blithepay/core/navigation/index.dart';
-import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
-import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_strings.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class BiometricAuthView extends StatelessWidget {
@@ -46,7 +43,7 @@ class BiometricAuthView extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppColors.primary.withOpacity(0.12),
+                        color: AppColors.primary.withValues(alpha: .12),
                         width: 4,
                       ),
                     ),
@@ -57,7 +54,7 @@ class BiometricAuthView extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppColors.primary.withOpacity(0.18),
+                        color: AppColors.primary.withValues(alpha: 0.18),
                         width: 2,
                       ),
                     ),

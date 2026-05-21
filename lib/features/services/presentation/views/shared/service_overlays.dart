@@ -35,9 +35,9 @@ class _ServiceStageOverlayState extends State<ServiceStageOverlay> {
 
   void _handleStage(ServiceStage stage) {
     switch (stage) {
-      case ServiceStage.review:
-        _showReview();
-        break;
+      // case ServiceStage.review:
+      //   context.push('/service/review');
+      //   break;
       case ServiceStage.pin:
         _showPin();
         break;

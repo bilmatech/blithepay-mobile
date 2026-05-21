@@ -1,3 +1,5 @@
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
+import 'package:blithepay/shared/widgets/layouts/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -61,8 +63,9 @@ class _CreateRecurringPaymentViewState extends State<CreateRecurringPaymentView>
   void _showPaymentDetailsBottomSheet() {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: false,
+      isScrollControlled: true,
       useSafeArea: true,
+      useRootNavigator: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -119,175 +122,303 @@ class _CreateRecurringPaymentViewState extends State<CreateRecurringPaymentView>
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
-        title: const Text('Create Recurring Payment'),
+        leading: const BackArrowButtonIcon(),
+        title: const HeadingLg('Create Recurring Payment'),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Biller Dropdown
+            const Text('Biller', style: AppTextStyles.bodyLarge),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: DropdownButton<String>(
+                value: selectedBiller,
+                hint: const Text('Select Biller'),
+                isExpanded: true,
+                underline: const SizedBox(),
+                items: billers
+                    .map(
+                      (biller) =>
+                          DropdownMenuItem(value: biller, child: Text(biller)),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  setState(() => selectedBiller = value);
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+
             // TabBar for Prepaid/Postpaid
             Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: AppColors.border),
               ),
               child: TabBar(
                 controller: _tabController,
+                indicatorSize: TabBarIndicatorSize.tab,
+                dividerColor: Colors.transparent,
+                labelColor: AppColors.textPrimary,
+                unselectedLabelColor: AppColors.textSecondary,
+                labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+                indicator: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
                 tabs: const [
                   Tab(text: 'Prepaid'),
                   Tab(text: 'Postpaid'),
                 ],
-                onTap: (_) => setState(() {}),
               ),
             ),
             const SizedBox(height: 24),
 
-            // Biller Dropdown
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Biller', style: AppTextStyles.bodyLarge),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.border),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: DropdownButton<String>(
-                    value: selectedBiller,
-                    hint: const Text('Select Biller'),
-                    isExpanded: true,
-                    underline: const SizedBox(),
-                    items: billers
-                        .map(
-                          (biller) => DropdownMenuItem(
-                            value: biller,
-                            child: Text(biller),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() => selectedBiller = value);
-                    },
-                  ),
-                ),
-              ],
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [_buildPrepaidView(), _buildPostpaidView()],
+              ),
             ),
-            const SizedBox(height: 16),
-
-            // Meter Number
-            AppTextField(
-              label: 'Meter Number',
-              controller: meterNumberController,
-              keyboardType: TextInputType.text,
-            ),
-            const SizedBox(height: 16),
-
-            // Amount
-            AppTextField(
-              label: 'Amount',
-              controller: amountController,
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 16),
-
-            // Duration Dropdown
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Duration', style: AppTextStyles.bodyLarge),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.border),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: DropdownButton<String>(
-                    value: selectedDuration,
-                    hint: const Text('Select Duration'),
-                    isExpanded: true,
-                    underline: const SizedBox(),
-                    items: durations
-                        .map(
-                          (duration) => DropdownMenuItem(
-                            value: duration,
-                            child: Text(duration),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() => selectedDuration = value);
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Start Date Picker
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Start Date', style: AppTextStyles.bodyLarge),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: _selectStartDate,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.border),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          selectedStartDate != null
-                              ? DateFormat(
-                                  'MMM dd, yyyy',
-                                ).format(selectedStartDate!)
-                              : 'Select Date',
-                          style: AppTextStyles.bodyRegular.copyWith(
-                            color: selectedStartDate != null
-                                ? AppColors.textPrimary
-                                : AppColors.textSecondary,
-                          ),
-                        ),
-                        const Icon(Icons.calendar_today, size: 20),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
 
             // Pay Button
-            PrimaryButton(
-              label: 'Pay',
-              onPressed: () {
-                if (selectedBiller == null ||
-                    meterNumberController.text.isEmpty ||
-                    amountController.text.isEmpty ||
-                    selectedDuration == null ||
-                    selectedStartDate == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please fill in all fields')),
-                  );
-                  return;
-                }
-                _showPaymentDetailsBottomSheet();
-              },
-            ),
           ],
         ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: PrimaryButton(
+          label: 'Pay',
+          onPressed: () {
+            if (selectedBiller == null ||
+                meterNumberController.text.isEmpty ||
+                amountController.text.isEmpty ||
+                selectedDuration == null ||
+                selectedStartDate == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please fill in all fields')),
+              );
+              return;
+            }
+            _showPaymentDetailsBottomSheet();
+          },
+        ),
+      ),
+    );
+  }
+
+  _buildPrepaidView() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Meter Number
+          AppTextField(
+            label: 'Meter Number',
+            controller: meterNumberController,
+            keyboardType: TextInputType.text,
+          ),
+          const SizedBox(height: 16),
+
+          // Amount
+          AppTextField(
+            label: 'Amount',
+            controller: amountController,
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 16),
+
+          // Duration Dropdown
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Duration', style: AppTextStyles.bodyLarge),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: DropdownButton<String>(
+                  value: selectedDuration,
+                  hint: const Text('Select Duration'),
+                  isExpanded: true,
+                  underline: const SizedBox(),
+                  items: durations
+                      .map(
+                        (duration) => DropdownMenuItem(
+                          value: duration,
+                          child: Text(duration),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() => selectedDuration = value);
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Start Date Picker
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Start Date', style: AppTextStyles.bodyLarge),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _selectStartDate,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        selectedStartDate != null
+                            ? DateFormat(
+                                'MMM dd, yyyy',
+                              ).format(selectedStartDate!)
+                            : 'Select Date',
+                        style: AppTextStyles.bodyRegular.copyWith(
+                          color: selectedStartDate != null
+                              ? AppColors.textPrimary
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                      const Icon(Icons.calendar_today, size: 20),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  _buildPostpaidView() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Meter Number
+          AppTextField(
+            label: 'Meter Number',
+            controller: meterNumberController,
+            keyboardType: TextInputType.text,
+          ),
+          const SizedBox(height: 16),
+
+          // Amount
+          AppTextField(
+            label: 'Amount',
+            controller: amountController,
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 16),
+
+          // Duration Dropdown
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Duration', style: AppTextStyles.bodyLarge),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: DropdownButton<String>(
+                  value: selectedDuration,
+                  hint: const Text('Select Duration'),
+                  isExpanded: true,
+                  underline: const SizedBox(),
+                  items: durations
+                      .map(
+                        (duration) => DropdownMenuItem(
+                          value: duration,
+                          child: Text(duration),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() => selectedDuration = value);
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Start Date Picker
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Start Date', style: AppTextStyles.bodyLarge),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _selectStartDate,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        selectedStartDate != null
+                            ? DateFormat(
+                                'MMM dd, yyyy',
+                              ).format(selectedStartDate!)
+                            : 'Select Date',
+                        style: AppTextStyles.bodyRegular.copyWith(
+                          color: selectedStartDate != null
+                              ? AppColors.textPrimary
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                      const Icon(Icons.calendar_today, size: 20),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+        ],
       ),
     );
   }
@@ -320,88 +451,156 @@ class PaymentDetailsBottomSheet extends StatelessWidget {
         bottom: MediaQuery.of(context).viewInsets.bottom + 24,
         left: 24,
         right: 24,
-        top: 24,
       ),
       decoration: const BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text(
-            'Review Payment Details',
-            style: AppTextStyles.h3,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          // Details Card
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const BackArrowButtonIcon(),
+            Text(
+              '₦${amount.toStringAsFixed(2)}',
+              style: AppTextStyles.h4,
+              textAlign: TextAlign.center,
             ),
-            child: Column(
+            const SizedBox(height: 24),
+            // Details Card
+            Column(
               children: [
                 _DetailRow(label: 'Biller', value: biller),
-                const Divider(height: 16),
+                const SizedBox(height: 16),
+
                 _DetailRow(label: 'Type', value: type),
-                const Divider(height: 16),
+                const SizedBox(height: 16),
+
                 _DetailRow(label: 'Meter Number', value: meterNumber),
-                const Divider(height: 16),
+                const SizedBox(height: 16),
+
                 _DetailRow(
                   label: 'Amount',
                   value: '₦${amount.toStringAsFixed(2)}',
                 ),
-                const Divider(height: 16),
+                const SizedBox(height: 16),
+
                 _DetailRow(label: 'Duration', value: duration),
-                const Divider(height: 16),
+                const SizedBox(height: 16),
+
                 _DetailRow(
                   label: 'Start Date',
                   value: DateFormat('MMM dd, yyyy').format(startDate),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 24),
-          // Payment Method
-          const Text('Payment Method', style: AppTextStyles.bodyLarge),
-          const SizedBox(height: 12),
+            const SizedBox(height: 24),
+            // Payment Method
+            const BalancePaymentCard(),
+
+            // const Text('Payment Method', style: AppTextStyles.bodyLarge),
+            // const SizedBox(height: 12),
+            // Container(
+            //   padding: const EdgeInsets.all(12),
+            //   decoration: BoxDecoration(
+            //     border: Border.all(color: AppColors.border),
+            //     borderRadius: BorderRadius.circular(12),
+            //   ),
+            //   child: Row(
+            //     children: [
+            //       const Icon(Icons.account_balance_wallet, size: 24),
+            //       const SizedBox(width: 12),
+            //       Expanded(
+            //         child: Column(
+            //           crossAxisAlignment: CrossAxisAlignment.start,
+            //           children: [
+            //             const Text(
+            //               'Wallet Balance',
+            //               style: AppTextStyles.bodyMedium,
+            //             ),
+            //             Text(
+            //               '₦5,000.00',
+            //               style: AppTextStyles.bodySmall.copyWith(
+            //                 color: AppColors.textSecondary,
+            //               ),
+            //             ),
+            //           ],
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            const SizedBox(height: 24),
+            PrimaryButton(label: 'Pay', onPressed: onPay),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class BalancePaymentCard extends StatelessWidget {
+  const BalancePaymentCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 140,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF6F8FF),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE9ECF6)),
+      ),
+      child: Row(
+        children: [
           Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              border: Border.all(color: AppColors.border),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.account_balance_wallet, size: 24),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Wallet Balance',
-                        style: AppTextStyles.bodyMedium,
-                      ),
-                      Text(
-                        '₦5,000.00',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            width: 5,
+            decoration: const BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.horizontal(left: Radius.circular(16)),
             ),
           ),
-          const SizedBox(height: 24),
-          PrimaryButton(label: 'Continue to Payment', onPressed: onPay),
-          const SizedBox(height: 8),
+
+          const Expanded(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(22, 18, 18, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Available balance',
+                    style: TextStyle(
+                      color: Color(0xFF55555D),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    '₦94,552.72',
+                    style: TextStyle(
+                      color: Color(0xFF061657),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Spacer(),
+                  Divider(color: Color(0xFFE4E7F1), height: 1),
+                  SizedBox(height: 14),
+                  Text(
+                    '-₦2000.00',
+                    style: TextStyle(
+                      color: Color(0xFF061657),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -417,15 +616,25 @@ class _DetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF4B4B52),
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
-        Text(value, style: AppTextStyles.bodyMedium),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Color(0xFF061657),
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ],
     );
   }

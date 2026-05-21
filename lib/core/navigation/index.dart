@@ -60,3 +60,13 @@ export 'package:blithepay/features/services/presentation/views/airtime/views/air
 export 'package:blithepay/features/services/presentation/views/data/data_service_view.dart';
 export 'package:blithepay/features/services/presentation/views/cable_tv/cable_tv_service_view.dart';
 export 'package:blithepay/features/services/presentation/views/electricity/electricity_service_view.dart';
+
+export 'package:blithepay/features/recurring_payment/presentation/views/create_recurring_payment_view.dart';
+export 'package:blithepay/features/recurring_payment/presentation/views/recurring_payment.dart';
+export 'package:blithepay/features/recurring_payment/presentation/views/recurring_payment_details.dart';
+export 'package:blithepay/features/services/presentation/bloc/service_bloc/service_bloc.dart';
+export 'package:blithepay/features/services/presentation/views/bettings/bettings_service.dart';
+export 'package:blithepay/features/services/presentation/views/service_review_view.dart';
+export 'package:blithepay/features/transaction/data/model/transaction_model.dart';
+export 'package:blithepay/features/transaction/presentation/views/transaction_details_view.dart';
+export 'package:blithepay/features/transaction/presentation/views/transaction_view.dart';

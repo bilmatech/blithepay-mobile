@@ -1,10 +1,12 @@
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/inputs/phone_number_field.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:blithepay/core/constants/app_colors.dart';
+// ignore: unused_import
 import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
 import '../../bloc/service_bloc/service_bloc.dart';
 import '../shared/reusable_service_view.dart';
@@ -53,7 +55,15 @@ class DataServiceView extends StatelessWidget {
           availableBalanceKobo: 9455272,
         ),
       ),
-      child: const _DataServiceScreen(),
+      child: AppScaffold(
+        appBar: AppBar(
+          leading: const BackArrowButtonIcon(),
+          title: const Text('Services'),
+          centerTitle: true,
+        ),
+        body: const Center(child: Text('Data ')),
+      ),
+      //  child: const _DataServiceScreen(),
     );
   }
 }
@@ -303,7 +313,7 @@ class _DataServiceFormState extends State<DataServiceForm> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppColors.primary.withOpacity(0.1)
+                      ? AppColors.primary.withValues(alpha: 0.1)
                       : AppColors.white,
                   border: Border.all(
                     color: isSelected

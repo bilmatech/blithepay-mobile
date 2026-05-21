@@ -1,11 +1,10 @@
 import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/features/services/presentation/bloc/service_bloc/service_bloc.dart';
+import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/services/presentation/views/airtime/widget/amount_entry_card.dart';
 import 'package:blithepay/features/services/presentation/widgets/top_off_grid.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/inputs/phone_number_field.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class PhoneNumberContainer extends StatelessWidget {
   final ServiceState state;
@@ -25,7 +24,7 @@ class PhoneNumberContainer extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Recipient phone number', style: AppTextStyles.bodyLarge),
-    
+
         const SizedBox(height: 12),
         PhoneNumberField(
           controller: phoneController,
@@ -65,14 +64,21 @@ class PhoneNumberContainer extends StatelessWidget {
           },
         ),
         const SizedBox(height: 24),
-    
+
         AmountEntryCard(controller: amountController),
         const SizedBox(height: 24),
         PrimaryButton(
+          //  onPressed: () {
           onPressed: () {
-            context.read<ServiceBloc>().add(ServiceReviewRequested());
+            final bloc = context.read<ServiceBloc>();
+
+            //bloc.add(ServiceReviewRequested());
+
+            context.push('/service/review', extra: bloc);
           },
-          label: 'Continue',
+          //    context.read<ServiceBloc>().add(ServiceReviewRequested());
+          //      },
+          label: 'Pay',
         ),
       ],
     );

@@ -1,10 +1,8 @@
 import 'package:blithepay/core/constants/app_colors.dart';
-import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/core/navigation/index.dart';
-import 'package:blithepay/features/transaction/data/model/transaction_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/app_bar.dart';
 import 'package:blithepay/shared/widgets/layouts/app_text.dart';
-import 'package:blithepay/shared/widgets/layouts/spacing.dart';
 import 'package:flutter/material.dart';
 
 class TransactionsScreen extends StatefulWidget {
@@ -26,7 +24,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       flow: TransactionFlow.outflow,
       type: TransactionType.airtime,
       icon: '📱',
-      color: const Color(0xFFFFB800),
       fees: 0,
     ),
     TransactionModel(
@@ -39,7 +36,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       flow: TransactionFlow.outflow,
       type: TransactionType.cable,
       icon: '📺',
-      color: const Color(0xFF0066FF),
       fees: 0,
     ),
     TransactionModel(
@@ -52,7 +48,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       flow: TransactionFlow.outflow,
       type: TransactionType.electricity,
       icon: '⚡',
-      color: const Color(0xFF00AADD),
       fees: 0,
     ),
     TransactionModel(
@@ -65,7 +60,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       flow: TransactionFlow.outflow,
       type: TransactionType.electricity,
       icon: '⚡',
-      color: const Color(0xFF00AADD),
       fees: 0,
     ),
     TransactionModel(
@@ -78,7 +72,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       flow: TransactionFlow.outflow,
       type: TransactionType.airtime,
       icon: '📱',
-      color: const Color(0xFFFFB800),
       fees: 0,
     ),
   ];
@@ -87,13 +80,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
+      appBar: const AppAppBar(title: 'Transactions', showBackButton: false),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const HeadingMd('Transactions', color: AppColors.textPrimary),
-            const VSpaceBase(),
-
             // Filter and Sort Controls
             Row(
               children: [
@@ -103,6 +94,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     onPressed: () {},
                     icon: const Icon(Icons.tune, size: 20),
                     label: const Text('Filter'),
+                    iconAlignment: IconAlignment.end,
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: AppColors.border),
                       shape: RoundedRectangleBorder(
@@ -111,26 +103,23 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 4),
                 Expanded(
-                  child: OutlinedButton(
+                  child: OutlinedButton.icon(
                     onPressed: () {},
+                    icon: const Icon(Icons.arrow_drop_down, size: 20),
+                    label: const Text('Sort by'),
+                    iconAlignment: IconAlignment.end,
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: AppColors.border),
+                      iconAlignment: IconAlignment.end,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Sort by'),
-                        SizedBox(width: 8),
-                        Icon(Icons.expand_more, size: 20),
-                      ],
-                    ),
                   ),
                 ),
+                const SizedBox(width: 4),
               ],
             ),
             const SizedBox(height: 20),
@@ -176,8 +165,7 @@ class _TransactionCard extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: transaction.color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Center(
                 child: Text(

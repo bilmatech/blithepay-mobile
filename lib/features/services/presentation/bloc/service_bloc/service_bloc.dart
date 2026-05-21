@@ -13,7 +13,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     on<ServiceBeneficiarySelected>(_onBeneficiarySelected);
     on<ServicePlanSelected>(_onPlanSelected);
     on<ServiceAmountSelected>(_onAmountSelected);
-    on<ServiceReviewRequested>(_onReviewRequested);
+    //  on<ServiceReviewRequested>(_onReviewRequested);
     on<ServiceReviewClosed>(_onReviewClosed);
     on<ServicePinRequested>(_onPinRequested);
     on<ServicePinDigitPressed>(_onPinDigitPressed);
@@ -52,12 +52,12 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     emit(state.copyWith(amountKobo: event.amountKobo, selectedPlanIndex: null));
   }
 
-  void _onReviewRequested(
-    ServiceReviewRequested event,
-    Emitter<ServiceState> emit,
-  ) {
-    emit(state.copyWith(stage: ServiceStage.review));
-  }
+  // void _onReviewRequested(
+  //   ServiceReviewRequested event,
+  //   Emitter<ServiceState> emit,
+  // ) {
+  //   emit(state.copyWith(stage: ServiceStage.review));
+  // }
 
   void _onReviewClosed(ServiceReviewClosed event, Emitter<ServiceState> emit) {
     emit(state.copyWith(stage: ServiceStage.entry, pin: ''));

@@ -2,9 +2,10 @@ import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/features/services/presentation/views/airtime/widget/amount_entry_card.dart';
 import 'package:blithepay/features/services/presentation/widgets/top_off_grid.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/service_bloc/service_bloc.dart';
@@ -42,7 +43,15 @@ class ElectricityServiceView extends StatelessWidget {
           availableBalanceKobo: 9455272,
         ),
       ),
-      child: const _ElectricityServiceScreen(),
+      child: AppScaffold(
+        appBar: AppBar(
+          leading: const BackArrowButtonIcon(),
+          title: const Text('Services'),
+          centerTitle: true,
+        ),
+        body: Container(child: Center(child: Text('Electricity'))),
+      ),
+      // child: const _ElectricityServiceScreen(),
     );
   }
 }

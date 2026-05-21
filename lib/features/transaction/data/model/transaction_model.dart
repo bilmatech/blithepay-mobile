@@ -17,7 +17,6 @@ class TransactionModel {
   final TransactionFlow flow;
   final TransactionType type;
   final String icon; // emoji or asset path
-  final Color color;
   final double fees;
 
   const TransactionModel({
@@ -31,7 +30,6 @@ class TransactionModel {
     required this.flow,
     required this.type,
     required this.icon,
-    required this.color,
     required this.fees,
   });
 
@@ -49,7 +47,6 @@ class TransactionModel {
       flow: _parseFlow(map['flow']),
       type: _parseType(map['type']),
       icon: map['icon'] ?? '',
-      color: map['color'] ?? Colors.grey,
       fees: (map['fees'] ?? 0).toDouble(),
     );
   }
@@ -68,7 +65,6 @@ class TransactionModel {
       'flow': flow.name,
       'type': type.name,
       'icon': icon,
-      'color': color.value,
       'fees': fees,
     };
   }

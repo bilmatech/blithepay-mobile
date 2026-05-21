@@ -31,9 +31,6 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
   late final TextEditingController emailController;
   late final FocusNode nameFocusNode;
 
-  String? selectedGender;
-  final List<String> genderOptions = ['Male', 'Female'];
-
   bool _controllersInitialized = false;
 
   @override
@@ -126,7 +123,6 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
               phoneController.text = profile['phone'] ?? phoneController.text;
               emailController.text = profile['email'] ?? emailController.text;
               _controllersInitialized = true;
-              selectedGender = profile['gender'];
             }
 
             return SingleChildScrollView(
@@ -239,73 +235,9 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                     label: 'Email',
                     controller: emailController,
                     enabled: false,
+                    
                   ),
-                  const SizedBox(height: 16),
-                  // Gender Dropdown
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Gender', style: AppTextStyles.bodyLarge),
-                      const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: isEditing
-                            ? () async {
-                                if (!isEditing) return;
-                                final value =
-                                    await showModalBottomSheet<String>(
-                                      context: context,
-                                      shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(20),
-                                        ),
-                                      ),
-                                      builder: (context) {
-                                        return Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: genderOptions.map((gender) {
-                                            return ListTile(
-                                              title: Text(gender),
-                                              onTap: () => Navigator.pop(
-                                                context,
-                                                gender,
-                                              ),
-                                            );
-                                          }).toList(),
-                                        );
-                                      },
-                                    );
 
-                                if (value != null) {
-                                  setState(() => selectedGender = value);
-                                }
-                              }
-                            : null,
-                        child: Container(
-                          height: 56,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.border),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  selectedGender ?? 'Select Gender',
-                                  style: AppTextStyles.bodyRegular.copyWith(
-                                    color: selectedGender == null
-                                        ? AppColors.textSecondary
-                                        : AppColors.textPrimary,
-                                  ),
-                                ),
-                              ),
-                              const Icon(Icons.keyboard_arrow_down),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                   const SizedBox(height: 32),
                   // Update Profile Button
                   PrimaryButton(
@@ -316,7 +248,6 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                           UpdateProfileEvent(
                             name: nameController.text.trim(),
                             phone: phoneController.text.trim(),
-                            gender: selectedGender,
                             profileImagePath: _selectedImageFile?.path,
                           ),
                         );

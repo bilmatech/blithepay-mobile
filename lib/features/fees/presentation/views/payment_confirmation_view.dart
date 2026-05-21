@@ -723,6 +723,7 @@ class _PaystackWebViewState extends State<PaystackWebView> {
 class PaymentMethodTile extends StatelessWidget {
   final String title;
   final String subtitle;
+  final String? amount;
   final IconData icon;
   final bool selected;
   final VoidCallback onTap;
@@ -731,6 +732,7 @@ class PaymentMethodTile extends StatelessWidget {
     super.key,
     required this.title,
     required this.subtitle,
+    this.amount,
     required this.icon,
     required this.selected,
     required this.onTap,
@@ -750,7 +752,7 @@ class PaymentMethodTile extends StatelessWidget {
             width: selected ? 1.5 : 1,
           ),
           color: selected
-              ? AppColors.primary.withOpacity(0.05)
+              ? AppColors.primary.withValues(alpha: 0.05)
               : AppColors.surface,
         ),
         child: Row(
@@ -760,7 +762,7 @@ class PaymentMethodTile extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color: selected
-                    ? AppColors.primary.withOpacity(0.1)
+                    ? AppColors.primary.withValues(alpha: 0.1)
                     : AppColors.lightBackground,
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -772,6 +774,15 @@ class PaymentMethodTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: AppTextStyles.bodyMedium),
+                  const SizedBox(height: 4),
+                  if (amount != null) ...[
+                    Text(
+                      amount!,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 4),
                   Text(
                     subtitle,

@@ -20,7 +20,7 @@ class AmountEntryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 120,
+      height: 100,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: const Color(0xFFF8F9FF),
@@ -35,7 +35,6 @@ class AmountEntryCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(label, style: AppTextStyles.bodySmall),
-                const SizedBox(height: 10),
                 Row(
                   children: [
                     Text(

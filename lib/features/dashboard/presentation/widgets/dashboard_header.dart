@@ -36,9 +36,7 @@ class DashboardHeader extends StatelessWidget {
               : null,
         ),
         const SizedBox(width: 12),
-        Expanded(
-          child: Text('Hi, $userName', style: AppTextStyles.headingSmall),
-        ),
+        Text('Hi, $userName', style: AppTextStyles.headingSmall),
         const Spacer(),
         Container(
           decoration: BoxDecoration(

@@ -265,7 +265,7 @@ class _FeeBreakDownViewState extends State<FeeBreakDownView> {
             height: 60,
             margin: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.border.withOpacity(0.3),
+              color: AppColors.border.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(8),
             ),
           ),

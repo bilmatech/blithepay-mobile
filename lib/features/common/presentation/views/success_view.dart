@@ -1,4 +1,3 @@
-import 'package:blithepay/features/common/data/success_args_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
 import 'package:flutter/material.dart';

@@ -24,7 +24,11 @@ class Helpers {
   static String formattedAmount(String amount, {String? flow}) {
     final amountValue = double.tryParse(amount) ?? 0.0;
 
-    final formatter = NumberFormat.currency(locale: 'en_NG', symbol: '₦', decimalDigits: 2);
+    final formatter = NumberFormat.currency(
+      locale: 'en_NG',
+      symbol: '₦',
+      decimalDigits: 2,
+    );
 
     final formatted = formatter.format(amountValue);
 

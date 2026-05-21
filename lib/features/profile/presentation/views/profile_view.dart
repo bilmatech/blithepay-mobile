@@ -7,13 +7,13 @@ import 'package:blithepay/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:blithepay/features/profile/presentation/bloc/profile_event.dart';
 import 'package:blithepay/features/profile/presentation/bloc/profile_state.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/app_bar.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:blithepay/shared/widgets/dialogs/confirmation_bottom_sheet.dart';
 import 'package:blithepay/shared/widgets/layouts/app_text.dart';
+import 'package:blithepay/shared/widgets/layouts/spacing.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -21,7 +21,8 @@ class ProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      appBar: AppBar(title: const HeadingLg('Profile'), centerTitle: true),
+      appBar: const AppAppBar(title: 'Account', showBackButton: false),
+      //appBar: AppBar(title: const HeadingLg('Profile'), centerTitle: true),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -34,46 +35,49 @@ class ProfileView extends StatelessWidget {
 
               return Column(
                 children: [
-                  Row(
-                    children: [
-                      const CircleAvatar(
-                        radius: 24,
-                        child: Icon(Icons.person, size: 24),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            BodyMd('$firstName $lastName'),
-                            const SizedBox(height: 4),
-                            GestureDetector(
-                              onTap: () {
-                                context.push(AppRoutes.profileDetail);
-                              },
-                              child: BodySm('${user?.email}'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  const VSpaceBase(),
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.surface,
+                      border: Border.all(color: AppColors.border, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.person,
+                      size: 40,
+                      color: AppColors.textTertiary,
+                    ),
                   ),
+                  const VSpaceBase(),
+                  HeadingXl('$firstName $lastName'),
+                  // const SizedBox(height: 4),
+                  // GestureDetector(
+                  //   onTap: () {
+                  //     context.push(AppRoutes.profileDetail);
+                  //   },
+                  //   child: BodySm('${user?.email}'),
+                  // ),
                   const SizedBox(height: 16),
-                  const Divider(height: 0.5, thickness: 0),
+                  const Divider(height: 0.8, thickness: 0.1),
                   const SizedBox(height: 16),
                   Expanded(
                     child: ListView(
                       children: [
                         _ProfileItem(
                           icon: Icons.person_outline,
-                          label: 'View Details',
+                          label: 'Profile',
                           onTap: () => context.push(AppRoutes.profileDetail),
                         ),
-                        _ProfileItem(
-                          icon: Icons.lock_outline,
-                          label: 'Recurring payments',
-                          onTap: () => context.push('/linked-students'),
-                        ),
+                        // _ProfileItem(
+                        //   icon: Icons.lock_outline,
+                        //   label: 'Recurring payments',
+                        //   onTap: () =>
+                        //       context.push(AppRoutes.reocurringPayment),
+
+                        //   //  onTap: () => context.push('/linked-students'),
+                        // ),
                         _ProfileItem(
                           icon: Icons.lock_outline,
                           label: 'Change payment pin',
@@ -118,17 +122,47 @@ class ProfileView extends StatelessWidget {
                           label: 'Help & Support',
                           onTap: () => context.push('/help-support'),
                         ),
+                        // _ProfileItem(
+                        //   icon: Icons.logout_outlined,
+                        //   label: 'Log Out',
+                        //   isLogout: true,
+                        //   onTap: () => _showLogoutDialog(context),
+                        // ),
                         _ProfileItem(
-                          icon: Icons.logout_outlined,
-                          label: 'Log Out',
-                          isLogout: true,
-                          onTap: () => _showLogoutDialog(context),
-                        ),
-                        _ProfileItem(
-                          icon: Icons.delete,
-                          label: 'Delete My Account',
+                          icon: Icons.delete_outline,
+                          label: 'Delete Account',
                           isLogout: true,
                           onTap: () => _showDeleteDialog(context),
+                        ),
+                        VSpaceBase(),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: SizedBox(
+                            width: 100,
+                            height: 40,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(8),
+                              onTap: () => _showLogoutDialog(context),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  color: AppColors.error.withValues(alpha: 0.8),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.logout_outlined,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                    HSpaceSm(),
+                                    BodySm('Sign out', color: Colors.white),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),

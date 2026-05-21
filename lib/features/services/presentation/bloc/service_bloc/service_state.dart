@@ -1,6 +1,6 @@
 part of 'service_bloc.dart';
 
-enum ServiceStage { entry, review, pin, success }
+enum ServiceStage { entry, pin, success }
 
 class ServiceConfig {
   final String title;

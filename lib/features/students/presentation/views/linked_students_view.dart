@@ -18,6 +18,8 @@ class LinkedStudentsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<StudentsBloc>().add(const GetLinkedStudentsEvent());
+
     return AppScaffold(
       appBar: const LinkedStudentsAppBar(),
       body: RefreshIndicator(

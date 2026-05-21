@@ -36,7 +36,14 @@ class _FinancialSummaryCardState extends State<FinancialSummaryCard> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(AppSpacing.base),
       child: Column(
@@ -44,7 +51,10 @@ class _FinancialSummaryCardState extends State<FinancialSummaryCard> {
         children: [
           Row(
             children: [
-              BodyMd('TOTAL BALANCE', color: AppColors.white.withOpacity(0.7)),
+              BodyMd(
+                'TOTAL BALANCE',
+                color: AppColors.white.withValues(alpha: 0.7),
+              ),
               const Spacer(),
               IconButton(
                 icon: Icon(
