@@ -48,16 +48,7 @@ class CableTvServiceView extends StatelessWidget {
           availableBalanceKobo: 9455272,
         ),
       ),
-      child: AppScaffold(
-        appBar: AppBar(
-          leading: const BackArrowButtonIcon(),
-          title: const Text('Services'),
-          centerTitle: true,
-        ),
-        body: const Center(child: Text('TV Subscription')),
-      ),
-
-      // child: const _CableTvServiceScreen(),
+      child: const _CableTvServiceScreen(),
     );
   }
 }
@@ -366,7 +357,7 @@ class _CableTvServiceFormState extends State<CableTvServiceForm> {
               ),
             ),
             child: const Text(
-              'Continue',
+              'Pay',
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
             ),
           ),

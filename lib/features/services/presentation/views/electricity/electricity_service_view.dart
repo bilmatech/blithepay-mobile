@@ -43,15 +43,8 @@ class ElectricityServiceView extends StatelessWidget {
           availableBalanceKobo: 9455272,
         ),
       ),
-      child: AppScaffold(
-        appBar: AppBar(
-          leading: const BackArrowButtonIcon(),
-          title: const Text('Services'),
-          centerTitle: true,
-        ),
-        body: Container(child: Center(child: Text('Electricity'))),
-      ),
-      // child: const _ElectricityServiceScreen(),
+
+      child: const _ElectricityServiceScreen(),
     );
   }
 }
@@ -409,7 +402,7 @@ class _ElectricityServiceFormState extends State<ElectricityServiceForm> {
               ),
             ),
             child: const Text(
-              'Continue',
+              'Pay',
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
             ),
           ),
