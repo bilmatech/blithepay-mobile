@@ -41,27 +41,31 @@ class PhoneNumberField<T> extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Row(
         children: [
-          /// OPTION SELECTOR (network / provider / etc.) - Only show if options provided
-          if (options.isNotEmpty) ...[
-            SizedBox(
-              width: 60,
-              child: InkWell(
-                onTap: () => _showOptionPicker(context),
-                child: Center(
-                  child: Text(
-                    optionLabel?.call(selectedOption as T) ?? 'Select',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
+          if (options.isNotEmpty)
+            InkWell(
+              onTap: () => _showOptionPicker(context),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Row(
+                  children: [
+                    Text(
+                      selectedOption != null
+                          ? optionLabel?.call(selectedOption as T) ?? ''
+                          : 'Select',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
+
+                    const SizedBox(width: 4),
+
+                    const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+                  ],
                 ),
               ),
             ),
-            Container(width: 1, height: 45, color: AppColors.primary),
-          ],
 
-          /// PHONE INPUT
           Expanded(
             child: TextField(
               controller: controller,
@@ -70,18 +74,18 @@ class PhoneNumberField<T> extends StatelessWidget {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
               ],
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
+                fillColor: AppColors.white,
                 hintText: '080 0000 0000',
                 border: InputBorder.none,
-                hintStyle: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textTertiary,
-                ),
                 enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                isCollapsed: true,
               ),
             ),
           ),
 
-          /// TOGGLE
           GestureDetector(
             onTap: onBeneficiariesToggle,
             child: Icon(
@@ -93,6 +97,7 @@ class PhoneNumberField<T> extends StatelessWidget {
         ],
       ),
     );
+    ;
   }
 
   Future<void> _showOptionPicker(BuildContext context) {
@@ -125,6 +130,7 @@ class PhoneNumberField<T> extends StatelessWidget {
     );
   }
 }
+
 // class PhoneNumberField extends StatelessWidget {
 //   final TextEditingController controller;
 //   final AirtimeNetwork network;

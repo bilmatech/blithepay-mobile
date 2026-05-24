@@ -81,7 +81,7 @@ class BottomNavigationWidget extends StatelessWidget {
           Icon(
             icon,
             color: isActive ? AppColors.white : AppColors.textSecondary,
-            size: 20, // keep consistent size
+            size: isActive ? 20 : 32, // keep consistent size
           ),
 
           if (isActive) ...[

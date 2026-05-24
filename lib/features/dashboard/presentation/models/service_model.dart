@@ -5,7 +5,6 @@ enum ServiceType {
   data,
   electricity,
   cableTv,
-  betting,
   feePayment,
   funding,
   more,
@@ -25,7 +24,6 @@ class ServiceEntity extends Equatable {
     required this.icon,
     required this.type,
     required this.route,
-
     required this.isActive,
   });
 
@@ -36,10 +34,10 @@ class ServiceEntity extends Equatable {
 var services = [
   const ServiceEntity(
     id: '1',
-    name: 'FeePayment',
+    name: 'Fee Payment',
     icon: 'assets/icons/feepayment.svg',
     type: ServiceType.feePayment,
-    route: '/link-child-school',
+    route: '/linked-students',
     isActive: true,
   ),
   const ServiceEntity(
@@ -60,7 +58,7 @@ var services = [
   ),
   const ServiceEntity(
     id: '4',
-    name: 'Cable Tv',
+    name: 'Cable/TV',
     icon: 'assets/icons/cable.svg',
     type: ServiceType.cableTv,
     route: '/service/cable-tv',
@@ -72,14 +70,6 @@ var services = [
     icon: 'assets/icons/elect.svg',
     type: ServiceType.electricity,
     route: '/service/electricity',
-    isActive: true,
-  ),
-  const ServiceEntity(
-    id: '6',
-    name: 'Betting',
-    icon: 'assets/icons/betting.svg',
-    type: ServiceType.betting,
-    route: '/service/betting',
     isActive: true,
   ),
   const ServiceEntity(

@@ -63,9 +63,9 @@ class _SplashViewState extends State<SplashView>
           child: FadeTransition(
             opacity: _fadeAnimation,
             child: Image.asset(
-              'assets/images/app_icon.png',
-              height: 196,
-              width: 196,
+              'assets/images/logo.png',
+              height: 89,
+              width: 100,
               fit: BoxFit.cover,
             ),
           ),

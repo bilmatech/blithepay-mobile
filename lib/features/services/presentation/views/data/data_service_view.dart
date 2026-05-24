@@ -55,15 +55,7 @@ class DataServiceView extends StatelessWidget {
           availableBalanceKobo: 9455272,
         ),
       ),
-      child: AppScaffold(
-        appBar: AppBar(
-          leading: const BackArrowButtonIcon(),
-          title: const Text('Services'),
-          centerTitle: true,
-        ),
-        body: const Center(child: Text('Data ')),
-      ),
-      //  child: const _DataServiceScreen(),
+      child: const _DataServiceScreen(),
     );
   }
 }

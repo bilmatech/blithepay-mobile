@@ -69,11 +69,9 @@ class AmountEntryCard extends StatelessWidget {
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 4,
-                            horizontal: 8,
-                          ),
+                          focusedBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                          isCollapsed: true,
                         ),
                       ),
                     ),
