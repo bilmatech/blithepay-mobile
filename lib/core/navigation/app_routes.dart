@@ -10,6 +10,7 @@ abstract class AppRoutes {
   static const String setupOtp = '/setup-otp';
   static const String resetPassword = '/reset-password';
   static const String passwordChanged = '/password-changed';
+  static const String biometric = '/biometric';
   static const String changePassword = '/change-password';
   static const String confirmSchool = '/confirm-school';
   static const String dashboard = '/dashboard';
@@ -32,10 +33,16 @@ abstract class AppRoutes {
   static const String invoicedetail = '/invoicedetail';
 
   static const String profile = '/profile';
+  static const String service = '/service';
+  static const String airtimeService = '/service/airtime';
+  static const String dataService = '/service/data';
+  static const String cableTvService = '/service/cable-tv';
+  static const String electricityService = '/service/electricity';
   static const String profileDetail = '/profile-detail';
   static const String walletManagement = '/wallet-management';
   static const String payFees = '/pay-fees';
   static const String helpSupport = '/help-support';
+  static const String wallettransactionDetail = '/wallet-transaction-detail';
   static const String transactionDetail = '/transaction-detail';
   static const String editSchools = '/edit-schools';
   static const String editSchoolDetail = '/edit-school/:id';
@@ -48,4 +55,10 @@ abstract class AppRoutes {
   static const String feeConfirmation = '/fee-confirmation';
   // static const String feeSuccess = '/fee-success';
   static const String studentTransactionDetail = '/student-transaction-detail';
+  static const String recurringPaymentDetails = '/recurring-payment-details';
+  static const String reocurringPayment = '/reoccurring-payment';
+  static const String createReocurringPayment = '/create-recurring-payment';
+  static const String serviceReview = '/service/review';
+    static const String betting = '/service/betting';
+
 }

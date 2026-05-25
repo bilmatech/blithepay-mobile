@@ -32,6 +32,11 @@ class DeleteAccount extends ProfileEvent {
 class UpdateProfileEvent extends ProfileEvent {
   final String name;
   final String phone;
+  final String? profileImagePath;
 
-  const UpdateProfileEvent({required this.name, required this.phone});
+  const UpdateProfileEvent({
+    required this.name,
+    required this.phone,
+    this.profileImagePath,
+  });
 }

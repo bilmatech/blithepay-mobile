@@ -9,6 +9,7 @@ import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_e
 import 'package:blithepay/features/students/data/models/invoice_model.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -50,10 +51,7 @@ class _FeeBreakDownViewState extends State<FeeBreakDownView> {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: BackArrowButtonIcon(),
         title: const Text('Pay Fees'),
         centerTitle: true,
       ),
@@ -225,7 +223,7 @@ class _FeeBreakDownViewState extends State<FeeBreakDownView> {
                   extra: {
                     'invoiceId': widget.invoice.id,
                     'studentId': widget.student.id,
-                    'feesItemIds':_selectedFeeIds
+                    'feesItemIds': _selectedFeeIds,
                   },
                 );
               },
@@ -267,7 +265,7 @@ class _FeeBreakDownViewState extends State<FeeBreakDownView> {
             height: 60,
             margin: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.border.withOpacity(0.3),
+              color: AppColors.border.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(8),
             ),
           ),

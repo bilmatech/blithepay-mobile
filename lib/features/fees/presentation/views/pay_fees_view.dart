@@ -5,6 +5,7 @@ import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.d
 import 'package:blithepay/features/fees/presentation/views/widgets/student_card_container_widget.dart';
 import 'package:blithepay/features/students/data/models/student_model.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:flutter/material.dart';
 
 class PayFeesView extends StatefulWidget {
@@ -39,10 +40,7 @@ class _PayFeesViewState extends State<PayFeesView> {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const BackArrowButtonIcon(),
         title: const Text('Pay Fees'),
         centerTitle: true,
       ),

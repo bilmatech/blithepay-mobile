@@ -107,6 +107,14 @@ class LogoutRequested extends AuthEvent {
   const LogoutRequested();
 }
 
+class GoogleSignInRequested extends AuthEvent {
+  const GoogleSignInRequested();
+}
+
+class AppleSignInRequested extends AuthEvent {
+  const AppleSignInRequested();
+}
+
 enum OtpFlow { signup, forgotPassword, verifyEmail }
 
 class SignupPayload extends Equatable {

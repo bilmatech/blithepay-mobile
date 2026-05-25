@@ -1,6 +1,5 @@
 import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
-import 'package:blithepay/features/students/data/models/view_invoice_model.dart';
 
 class AppRouterConfig {
   static GoRouter createRouter() {
@@ -71,6 +70,10 @@ class AppRouterConfig {
             return PasswordChangedView(fromProfile: fromProfile);
           },
         ),
+        GoRoute(
+          path: AppRoutes.biometric,
+          builder: (_, __) => const BiometricAuthView(),
+        ),
         // GoRoute(
         //   path: AppRoutes.passwordChanged,
         //   builder: (_, __) => const PasswordChangedView(),
@@ -85,18 +88,46 @@ class AppRouterConfig {
           },
           routes: [
             GoRoute(
-              path: AppRoutes.linkedStudents,
-              builder: (_, __) => const LinkedStudentsView(),
-            ),
-            GoRoute(
               path: AppRoutes.home,
               builder: (context, state) => const HomeView(),
+            ),
+            // GoRoute(
+            //   path: AppRoutes.linkedStudents,
+            //   builder: (_, __) => const LinkedStudentsView(),
+            // ),
+            GoRoute(
+              path: AppRoutes.service,
+              builder: (context, state) => const ServicesScreen(),
+            ),
+            GoRoute(
+              path: AppRoutes.airtimeService,
+              builder: (context, state) => const AirtimeServiceView(),
+            ),
+            GoRoute(
+              path: AppRoutes.dataService,
+              builder: (context, state) => const DataServiceView(),
+            ),
+            GoRoute(
+              path: AppRoutes.cableTvService,
+              builder: (context, state) => const CableTvServiceView(),
+            ),
+            GoRoute(
+              path: AppRoutes.electricityService,
+              builder: (context, state) => const ElectricityServiceView(),
+            ),
+            GoRoute(
+              path: AppRoutes.transactions,
+              builder: (context, state) => const TransactionsScreen(),
             ),
             GoRoute(
               path: AppRoutes.profile,
               builder: (context, state) => const ProfileView(),
             ),
           ],
+        ),
+        GoRoute(
+          path: AppRoutes.linkedStudents,
+          builder: (_, __) => const LinkedStudentsView(),
         ),
         GoRoute(
           path: AppRoutes.walletManagement,
@@ -215,7 +246,7 @@ class AppRouterConfig {
         ),
         GoRoute(
           path: AppRoutes.transactions,
-          builder: (_, __) => const TransactionsView(),
+          builder: (_, __) => const WalletTransactionsView(),
         ),
         GoRoute(
           path: AppRoutes.transactionReceiptView,
@@ -242,13 +273,20 @@ class AppRouterConfig {
         ),
 
         GoRoute(
-          path: AppRoutes.transactionDetail,
+          path: AppRoutes.wallettransactionDetail,
           builder: (context, state) {
             final transaction = state.extra as WalletTransactionModel;
-            return TransactionDetailView(transaction: transaction);
+            return WalletTransactionDetailView(transaction: transaction);
           },
         ),
 
+        GoRoute(
+          path: AppRoutes.transactionDetail,
+          builder: (context, state) {
+            final transaction = state.extra as TransactionModel;
+            return TransactionDetailView(transaction: transaction);
+          },
+        ),
         GoRoute(
           path: AppRoutes.payFees,
           builder: (_, __) => const PayFeesView(),
@@ -286,6 +324,49 @@ class AppRouterConfig {
             return PaymentHistoryDetailView(transaction: transaction);
           },
         ),
+        GoRoute(
+          path: AppRoutes.service,
+          builder: (context, state) {
+            return const ServicesScreen();
+          },
+        ),
+
+        //reccuring payment
+        GoRoute(
+          path: AppRoutes.reocurringPayment,
+          builder: (context, state) {
+            return const RecurringPaymentsScreen();
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.createReocurringPayment,
+          builder: (context, state) {
+            return const CreateRecurringPaymentView();
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.recurringPaymentDetails,
+          builder: (context, state) {
+            final args = state.extra as Map<String, dynamic>;
+
+            return RecurringPaymentDetailView(recurringPayments: args);
+          },
+        ),
+        GoRoute(
+          path: '/service/review',
+          builder: (context, state) {
+            final bloc = state.extra as ServiceBloc;
+
+            return BlocProvider.value(
+              value: bloc,
+              child: const ServiceReviewView(),
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.betting,
+          builder: (_, __) => const BettingServiceView(),
+        ),
 
         GoRoute(
           path: AppRoutes.success,
@@ -298,6 +379,7 @@ class AppRouterConfig {
               buttonLabel: args.buttonLabel,
               nextRoute: args.nextRoute,
               nextExtra: args.nextExtra,
+              useAuthBackground: args.useAuthBackground,
             );
           },
         ),

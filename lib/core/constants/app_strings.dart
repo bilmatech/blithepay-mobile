@@ -14,15 +14,32 @@ class AppStrings {
   static const String loading = 'Loading...';
 
   // Auth
-  static const String logIn = 'Log In';
+  static const String logIn = 'Login';
   static const String signUp = 'Sign Up';
   static const String signIn = 'Sign In';
   static const String createAccount = 'Create Account';
+  static const String createAccountTitle = 'Create Account!';
+  static const String getStarted = 'Get Started';
   static const String forgotPassword = 'Forgot password?';
+  static const String forgotPasswordSubtitle =
+      'Follow these steps to change your account password.';
   static const String alreadyhaveAnAccount = 'Already have an account? ';
   static const String resetPassword = 'Password Set-Up';
+  static const String enterNewPassword = 'Please enter new password';
+
   static const String changePassword = 'Change Password';
   static const String returnToLogIn = 'Return To Log In';
+  static const String welcomeBackSubtitle =
+      'Please enter your credentials to access your ledger.';
+  static const String orContinueWith = 'OR CONTINUE WITH';
+  static const String biometricSignIn = 'Biometric Sign In';
+  static const String usePasswordInstead = 'Use Password Instead';
+  static const String touchSensorToLogin = 'Touch sensor to log in';
+  static const String personalInfo = 'Personal Info';
+  static const String byRegisteringYourAccount =
+      'By registering your account, you accept the ';
+  static const String termsAndConditions = 'Terms & Conditions';
+  static const String privacyPolicy = 'privacy policy';
 
   // Form Labels
   static const String email = 'Email Address';
@@ -41,7 +58,8 @@ class AppStrings {
   // Error Messages
   static const String passwordMismatch = 'Password mismatch';
   static const String invalidEmail = 'Please enter a valid email';
-  static const String passwordTooShort = 'Password must be at least 6 characters';
+  static const String passwordTooShort =
+      'Password must be at least 6 characters';
   static const String fieldRequired = 'This field is required';
 
   // Success Messages
@@ -58,17 +76,18 @@ class AppStrings {
 
   //set up pin
 
-  static const String setupDigitPin = 'Set Up 4 Digit Pin';
-  static const String setup = 'Set up a 4 digit pin for carrying out transactions on BlithePay';
+  static const String setupDigitPin = 'Set Up four Digit Pin';
+  static const String setup =
+      'Set up a 4 digit pin for carrying out transactions on BlithePay';
   static const String continueS = 'Continue';
 
   // Onboarding
-  static const String paySecurely = 'Pay School Fees Securely & Efficiently.';
+  static const String paySecurely = 'BlithePay';
   static const String paySecurelyDesc =
-      'Make fast, secure school fee payments without stress, delays, or unnecessary paperwork.';
-  static const String manageMultiple = 'Manage Multiple Children/Students Easily.';
+      'Elevate your financial journey. Secure, seamless, and uniquely yours.';
+  static const String manageMultiple = 'BlithePay';
   static const String manageMultipleDesc =
-      'Track, organize, and manage payments for multiple children or students from one dashboard.';
+      'Bills, data, airtime, electricity everything simplified in one app.';
   static const String getReminders = 'Get Reminders, Receipts & Transparency.';
   static const String getRemindersDesc =
       'Never miss payments with automated reminders, instant receipts, and full financial visibility.';

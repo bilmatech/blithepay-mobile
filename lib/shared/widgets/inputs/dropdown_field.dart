@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../bottom_sheets/bottom_sheet_container.dart';
 
 class DropdownField<T> extends StatelessWidget {
   final String label;
@@ -68,7 +69,7 @@ Future<void> showFilterPopup<T>({
 
   return showDialog(
     context: context,
-    barrierColor: Colors.black.withOpacity(0.3),
+    barrierColor: Colors.black.withValues(alpha: 0.3),
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setState) {
@@ -232,90 +233,60 @@ Future<void> showItemSelectionSheet<T>({
                 }
               });
 
-              return Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: filteredItems.isEmpty
-                          ? const Center(child: Text('No items found'))
-                          : ListView.builder(
-                              controller: controller,
-                              itemCount: filteredItems.length,
-                              itemBuilder: (context, index) {
-                                final item = filteredItems[index];
-                                final label = itemLabel != null
-                                    ? itemLabel(item)
-                                    : item.toString();
-                                final isSelected = item == selectedItem;
+              return BottomSheetContainer(
+                title: title,
+                child: Expanded(
+                  child: filteredItems.isEmpty
+                      ? const Center(child: Text('No items found'))
+                      : ListView.builder(
+                          controller: controller,
+                          itemCount: filteredItems.length,
+                          itemBuilder: (context, index) {
+                            final item = filteredItems[index];
+                            final label = itemLabel != null
+                                ? itemLabel(item)
+                                : item.toString();
+                            final isSelected = item == selectedItem;
 
-                                return InkWell(
-                                  onTap: () {
-                                    onItemSelected(item);
-                                    Navigator.pop(context);
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                      vertical: 4,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 12,
-                                      horizontal: 16,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? Colors.grey.shade100
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                      boxShadow: isSelected
-                                          ? const [
-                                              BoxShadow(
-                                                color: Colors.black12,
-                                                blurRadius: 2,
-                                                offset: Offset(0, 1),
-                                              ),
-                                            ]
-                                          : null,
-                                    ),
-                                    child: Text(
-                                      label,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: isSelected
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                    ),
-                                  ),
-                                );
+                            return InkWell(
+                              onTap: () {
+                                onItemSelected(item);
+                                Navigator.pop(context);
                               },
-                            ),
-                    ),
-                  ],
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 16,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? Colors.grey.shade100
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: isSelected
+                                      ? const [
+                                          BoxShadow(
+                                            color: Colors.black12,
+                                            blurRadius: 2,
+                                            offset: Offset(0, 1),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                child: Text(
+                                  label,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                 ),
               );
             },

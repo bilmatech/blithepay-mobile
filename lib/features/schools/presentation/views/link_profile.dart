@@ -4,6 +4,8 @@ import 'package:blithepay/features/students/presentation/bloc/students_bloc.dart
 import 'package:blithepay/features/students/presentation/bloc/students_event.dart';
 import 'package:blithepay/features/students/presentation/bloc/students_state.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
+import 'package:blithepay/shared/widgets/layouts/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -39,9 +41,8 @@ class _LinkProfileViewState extends State<LinkProfileView> {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Link Child'),
-        elevation: 0,
+        leading: const BackArrowButtonIcon(),
+        title: const HeadingLg('Service'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

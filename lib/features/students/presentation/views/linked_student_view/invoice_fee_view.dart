@@ -147,7 +147,7 @@ class InvoiceAndFeeDetailsView extends StatelessWidget {
                   // FULL-SCREEN LOADING OVERLAY
                   if (isDownloading)
                     Container(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       alignment: Alignment.center,
                       child: const Column(
                         mainAxisSize: MainAxisSize.min,
@@ -379,7 +379,7 @@ Widget _buildKeyValueTable(List<Map<String, String>> rows) {
           height: 60,
           margin: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.border.withOpacity(0.3),
+            color: AppColors.border.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(8),
           ),
         ),

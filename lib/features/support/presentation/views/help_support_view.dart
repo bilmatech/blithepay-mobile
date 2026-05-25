@@ -1,7 +1,9 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
+import 'package:blithepay/shared/widgets/layouts/app_text.dart';
 import 'package:flutter/material.dart';
 
 class HelpSupportView extends StatefulWidget {
@@ -55,11 +57,8 @@ class _HelpSupportViewState extends State<HelpSupportView> {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('Help & Support'),
+        leading: const BackArrowButtonIcon(),
+        title: const HeadingLg('Help & Support'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(

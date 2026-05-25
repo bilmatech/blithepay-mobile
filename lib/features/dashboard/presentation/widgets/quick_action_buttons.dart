@@ -12,26 +12,22 @@ class QuickActionButtons extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // _buildActionButton(
-        //   backgroundColor: const Color(0xFFDEF8F1).withValues(alpha: 0.7),
-        //   icon: Icons.account_balance_wallet_outlined,
-        //   label: 'Fund Wallet',
-        //   onTap: () {
-        //     context.push(AppRoutes.fundWallet);
-        //   },
-        // ),
-        // const SizedBox(width: 8),
         _buildActionButton(
-          backgroundColor: const Color(0xFFEADDFF).withValues(alpha: 0.7),
+          backgroundColor: AppColors.primaryLight,
           icon: Icons.payment_outlined,
           label: 'Pay Fees',
           onTap: () => context.push('/linked-students'),
-          //            context.push(AppRoutes.payFees);
         ),
         const SizedBox(width: 8),
-
         _buildActionButton(
-          backgroundColor: const Color(0x00ffd8e4).withValues(alpha: 0.7),
+          backgroundColor: AppColors.lightBackground,
+          icon: Icons.account_balance_wallet_outlined,
+          label: 'Fund Wallet',
+          onTap: () => context.push(AppRoutes.fundWallet),
+        ),
+        const SizedBox(width: 8),
+        _buildActionButton(
+          backgroundColor: AppColors.surface,
           icon: Icons.person_add_outlined,
           label: 'Link Child',
           onTap: () {

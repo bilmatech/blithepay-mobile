@@ -1,42 +1,48 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/core/navigation/index.dart';
-import 'package:blithepay/core/storage/auth_local_storage.dart';
-import 'package:blithepay/features/auth/presentation/bloc/auth_event.dart';
-import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_bloc.dart';
-import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_event.dart';
-import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_state.dart';
 import 'package:blithepay/features/fees/presentation/views/widgets/nemeric_keyboard.dart';
+import 'package:blithepay/shared/widgets/bottom_sheets/bottom_sheet_container.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 
 class PinBottomSheetContent extends StatefulWidget {
-  const PinBottomSheetContent({super.key});
+  final int pinLength;
+  final Future<void> Function(String pin) onSubmit;
+  final VoidCallback? onForgotPin;
+  final bool isLoading;
+  final String? errorMessage;
+
+  const PinBottomSheetContent({
+    super.key,
+    this.pinLength = 4,
+    required this.onSubmit,
+    this.onForgotPin,
+    this.isLoading = false,
+    this.errorMessage,
+  });
 
   @override
-  State<PinBottomSheetContent> createState() => _PinBottomSheetContentState();
+  State<PinBottomSheetContent> createState() =>
+      _PinBottomSheetContentState();
 }
 
-class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
+class _PinBottomSheetContentState
+    extends State<PinBottomSheetContent> {
   late final List<TextEditingController> _controllers;
   late final List<FocusNode> _focusNodes;
 
   @override
   void initState() {
     super.initState();
-    _controllers = List.generate(4, (_) => TextEditingController());
-    _focusNodes = List.generate(4, (_) => FocusNode());
+    _controllers = List.generate(widget.pinLength, (_) => TextEditingController());
+    _focusNodes = List.generate(widget.pinLength, (_) => FocusNode());
   }
 
   @override
   void dispose() {
-    for (final c in _controllers) {
-      c.dispose();
-    }
-    for (final f in _focusNodes) {
-      f.dispose();
-    }
+    for (final c in _controllers) c.dispose();
+    for (final f in _focusNodes) f.dispose();
     super.dispose();
   }
 
@@ -44,7 +50,9 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
     for (int i = 0; i < _controllers.length; i++) {
       if (_controllers[i].text.isEmpty) {
         _controllers[i].text = value;
-        if (i < _focusNodes.length - 1) _focusNodes[i + 1].requestFocus();
+        if (i < _focusNodes.length - 1) {
+          _focusNodes[i + 1].requestFocus();
+        }
         break;
       }
     }
@@ -62,28 +70,15 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
+    return BottomSheetContainer(
+      title: 'Enter Payment PIN',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 20),
-          Text(
-            'Enter Payment PIN',
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(
-              4,
+              widget.pinLength,
               (index) => SizedBox(
                 width: 60,
                 height: 60,
@@ -91,88 +86,224 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
                   controller: _controllers[index],
                   focusNode: _focusNodes[index],
                   readOnly: true,
-                  showCursor: false,
-                  textAlign: TextAlign.center,
-                  maxLength: 1,
                   obscureText: true,
-                  style: AppTextStyles.h3,
+                  textAlign: TextAlign.center,
                   decoration: InputDecoration(
-                    counter: const Offstage(),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          GestureDetector(
-            onTap: () async {
-              final userSession = await AppLocalDataSourceImpl(
-                const FlutterSecureStorage(),
-              ).getSession();
 
-              Navigator.pop(context); // close bottom sheet
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                context.push(
-                  AppRoutes.setupOtp,
-                  extra: {
-                    'email': userSession?.user?.email ?? '',
-                    'flow': OtpFlow.forgotPassword,
-                    'pop': true,
-                  },
-                );
-              });
-            },
-            child: Text(
-              'Forgot PIN? Reset',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.success,
-                fontWeight: FontWeight.w600,
+          if (widget.onForgotPin != null) ...[
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: widget.onForgotPin,
+              child: Text(
+                'Forgot PIN? Reset',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.success,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
+          ],
+
+          const SizedBox(height: 18),
+
+          NumericKeypad(
+            onKeyTap: _onKeyPressed,
+            onDelete: _onDeletePressed,
           ),
-          const SizedBox(height: 16),
-          NumericKeypad(onKeyTap: _onKeyPressed, onDelete: _onDeletePressed),
+
+          if (widget.errorMessage != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              widget.errorMessage!,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ],
+
           const SizedBox(height: 24),
-          BlocListener<PaymentBloc, PaymentState>(
-            listener: (context, state) {
-              if (state.status == PaymentStatus.success) {
-                Navigator.pop(context); // CLOSE SHEET
-              }
 
-              if (state.status == PaymentStatus.failure &&
-                  state.message != null) {
-                Navigator.pop(context); // CLOSE SHEET
+          PrimaryButton(
+            label: 'Confirm Payment',
+            isLoading: widget.isLoading,
+            onPressed: () async {
+              final pin = _controllers.map((c) => c.text).join();
 
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.message!)));
+              if (pin.length == widget.pinLength) {
+                await widget.onSubmit(pin);
               }
             },
-            child: BlocBuilder<PaymentBloc, PaymentState>(
-              builder: (context, state) {
-                return PrimaryButton(
-                  label: 'Confirm Payment',
-                  isLoading:
-                      state.status == PaymentStatus.pinVerifying ||
-                      state.status == PaymentStatus.walletInProgress,
-                  onPressed: () {
-                    final pin = _controllers.map((c) => c.text).join();
-                    if (pin.length == 4) {
-                      context.read<PaymentBloc>().add(VerifyPin(pin));
-                    }
-                  },
-                );
-              },
-            ),
           ),
         ],
       ),
     );
   }
 }
+
+// class PinBottomSheetContent extends StatefulWidget {
+//   const PinBottomSheetContent({super.key});
+
+//   @override
+//   State<PinBottomSheetContent> createState() => _PinBottomSheetContentState();
+// }
+
+// class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
+//   late final List<TextEditingController> _controllers;
+//   late final List<FocusNode> _focusNodes;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _controllers = List.generate(4, (_) => TextEditingController());
+//     _focusNodes = List.generate(4, (_) => FocusNode());
+//   }
+
+//   @override
+//   void dispose() {
+//     for (final c in _controllers) {
+//       c.dispose();
+//     }
+//     for (final f in _focusNodes) {
+//       f.dispose();
+//     }
+//     super.dispose();
+//   }
+
+//   void _onKeyPressed(String value) {
+//     for (int i = 0; i < _controllers.length; i++) {
+//       if (_controllers[i].text.isEmpty) {
+//         _controllers[i].text = value;
+//         if (i < _focusNodes.length - 1) _focusNodes[i + 1].requestFocus();
+//         break;
+//       }
+//     }
+//   }
+
+//   void _onDeletePressed() {
+//     for (int i = _controllers.length - 1; i >= 0; i--) {
+//       if (_controllers[i].text.isNotEmpty) {
+//         _controllers[i].clear();
+//         _focusNodes[i].requestFocus();
+//         break;
+//       }
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return BottomSheetContainer(
+//       title: 'Enter Payment PIN',
+//       child: Padding(
+//         padding: EdgeInsets.only(
+//           bottom: MediaQuery.of(context).viewInsets.bottom,
+//         ),
+//         child: Column(
+//           mainAxisSize: MainAxisSize.min,
+//           crossAxisAlignment: CrossAxisAlignment.stretch,
+//           children: [
+//             const SizedBox(height: 8),
+//             Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//               children: List.generate(
+//                 4,
+//                 (index) => SizedBox(
+//                   width: 60,
+//                   height: 60,
+//                   child: TextField(
+//                     controller: _controllers[index],
+//                     focusNode: _focusNodes[index],
+//                     readOnly: true,
+//                     showCursor: false,
+//                     textAlign: TextAlign.center,
+//                     maxLength: 1,
+//                     obscureText: true,
+//                     style: AppTextStyles.h3,
+//                     decoration: InputDecoration(
+//                       counter: const Offstage(),
+//                       border: OutlineInputBorder(
+//                         borderRadius: BorderRadius.circular(14),
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//             ),
+//             const SizedBox(height: 16),
+//             Center(
+//               child: GestureDetector(
+//                 onTap: () async {
+//                   final userSession = await AppLocalDataSourceImpl(
+//                     const FlutterSecureStorage(),
+//                   ).getSession();
+
+//                   Navigator.pop(context); // close bottom sheet
+//                   WidgetsBinding.instance.addPostFrameCallback((_) {
+//                     context.push(
+//                       AppRoutes.setupOtp,
+//                       extra: {
+//                         'email': userSession?.user?.email ?? '',
+//                         'flow': OtpFlow.forgotPassword,
+//                         'pop': true,
+//                       },
+//                     );
+//                   });
+//                 },
+//                 child: Text(
+//                   'Forgot PIN? Reset',
+//                   style: AppTextStyles.bodySmall.copyWith(
+//                     color: AppColors.success,
+//                     fontWeight: FontWeight.w600,
+//                   ),
+//                 ),
+//               ),
+//             ),
+//             const SizedBox(height: 18),
+//             NumericKeypad(onKeyTap: _onKeyPressed, onDelete: _onDeletePressed),
+//             const SizedBox(height: 24),
+//             BlocListener<PaymentBloc, PaymentState>(
+//               listener: (context, state) {
+//                 if (state.status == PaymentStatus.success) {
+//                   Navigator.pop(context); // CLOSE SHEET
+//                 }
+
+//                 if (state.status == PaymentStatus.failure &&
+//                     state.message != null) {
+//                   Navigator.pop(context); // CLOSE SHEET
+
+//                   ScaffoldMessenger.of(
+//                     context,
+//                   ).showSnackBar(SnackBar(content: Text(state.message!)));
+//                 }
+//               },
+//               child: BlocBuilder<PaymentBloc, PaymentState>(
+//                 builder: (context, state) {
+//                   return PrimaryButton(
+//                     label: 'Confirm Payment',
+//                     isLoading:
+//                         state.status == PaymentStatus.pinVerifying ||
+//                         state.status == PaymentStatus.walletInProgress,
+//                     onPressed: () {
+//                       final pin = _controllers.map((c) => c.text).join();
+//                       if (pin.length == 4) {
+//                         context.read<PaymentBloc>().add(VerifyPin(pin));
+//                       }
+//                     },
+//                   );
+//                 },
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 // class PinBottomSheetContent extends StatefulWidget {
 //   const PinBottomSheetContent({super.key});

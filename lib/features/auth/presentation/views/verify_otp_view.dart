@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:blithepay/features/common/data/success_args_model.dart';
+import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -62,6 +63,47 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
     final code = _otpControllers.map((c) => c.text).join();
 
     if (code.length == 6) {
+      // if (kDebugMode) {
+      //   switch (widget.flow) {
+      //     case OtpFlow.signup:
+      //       context.go(
+      //         AppRoutes.success,
+      //         extra: SuccessArgs(
+      //           title: AppStrings.verificationSuccess,
+      //           message: AppStrings.anAccounthasbeen,
+      //           buttonLabel: AppStrings.setupPin,
+      //           nextRoute: AppRoutes.setupOtp,
+      //           nextExtra: {
+      //             'email': widget.email,
+      //             'flow': OtpFlow.signup,
+      //             'fromProfile': widget.fromProfile,
+      //           },
+      //           useAuthBackground: true,
+      //         ),
+      //       );
+      //       break;
+      //     case OtpFlow.forgotPassword:
+      //       context.push(
+      //         AppRoutes.resetPassword,
+      //         extra: {'email': widget.email, 'fromProfile': widget.fromProfile},
+      //       );
+      //       break;
+      //     case OtpFlow.verifyEmail:
+      //       context.go(
+      //         AppRoutes.success,
+      //         extra: SuccessArgs(
+      //           title: AppStrings.verificationSuccess,
+      //           message: AppStrings.anAccounthasbeen,
+      //           buttonLabel: AppStrings.logIn,
+      //           nextRoute: AppRoutes.login,
+      //           nextExtra: {'email': widget.email, 'flow': OtpFlow.verifyEmail},
+      //         ),
+      //       );
+      //       break;
+      //   }
+      //   return;
+      // }
+
       if (widget.flow == OtpFlow.forgotPassword) {
         context.read<AuthBloc>().add(
           VerifyForgotPasswordOtpRequested(
@@ -202,109 +244,212 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
       },
       child: AppScaffold(
         showBackButton: false,
-        body: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            return SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 24,
-                  horizontal: 8,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 40),
-                    const Text(
-                      AppStrings.enterVerificationCode,
-                      style: AppTextStyles.h3,
-                    ),
-                    const SizedBox(height: 12),
-                    RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        text: '${AppStrings.codeSentTo}\n',
-                        style: AppTextStyles.bodyRegular,
-                        children: [
-                          TextSpan(
-                            text: widget.email,
-                            style: AppTextStyles.bodyRegular.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(6, (index) {
-                        return Row(
+        // background: const AuthFlowBackground(),
+        body: AuthBackgroundWrapper(
+          child: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              return SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 24,
+                    horizontal: 8,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 24),
+                      if (widget.flow == OtpFlow.signup) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            SizedBox(
-                              width: fieldWidth,
-                              height: 56,
-                              child: TextField(
-                                controller: _otpControllers[index],
-                                focusNode: _focusNodes[index],
-                                textAlign: TextAlign.center,
-                                keyboardType: TextInputType.number,
-                                maxLength: 1,
-                                maxLengthEnforcement: MaxLengthEnforcement.none,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                onChanged: (value) =>
-                                    _onOtpFieldChanged(index, value),
-                                decoration: InputDecoration(
-                                  counterText: '',
-                                  isDense: true,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                            Text(
+                              'Step 2 of 3',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              'Verification',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                             ),
-
-                            // 👇 spacing BETWEEN fields
-                            if (index != 5) const SizedBox(width: 12),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Container(
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Container(
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
                           ],
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 32),
-                    Center(
-                      child: GestureDetector(
-                        onTap: _canResend ? _handleResendOtp : null,
-                        child: Text(
-                          _canResend
-                              ? AppStrings.resendCode
-                              : '${AppStrings.resendCode} (${_secondsRemaining}s)',
-                          style: AppTextStyles.link.copyWith(
-                            color: _canResend
-                                ? AppColors.primary
-                                : AppColors.textSecondary,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                      Container(
+                        width: 128,
+                        height: 128,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(32),
+                        ),
+                        child: Center(
+                          child: Image.asset(
+                            'assets/images/message.png',
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.contain,
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 48),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: PrimaryButton(
-                        label: AppStrings.verify,
-                        onPressed: _handleVerifyOtp,
-                        isLoading: state.status == AuthStatus.loading,
-                        isEnabled: state.status != AuthStatus.loading,
+                      const SizedBox(height: 28),
+
+                      // BackArrowButtonIcon(),
+                      const SizedBox(height: 24),
+                      const Text(
+                        AppStrings.enterVerificationCode,
+                        style: AppTextStyles.h3,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          text: '${AppStrings.codeSentTo}\n',
+                          style: AppTextStyles.bodyRegular,
+                          children: [
+                            TextSpan(
+                              text: widget.email,
+                              style: AppTextStyles.bodyRegular.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 48),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(6, (index) {
+                          return Row(
+                            children: [
+                              SizedBox(
+                                width: fieldWidth,
+                                height: 56,
+                                child: TextField(
+                                  controller: _otpControllers[index],
+                                  focusNode: _focusNodes[index],
+                                  textAlign: TextAlign.center,
+                                  keyboardType: TextInputType.number,
+                                  maxLength: 1,
+                                  maxLengthEnforcement:
+                                      MaxLengthEnforcement.none,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
+                                  onChanged: (value) =>
+                                      _onOtpFieldChanged(index, value),
+                                  decoration: InputDecoration(
+                                    counterText: '',
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // 👇 spacing BETWEEN fields
+                              if (index != 5) const SizedBox(width: 12),
+                            ],
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 32),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: GestureDetector(
+                          onTap: _canResend ? _handleResendOtp : null,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Text(
+                              //   _canResend
+                              //       ? AppStrings.resendCode
+                              //       : '${AppStrings.resendCode} (${_secondsRemaining}s)',
+                              //   style: AppTextStyles.link.copyWith(
+                              //     color: _canResend
+                              //         ? AppColors.primary
+                              //         : AppColors.textSecondary,
+                              //   ),
+                              // ),
+                              Text(
+                                _canResend
+                                    ? AppStrings.resendCode
+                                    : '${_secondsRemaining}s',
+
+                                style: AppTextStyles.link.copyWith(
+                                  color: _canResend
+                                      ? AppColors.primary
+                                      : AppColors.textSecondary,
+                                ),
+                              ),
+                              if (!_canResend) ...[
+                                const Icon(
+                                  Icons.access_time,
+                                  size: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                                const SizedBox(width: 4),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 48),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: PrimaryButton(
+                          label: AppStrings.verify,
+                          onPressed: _handleVerifyOtp,
+                          isLoading: state.status == AuthStatus.loading,
+                          isEnabled: state.status != AuthStatus.loading,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

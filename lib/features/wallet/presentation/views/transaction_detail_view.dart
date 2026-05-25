@@ -10,16 +10,18 @@ import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
 
-class TransactionDetailView extends StatefulWidget {
+class WalletTransactionDetailView extends StatefulWidget {
   final WalletTransactionModel transaction;
 
-  const TransactionDetailView({super.key, required this.transaction});
+  const WalletTransactionDetailView({super.key, required this.transaction});
 
   @override
-  State<TransactionDetailView> createState() => _TransactionDetailViewState();
+  State<WalletTransactionDetailView> createState() =>
+      _WalletTransactionDetailViewState();
 }
 
-class _TransactionDetailViewState extends State<TransactionDetailView> {
+class _WalletTransactionDetailViewState
+    extends State<WalletTransactionDetailView> {
   bool _isDownloading = false;
 
   @override
@@ -49,7 +51,10 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
             const SizedBox(height: 8),
 
             Text(
-              Helpers.formattedAmount(widget.transaction.amount, flow: widget.transaction.flow),
+              Helpers.formattedAmount(
+                widget.transaction.amount,
+                flow: widget.transaction.flow,
+              ),
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
@@ -69,7 +74,9 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
               children: [
                 Expanded(
                   child: SecondaryOutlinedButton(
-                    onPressed: _isDownloading ? null : () => _downloadReceipt(context),
+                    onPressed: _isDownloading
+                        ? null
+                        : () => _downloadReceipt(context),
                     label: _isDownloading ? 'Preparing...' : 'Download Receipt',
                     leading: _isDownloading
                         ? const SizedBox(
@@ -104,7 +111,10 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                 // Header
                 pw.Text(
                   'Transaction Receipt',
-                  style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold),
+                  style: pw.TextStyle(
+                    fontSize: 26,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
                 ),
                 pw.SizedBox(height: 12),
                 pw.Divider(color: PdfColors.grey, thickness: 1.5),
@@ -122,7 +132,12 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                     children: [
                       _pdfRow('Status', widget.transaction.status),
                       _pdfRow('Type', widget.transaction.type),
-                      _pdfRow('Date', Helpers.formattedDateTime(widget.transaction.transactionAt)),
+                      _pdfRow(
+                        'Date',
+                        Helpers.formattedDateTime(
+                          widget.transaction.transactionAt,
+                        ),
+                      ),
                       _pdfRow('Reference', widget.transaction.reference),
                     ],
                   ),
@@ -132,14 +147,19 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                 // Amount Section
                 pw.Container(
                   padding: const pw.EdgeInsets.all(16),
-                  decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey300)),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.grey300),
+                  ),
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       _pdfRowBold('Amount', 'N${widget.transaction.amount}'),
                       if (widget.transaction.fees.isNotEmpty)
                         _pdfRow('Fees', 'N${widget.transaction.fees}'),
-                      _pdfRowBold('Net Amount', 'N${widget.transaction.netAmount}'),
+                      _pdfRowBold(
+                        'Net Amount',
+                        'N${widget.transaction.netAmount}',
+                      ),
                     ],
                   ),
                 ),
@@ -164,7 +184,8 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
       );
 
       final Uint8List pdfBytes = await pdf.save();
-      final filename = 'blithepay_transaction_recipient_${widget.transaction.reference}.pdf';
+      final filename =
+          'blithepay_transaction_recipient_${widget.transaction.reference}.pdf';
       await Printing.sharePdf(bytes: pdfBytes, filename: filename);
     } finally {
       if (mounted) setState(() => _isDownloading = false);
@@ -190,8 +211,14 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text(label, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-          pw.Text(value, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+          pw.Text(
+            label,
+            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Text(
+            value,
+            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+          ),
         ],
       ),
     );
@@ -202,11 +229,17 @@ Widget _buildDetailsCard(WalletTransactionModel transaction) {
   final details = [
     {'label': 'Transaction Type', 'value': transaction.type},
     {'label': 'Method', 'value': 'Fees'},
-    {'label': 'Date', 'value': Helpers.formattedDateTime(transaction.transactionAt)},
+    {
+      'label': 'Date',
+      'value': Helpers.formattedDateTime(transaction.transactionAt),
+    },
     {'label': 'Reference', 'value': transaction.reference},
     {'label': 'Amount', 'value': Helpers.formattedAmount(transaction.amount)},
     {'label': 'Fees', 'value': Helpers.formattedAmount(transaction.fees)},
-    {'label': 'Net Amount', 'value': Helpers.formattedAmount(transaction.netAmount)},
+    {
+      'label': 'Net Amount',
+      'value': Helpers.formattedAmount(transaction.netAmount),
+    },
     {'label': 'Description', 'value': transaction.description ?? '-'},
   ];
 
@@ -231,14 +264,18 @@ Widget _buildDetailsCard(WalletTransactionModel transaction) {
             children: [
               Text(
                 item['label']!,
-                style: AppTextStyles.bodyRegular.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.bodyRegular.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   item['value']!,
                   textAlign: TextAlign.right,
-                  style: AppTextStyles.bodyRegular.copyWith(fontWeight: FontWeight.w600),
+                  style: AppTextStyles.bodyRegular.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],

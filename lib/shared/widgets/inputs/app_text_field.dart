@@ -84,18 +84,33 @@ class _AppTextFieldState extends State<AppTextField> {
               hintStyle: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textTertiary,
               ),
+              filled: true,
+              fillColor: AppColors.grey.withValues(alpha: 0.05),
               contentPadding: EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: widget.maxLines! > 1 ? 16 : 12,
+                horizontal: 16,
+                vertical: widget.maxLines! > 1 ? 16 : 18,
               ),
-
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 1.5,
+                ),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
               alignLabelWithHint: widget.maxLines! > 1,
               prefixIcon: widget.prefix,
               prefixIconConstraints: const BoxConstraints(
                 minWidth: 0,
                 minHeight: 0,
               ),
-
               suffixIcon: widget.showPasswordToggle
                   ? GestureDetector(
                       onTap: () => setState(() => _obscureText = !_obscureText),

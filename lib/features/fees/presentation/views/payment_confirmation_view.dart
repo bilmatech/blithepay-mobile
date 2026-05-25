@@ -1,5 +1,6 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/core/utils/helpers.dart';
 import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_bloc.dart';
 import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_event.dart';
@@ -11,6 +12,7 @@ import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_state.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student_view/linked_student_body.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -98,10 +100,7 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
       },
       child: AppScaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios),
-            onPressed: () => Navigator.pop(context),
-          ),
+          leading: const BackArrowButtonIcon(),
           title: const Text('Pay Fees'),
           centerTitle: true,
         ),
@@ -269,12 +268,25 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
     );
   }
 
-  void _showPinBottomSheet(ViewInvoiceModel invoice) {
-    showModalBottomSheet(
-      isScrollControlled: true,
+  void _showPinBottomSheet(ViewInvoiceModel invoice) async {
+    await showModalBottomSheet(
       context: context,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      builder: (_) => const PinBottomSheetContent(),
+      builder: (_) {
+        return BlocBuilder<PaymentBloc, PaymentState>(
+          builder: (context, state) {
+            return PinBottomSheetContent(
+              isLoading: state.status == PaymentStatus.pinVerifying,
+              errorMessage: state.message,
+              onSubmit: (pin) async {
+                context.read<PaymentBloc>().add(VerifyPin(pin));
+              },
+              onForgotPin: () {
+                context.push(AppRoutes.setupOtp);
+              },
+            );
+          },
+        );
+      },
     );
   }
 
@@ -711,6 +723,7 @@ class _PaystackWebViewState extends State<PaystackWebView> {
 class PaymentMethodTile extends StatelessWidget {
   final String title;
   final String subtitle;
+  final String? amount;
   final IconData icon;
   final bool selected;
   final VoidCallback onTap;
@@ -719,6 +732,7 @@ class PaymentMethodTile extends StatelessWidget {
     super.key,
     required this.title,
     required this.subtitle,
+    this.amount,
     required this.icon,
     required this.selected,
     required this.onTap,
@@ -738,7 +752,7 @@ class PaymentMethodTile extends StatelessWidget {
             width: selected ? 1.5 : 1,
           ),
           color: selected
-              ? AppColors.primary.withOpacity(0.05)
+              ? AppColors.primary.withValues(alpha: 0.05)
               : AppColors.surface,
         ),
         child: Row(
@@ -748,7 +762,7 @@ class PaymentMethodTile extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color: selected
-                    ? AppColors.primary.withOpacity(0.1)
+                    ? AppColors.primary.withValues(alpha: 0.1)
                     : AppColors.lightBackground,
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -760,6 +774,15 @@ class PaymentMethodTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: AppTextStyles.bodyMedium),
+                  const SizedBox(height: 4),
+                  if (amount != null) ...[
+                    Text(
+                      amount!,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 4),
                   Text(
                     subtitle,

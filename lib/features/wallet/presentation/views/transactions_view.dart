@@ -8,14 +8,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/loaders/shimmer_table_loader.dart';
 
-class TransactionsView extends StatefulWidget {
-  const TransactionsView({super.key});
+class WalletTransactionsView extends StatefulWidget {
+  const WalletTransactionsView({super.key});
 
   @override
-  State<TransactionsView> createState() => _TransactionsViewState();
+  State<WalletTransactionsView> createState() => _WalletTransactionsViewState();
 }
 
-class _TransactionsViewState extends State<TransactionsView> {
+class _WalletTransactionsViewState extends State<WalletTransactionsView> {
   final ScrollController _scrollController = ScrollController();
 
   String? currentFilter;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 
@@ -19,7 +20,7 @@ class DashboardHeader extends StatelessWidget {
     return Row(
       children: [
         CircleAvatar(
-          radius: 24,
+          radius: 20,
           backgroundColor: AppColors.primary.withValues(alpha: .15),
           backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
               ? NetworkImage(avatarUrl!)
@@ -35,34 +36,23 @@ class DashboardHeader extends StatelessWidget {
               : null,
         ),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              greeting,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-              ),
+        Text('Hi, $userName', style: AppTextStyles.headingSmall),
+        const Spacer(),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: IconButton(
+            icon: const Icon(
+              Icons.notifications_none,
+              color: AppColors.primary,
             ),
-            const SizedBox(height: 4),
-            Text(userName, style: AppTextStyles.headingSmall),
-          ],
+            onPressed: () {
+              context.push('/notifications');
+            },
+          ),
         ),
-        // const Spacer(),
-        // IconButton(
-        //   icon: const Icon(Icons.notifications_none),
-        //   onPressed: () {
-        //     context.push(AppRoutes.notifications);
-        //   },
-        // ),
-        // Container(
-        //   padding: const EdgeInsets.all(8),
-        //   decoration: BoxDecoration(
-        //     color: AppColors.surface,
-        //     borderRadius: BorderRadius.circular(8),
-        //   ),
-        //   child: const Icon(Icons.notifications_none, color: AppColors.primary),
-        // ),
       ],
     );
   }
