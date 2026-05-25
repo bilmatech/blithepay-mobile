@@ -112,11 +112,11 @@ class ProfileView extends StatelessWidget {
                             extra: {'email': user?.email, 'fromProfile': true},
                           ),
                         ),
-                        _ProfileItem(
-                          icon: Icons.notifications_none_outlined,
-                          label: 'Notifications',
-                          onTap: () => context.push('/notifications'),
-                        ),
+                        // _ProfileItem(
+                        //   icon: Icons.notifications_none_outlined,
+                        //   label: 'Notifications',
+                        //   onTap: () => context.push('/notifications'),
+                        // ),
                         _ProfileItem(
                           icon: Icons.help_outline,
                           label: 'Help & Support',
