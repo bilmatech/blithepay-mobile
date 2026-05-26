@@ -2,6 +2,8 @@ part of 'service_bloc.dart';
 
 enum ServiceStage { entry, pin, success }
 
+enum ServicePlanCategory { daily, weekly, monthly, yearly, unlimited }
+
 class ServiceConfig {
   final String title;
   final String recipientLabel;
@@ -29,12 +31,14 @@ class ServicePlan {
   final String description;
   final int amountKobo;
   final String priceLabel;
+  final ServicePlanCategory? category;
 
   const ServicePlan({
     required this.title,
     required this.description,
     required this.amountKobo,
     required this.priceLabel,
+    this.category,
   });
 }
 
@@ -71,7 +75,10 @@ class ServiceState {
     this.errorMessage = '',
   });
 
-  factory ServiceState.initial(ServiceConfig config) {
+  factory ServiceState.initial(
+    ServiceConfig config, {
+    List<Beneficiary> initialBeneficiaries = const [],
+  }) {
     final hasPlans = config.plans.isNotEmpty;
     return ServiceState(
       config: config,
@@ -85,7 +92,7 @@ class ServiceState {
       isBeneficiaryListVisible: false,
       phoneNumber: '',
       network: null,
-      beneficiaries: const [],
+      beneficiaries: initialBeneficiaries,
       isProcessing: false,
       errorMessage: null,
     );

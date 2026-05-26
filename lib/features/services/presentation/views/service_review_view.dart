@@ -1,15 +1,15 @@
-import 'package:blithepay/core/constants/app_colors.dart';
-import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/core/navigation/index.dart';
-import 'package:blithepay/features/fees/presentation/views/widgets/pin_bottom_sheet_content.dart';
-import 'package:blithepay/features/services/presentation/bloc/service_bloc/service_bloc.dart';
-import 'package:blithepay/features/services/presentation/views/shared/success_panel.dart';
-import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
-import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
-import 'package:blithepay/shared/widgets/layouts/app_text.dart';
-import 'package:blithepay/shared/widgets/layouts/spacing.dart';
 import 'package:flutter/material.dart';
+import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/shared/widgets/layouts/spacing.dart';
+import 'package:blithepay/shared/widgets/layouts/app_text.dart';
+import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
+import 'package:blithepay/features/services/presentation/views/shared/success_panel.dart';
+import 'package:blithepay/features/services/presentation/bloc/service_bloc/service_bloc.dart';
+import 'package:blithepay/features/fees/presentation/views/widgets/pin_bottom_sheet_content.dart';
 
 class ServiceReviewView extends StatefulWidget {
   const ServiceReviewView({super.key});
@@ -26,27 +26,21 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
     final state = context.watch<ServiceBloc>().state;
 
     return AppScaffold(
-      appBar: AppBar(
-        leading: const BackArrowButtonIcon(),
-        title: const HeadingLg('Service'),
-      ),
+      appBar: AppBar(leading: const BackArrowButtonIcon(), title: const HeadingLg('Service')),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 32,
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight - 32),
                 child: IntrinsicHeight(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const BodyLg('Payment Details'),
+                      const VSpaceBase(),
 
-                      VSpaceBase(),
-
+                      // Instead of the logo display the service logo
                       Center(
                         child: Image.asset(
                           'assets/images/logo.png',
@@ -65,10 +59,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
 
                             Text(
                               '₦${(state.amountKobo / 100).toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -88,28 +79,21 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
 
                             _row('Recipient Number', state.recipient),
 
-                            _row(
-                              'Amount',
-                              '₦${(state.amountKobo / 100).toStringAsFixed(2)}',
-                            ),
+                            _row('Amount', '₦${(state.amountKobo / 100).toStringAsFixed(2)}'),
                           ],
                         ),
                       ),
 
                       const SizedBox(height: 24),
 
-                      const Text(
-                        'Payment Method',
-                        style: AppTextStyles.bodyLarge,
-                      ),
+                      const Text('Payment Method', style: AppTextStyles.bodyLarge),
 
                       const SizedBox(height: 12),
 
                       PaymentMethodTile(
                         title: 'Pay with Wallet',
                         subtitle: 'AVAILABLE BALANCE',
-                        amount:
-                            '₦${(state.availableBalanceKobo / 100).toStringAsFixed(2)}',
+                        amount: '₦${(state.availableBalanceKobo / 100).toStringAsFixed(2)}',
                         icon: Icons.account_balance_wallet_outlined,
                         selected: _method == PaymentMethod.wallet,
                         onTap: () {
@@ -123,8 +107,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
 
                       PaymentMethodTile(
                         title: 'Pay with Card',
-                        subtitle:
-                            'Secure card, bank transfer, and USSD options via Paystack.',
+                        subtitle: 'Secure card, bank transfer, and USSD options via Paystack.',
                         icon: Icons.credit_card,
                         selected: _method == PaymentMethod.card,
                         onTap: () {

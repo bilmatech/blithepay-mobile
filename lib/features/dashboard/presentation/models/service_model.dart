@@ -1,14 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum ServiceType {
-  airtime,
-  data,
-  electricity,
-  cableTv,
-  feePayment,
-  funding,
-  more,
-}
+enum ServiceType { airtime, data, electricity, cableTv, feePayment, funding, more }
 
 class ServiceEntity extends Equatable {
   final String id;
@@ -50,7 +42,7 @@ var services = [
   ),
   const ServiceEntity(
     id: '3',
-    name: 'Data',
+    name: 'Internet',
     icon: 'assets/icons/data.svg',
     type: ServiceType.data,
     route: '/service/data',
@@ -58,7 +50,7 @@ var services = [
   ),
   const ServiceEntity(
     id: '4',
-    name: 'Cable/TV',
+    name: 'Cable TV',
     icon: 'assets/icons/cable.svg',
     type: ServiceType.cableTv,
     route: '/service/cable-tv',

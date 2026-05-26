@@ -5,8 +5,10 @@ part 'service_event.dart';
 part 'service_state.dart';
 
 class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
-  ServiceBloc({required ServiceConfig config})
-    : super(ServiceState.initial(config)) {
+  ServiceBloc({
+    required ServiceConfig config,
+    List<Beneficiary> initialBeneficiaries = const [],
+  }) : super(ServiceState.initial(config, initialBeneficiaries: initialBeneficiaries)) {
     on<ServiceRecipientChanged>(_onRecipientChanged);
     on<ServiceProviderSelected>(_onProviderSelected);
     on<ServiceBeneficiaryListToggled>(_onBeneficiaryListToggled);
@@ -26,7 +28,10 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     ServiceRecipientChanged event,
     Emitter<ServiceState> emit,
   ) {
-    emit(state.copyWith(recipient: event.recipient));
+    emit(state.copyWith(
+      recipient: event.recipient,
+      phoneNumber: event.recipient,
+    ));
   }
 
   void _onProviderSelected(

@@ -1,4 +1,5 @@
 import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/features/services/data/models/beneficiary_model.dart';
 import 'package:blithepay/features/services/presentation/bloc/service_bloc/service_bloc.dart'
     hide ServiceStage;
 import 'package:blithepay/features/services/presentation/views/shared/reusable_service_view.dart';
@@ -23,6 +24,13 @@ class AirtimeServiceView extends StatelessWidget {
           presetAmounts: [300000, 500000, 850000, 1000000, 1500000, 2000000],
           availableBalanceKobo: 9455272,
         ),
+        // TODO: replace with beneficiaries loaded from local storage / API
+        initialBeneficiaries: const [
+          Beneficiary(id: '1', phoneNumber: '08031234567', network: ServiceNetwork.mtn),
+          Beneficiary(id: '2', phoneNumber: '08115678901', network: ServiceNetwork.glo),
+          Beneficiary(id: '3', phoneNumber: '08029876543', network: ServiceNetwork.airtel),
+          Beneficiary(id: '4', phoneNumber: '08091122334', network: ServiceNetwork.nineMobile),
+        ],
       ),
       child: const _AirtimeView(),
     );
@@ -77,18 +85,7 @@ class _AirtimeViewState extends State<_AirtimeView> {
   }
 
   TextEditingController _ensurePhoneController(ServiceState state) {
-    final controller = _phoneController ??= TextEditingController(
-      text: state.phoneNumber,
-    );
-
-    if (controller.text != state.phoneNumber) {
-      controller.text = state.phoneNumber;
-      controller.selection = TextSelection.collapsed(
-        offset: controller.text.length,
-      );
-    }
-
-    return controller;
+    return _phoneController ??= TextEditingController(text: state.phoneNumber);
   }
 
   TextEditingController _ensureAmountController(ServiceState state) {
