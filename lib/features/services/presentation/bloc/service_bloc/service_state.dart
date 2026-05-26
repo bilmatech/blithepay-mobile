@@ -136,17 +136,8 @@ class ServiceState {
       selectedPlanIndex: selectedPlanIndex ?? this.selectedPlanIndex,
       isBeneficiaryListVisible:
           isBeneficiaryListVisible ?? this.isBeneficiaryListVisible,
-      phoneNumber: phoneNumber ?? this.recipient,
-      network:
-          network ??
-          (this.config.providerOptions.contains(selectedProvider)
-              ? ServiceNetwork.values.firstWhere(
-                  (net) =>
-                      net.toString().split('.').last ==
-                      selectedProvider?.toLowerCase(),
-                  orElse: () => ServiceNetwork.mtn,
-                )
-              : null),
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      network: network ?? this.network,
       beneficiaries: beneficiaries ?? this.beneficiaries,
       isProcessing: isProcessing ?? this.isProcessing,
       errorMessage: errorMessage ?? this.errorMessage,

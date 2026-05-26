@@ -1,70 +1,70 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/features/services/data/models/beneficiary_model.dart';
+import 'package:blithepay/features/services/utils/network_detector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class PhoneNumberField<T> extends StatelessWidget {
+/// Reusable phone number input with auto-detected Nigerian network badge on
+/// the left and a contact-picker trigger on the right.
+///
+/// Callers are responsible for:
+/// - supplying [detectedNetwork] derived from the typed number (see
+///   [detectNigerianNetwork]).
+/// - wiring [onContactPickerTap] to open a contact picker sheet.
+class PhoneNumberField extends StatelessWidget {
   final TextEditingController controller;
-
-  final T? selectedOption;
-  final List<T> options;
-
-  final String Function(T)? optionLabel;
-
-  final bool isBeneficiaryListVisible;
-
+  final ServiceNetwork? detectedNetwork;
   final ValueChanged<String>? onChanged;
-  final VoidCallback onBeneficiariesToggle;
-  final ValueChanged<T>? onOptionSelected;
+  final VoidCallback? onContactPickerTap;
+  final String hintText;
 
   const PhoneNumberField({
     super.key,
     required this.controller,
-    this.selectedOption,
-    this.options = const [],
-    this.optionLabel,
-    required this.isBeneficiaryListVisible,
+    this.detectedNetwork,
     this.onChanged,
-    required this.onBeneficiariesToggle,
-    this.onOptionSelected,
+    this.onContactPickerTap,
+    this.hintText = '080 0000 0000',
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 60,
+    final borderColor = detectedNetwork != null
+        ? networkColor(detectedNetwork!)
+        : AppColors.primary;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+      height: 58,
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.primary, width: 1.3),
+        border: Border.all(color: borderColor, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: borderColor.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
         children: [
-          if (options.isNotEmpty)
-            InkWell(
-              onTap: () => _showOptionPicker(context),
-              child: Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: Row(
-                  children: [
-                    Text(
-                      selectedOption != null
-                          ? optionLabel?.call(selectedOption as T) ?? ''
-                          : 'Select',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+          _NetworkBadge(network: detectedNetwork),
 
-                    const SizedBox(width: 4),
-
-                    const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
-                  ],
-                ),
-              ),
-            ),
+          const SizedBox(width: 10),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 1,
+            height: 22,
+            color: detectedNetwork != null
+                ? networkColor(detectedNetwork!).withValues(alpha: 0.35)
+                : AppColors.border,
+          ),
+          const SizedBox(width: 10),
 
           Expanded(
             child: TextField(
@@ -74,9 +74,19 @@ class PhoneNumberField<T> extends StatelessWidget {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
               ],
-              decoration: const InputDecoration(
-                fillColor: AppColors.white,
-                hintText: '080 0000 0000',
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+                letterSpacing: 1.2,
+              ),
+              decoration: InputDecoration(
+                hintText: hintText,
+                hintStyle: AppTextStyles.bodyRegular.copyWith(
+                  color: AppColors.textTertiary,
+                  letterSpacing: 0.3,
+                  fontWeight: FontWeight.w400,
+                ),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
@@ -86,222 +96,107 @@ class PhoneNumberField<T> extends StatelessWidget {
             ),
           ),
 
-          GestureDetector(
-            onTap: onBeneficiariesToggle,
-            child: Icon(
-              isBeneficiaryListVisible
-                  ? Icons.keyboard_arrow_up_rounded
-                  : Icons.keyboard_arrow_down_rounded,
-            ),
-          ),
+          const SizedBox(width: 8),
+          _ContactPickerButton(onTap: onContactPickerTap),
         ],
       ),
-    );
-    ;
-  }
-
-  Future<void> _showOptionPicker(BuildContext context) {
-    return showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Wrap(
-            children: options.map((option) {
-              final isSelected = option == selectedOption;
-
-              return ListTile(
-                title: Text(optionLabel?.call(option) ?? option.toString()),
-                trailing: isSelected
-                    ? const Icon(Icons.check_circle, color: AppColors.primary)
-                    : null,
-                onTap: () {
-                  Navigator.pop(sheetContext);
-                  onOptionSelected?.call(option);
-                },
-              );
-            }).toList(),
-          ),
-        );
-      },
     );
   }
 }
 
-// class PhoneNumberField extends StatelessWidget {
-//   final TextEditingController controller;
-//   final AirtimeNetwork network;
-//   final bool isBeneficiaryListVisible;
-//   final VoidCallback onBeneficiariesToggle;
+class _NetworkBadge extends StatelessWidget {
+  final ServiceNetwork? network;
 
-//   const PhoneNumberField({
-//     super.key,
-//     required this.controller,
-//     required this.network,
-//     required this.isBeneficiaryListVisible,
-//     required this.onBeneficiariesToggle,
-//   });
+  const _NetworkBadge({this.network});
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       width: double.infinity,
-//       height: 60,
-//       decoration: BoxDecoration(
-//         color: AppColors.white,
-//         borderRadius: BorderRadius.circular(14),
-//         border: Border.all(color: AppColors.primary, width: 1.3),
-//       ),
-//       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-//       child: Row(
-//         children: [
-//           // Network selector button
-//           SizedBox(
-//             width: 50,
-//             child: InkWell(
-//               onTap: () => _showNetworkPicker(context),
-//               child: Center(
-//                 child: Text(
-//                   _networkLabel(network),
-//                   style: const TextStyle(
-//                     color: Color(0xFF061657),
-//                     fontSize: 13,
-//                     fontWeight: FontWeight.w700,
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           ),
-//           // Divider
-//           Container(width: 1, height: 45, color: AppColors.primary),
-//           // Phone number input
-//           Expanded(
-//             child: TextField(
-//               controller: controller,
-//               onChanged: (value) {
-//                 context.read<AirtimeBloc>().add(AirtimePhoneChanged(value));
-//               },
-//               style: AppTextStyles.bodyRegular,
-//               keyboardType: TextInputType.phone,
-//               inputFormatters: [
-//                 FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
-//               ],
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      transitionBuilder: (child, animation) => ScaleTransition(
+        scale: animation,
+        child: FadeTransition(opacity: animation, child: child),
+      ),
+      child: network == null
+          ? _buildEmpty()
+          : _buildNetwork(network!),
+    );
+  }
 
-//               decoration: InputDecoration(
-//                 hintText: '080 0000 0000',
-//                 hintStyle: AppTextStyles.bodySmall.copyWith(
-//                   color: AppColors.textTertiary,
-//                 ),
-//                 filled: true,
-//                 fillColor: AppColors.white,
-//                 enabledBorder: OutlineInputBorder(
-//                   borderRadius: BorderRadius.circular(16),
-//                   borderSide: const BorderSide(color: AppColors.border),
-//                 ),
-//                 focusedBorder: OutlineInputBorder(
-//                   borderRadius: BorderRadius.circular(16),
-//                   borderSide: BorderSide.none,
-//                 ),
-//                 border: OutlineInputBorder(
-//                   borderRadius: BorderRadius.circular(16),
-//                   borderSide: BorderSide.none,
-//                 ),
+  Widget _buildEmpty() {
+    return Container(
+      key: const ValueKey('empty'),
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: const Icon(
+        Icons.sim_card_outlined,
+        color: AppColors.textTertiary,
+        size: 18,
+      ),
+    );
+  }
 
-//                 prefixIconConstraints: const BoxConstraints(
-//                   minWidth: 0,
-//                   minHeight: 0,
-//                 ),
-//               ),
+  Widget _buildNetwork(ServiceNetwork net) {
+    final color = networkColor(net);
+    return Container(
+      key: ValueKey(net),
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Center(
+        child: Text(
+          networkShortLabel(net),
+          style: TextStyle(
+            color: color,
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.2,
+          ),
+        ),
+      ),
+    );
+  }
+}
 
-//               // decoration: const InputDecoration(
-//               //   border: InputBorder.none,
-//               //   hintText: '080 0000 0000',
-//               //   hintStyle: TextStyle(
-//               //     color: Color(0xFF9EA1AA),
-//               //     fontSize: 18,
-//               //     fontWeight: FontWeight.w500,
-//               //     letterSpacing: 0,
-//               //   ),
-//               //   // isDense: true,
-//               //   contentPadding: EdgeInsets.zero,
-//               // ),
-//             ),
-//           ),
-//           // Beneficiaries toggle button
-//           GestureDetector(
-//             onTap: onBeneficiariesToggle,
-//             child: Icon(
-//               isBeneficiaryListVisible
-//                   ? Icons.keyboard_arrow_up_rounded
-//                   : Icons.keyboard_arrow_down_rounded,
-//               color: Colors.black,
-//               size: 22,
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
+class _ContactPickerButton extends StatelessWidget {
+  final VoidCallback? onTap;
 
-//   Future<void> _showNetworkPicker(BuildContext context) {
-//     return showModalBottomSheet<void>(
-//       context: context,
-//       backgroundColor: AppColors.white,
-//       shape: const RoundedRectangleBorder(
-//         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-//       ),
-//       builder: (sheetContext) {
-//         return SafeArea(
-//           top: false,
-//           child: Padding(
-//             padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
-//             child: Column(
-//               mainAxisSize: MainAxisSize.min,
-//               children: AirtimeNetwork.values.map((option) {
-//                 final isSelected = option == network;
+  const _ContactPickerButton({this.onTap});
 
-//                 return ListTile(
-//                   contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-//                   //  leading: _NetworkLogo(network: option, size: 42),
-//                   title: Text(
-//                     _networkLabel(option),
-//                     style: const TextStyle(
-//                       color: Color(0xFF061657),
-//                       fontSize: 18,
-//                       fontWeight: FontWeight.w800,
-//                       letterSpacing: 0,
-//                     ),
-//                   ),
-//                   trailing: isSelected
-//                       ? const Icon(
-//                           Icons.check_circle,
-//                           color: AppColors.primary,
-//                           size: 25,
-//                         )
-//                       : null,
-//                   onTap: () {
-//                     // context.read<AirtimeBloc>().add(
-//                     //   AirtimeNetworkSelected(option),
-//                     // );
-//                     // Navigator.pop(sheetContext);
-//                   },
-//                 );
-//               }).toList(),
-//             ),
-//           ),
-//         );
-//       },
-//     );
-//   }
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: AppColors.primaryLight,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Icon(
+          Icons.contacts_rounded,
+          color: AppColors.primary,
+          size: 18,
+        ),
+      ),
+    );
+  }
+}
 
-//   String _networkLabel(AirtimeNetwork network) {
-//     return switch (network) {
-//       AirtimeNetwork.mtn => 'MTN',
-//       AirtimeNetwork.glo => 'Glo',
-//       AirtimeNetwork.airtel => 'Airtel',
-//     };
-//   }
-// }
+/// Network brand colour used across the phone field and contact picker.
+Color networkColor(ServiceNetwork network) => switch (network) {
+      ServiceNetwork.mtn => const Color(0xFFFFC300),
+      ServiceNetwork.glo => const Color(0xFF009A44),
+      ServiceNetwork.airtel => const Color(0xFFED1C24),
+      ServiceNetwork.nineMobile => const Color(0xFF006633),
+    };

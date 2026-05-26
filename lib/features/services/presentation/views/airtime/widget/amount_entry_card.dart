@@ -8,6 +8,7 @@ class AmountEntryCard extends StatelessWidget {
   final ValueChanged<int>? onAmountChanged;
   final String currencySymbol;
   final String label;
+  final int? availableBalanceKobo;
 
   const AmountEntryCard({
     super.key,
@@ -15,75 +16,111 @@ class AmountEntryCard extends StatelessWidget {
     this.onAmountChanged,
     this.currencySymbol = '₦',
     this.label = 'ENTER AMOUNT',
+    this.availableBalanceKobo,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 100,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FF),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.primary, width: 1.1),
+        color: const Color(0xFFF6F8FF),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.2),
+          width: 1.2,
+        ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(label, style: AppTextStyles.bodySmall),
+          // ── label row ──────────────────────────────────────────────────────
+          Row(
+            children: [
+              Text(
+                label,
+                style: AppTextStyles.caption.copyWith(
+                  letterSpacing: 0.8,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const Spacer(),
+              if (availableBalanceKobo != null)
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      currencySymbol,
-                      style: const TextStyle(
-                        color: Color(0xFF061657),
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                      ),
+                    const Icon(
+                      Icons.account_balance_wallet_outlined,
+                      size: 12,
+                      color: AppColors.textSecondary,
                     ),
                     const SizedBox(width: 4),
-                    Expanded(
-                      child: TextField(
-                        controller: controller,
-                        onChanged: (value) {
-                          final amount = _parseAmountKobo(value);
-                          if (amount != null && onAmountChanged != null) {
-                            onAmountChanged!(amount);
-                          }
-                        },
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                        ],
-                        style: const TextStyle(
-                          color: Color(0xFF061657),
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                          isCollapsed: true,
-                        ),
+                    Text(
+                      _formatBalance(availableBalanceKobo!),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
+            ],
           ),
-          const Icon(
-            Icons.account_balance_wallet_rounded,
-            color: AppColors.primary,
-            size: 20,
+
+          const SizedBox(height: 10),
+
+          // ── amount input ───────────────────────────────────────────────────
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                currencySymbol,
+                style: const TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  onChanged: (value) {
+                    final amount = _parseAmountKobo(value);
+                    if (amount != null) onAmountChanged?.call(amount);
+                  },
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  ],
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 34,
+                    fontWeight: FontWeight.w700,
+                    height: 1.1,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: '0.00',
+                    hintStyle: TextStyle(
+                      color: AppColors.textTertiary.withValues(alpha: 0.6),
+                      fontSize: 34,
+                      fontWeight: FontWeight.w300,
+                      height: 1.1,
+                    ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                    isCollapsed: true,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -94,5 +131,22 @@ class AmountEntryCard extends StatelessWidget {
     final parsed = double.tryParse(value.trim());
     if (parsed == null || parsed < 0) return null;
     return (parsed * 100).round();
+  }
+
+  String _formatBalance(int kobo) {
+    final whole = kobo ~/ 100;
+    final decimal = kobo.remainder(100).toString().padLeft(2, '0');
+    final formatted = _addCommas(whole);
+    return '₦$formatted.$decimal';
+  }
+
+  String _addCommas(int value) {
+    final digits = value.abs().toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 == 0) buf.write(',');
+      buf.write(digits[i]);
+    }
+    return buf.toString();
   }
 }

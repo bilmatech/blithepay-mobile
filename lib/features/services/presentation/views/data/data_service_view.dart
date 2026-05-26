@@ -1,3 +1,4 @@
+import 'package:blithepay/features/services/utils/network_detector.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/inputs/phone_number_field.dart';
 import 'package:flutter/material.dart';
@@ -160,12 +161,11 @@ class _DataServiceFormState extends State<DataServiceForm> {
         const SizedBox(height: 12),
         PhoneNumberField(
           controller: widget.phoneController,
-          isBeneficiaryListVisible: widget.state.isBeneficiaryListVisible,
-          onBeneficiariesToggle: () {
-            context.read<ServiceBloc>().add(ServiceBeneficiaryListToggled());
-          },
+          detectedNetwork: widget.state.network,
           onChanged: (value) {
             context.read<ServiceBloc>().add(ServiceRecipientChanged(value));
+            final network = detectNigerianNetwork(value);
+            context.read<ServiceBloc>().add(ServiceNetworkDetected(network));
           },
         ),
 

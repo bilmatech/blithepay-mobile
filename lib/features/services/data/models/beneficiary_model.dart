@@ -1,6 +1,6 @@
 enum ServiceStage { entry, review, success }
 
-enum ServiceNetwork { mtn, glo, airtel }
+enum ServiceNetwork { mtn, glo, airtel, nineMobile }
 
 class Beneficiary {
   final String id;

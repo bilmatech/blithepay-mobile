@@ -45,6 +45,7 @@ dependencies:
   rxdart: ^0.28.0
   crypto: ^3.0.3
   flutter_svg: ^2.0.10+1
+  flutter_contacts: ^1.1.9+1
 
 dev_dependencies:
   flutter_test:
@@ -70,11 +71,11 @@ flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#FFFFFF"
-  image: assets/images/app_icon.png
+  image: assets/images/logo.png
   color_dark: "#FFFFFF"
-  image_dark: assets/images/app_icon.png
+  image_dark: assets/images/logo.png
   android_12:
-    image: assets/images/app_icon.png
+    image: assets/images/logo.png
     color: "#FFFFFF"
   android: true
   ios: true
