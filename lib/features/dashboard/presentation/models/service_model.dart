@@ -50,7 +50,7 @@ var services = [
   ),
   const ServiceEntity(
     id: '3',
-    name: 'Data',
+    name: 'Internet',
     icon: 'assets/icons/data.svg',
     type: ServiceType.data,
     route: '/service/data',
@@ -58,7 +58,7 @@ var services = [
   ),
   const ServiceEntity(
     id: '4',
-    name: 'Cable/TV',
+    name: 'Cable TV',
     icon: 'assets/icons/cable.svg',
     type: ServiceType.cableTv,
     route: '/service/cable-tv',
@@ -73,7 +73,7 @@ var services = [
     isActive: true,
   ),
   const ServiceEntity(
-    id: '7',
+    id: '6',
     name: 'Funding',
     icon: 'assets/icons/funding.svg',
     type: ServiceType.funding,
@@ -81,7 +81,7 @@ var services = [
     isActive: true,
   ),
   const ServiceEntity(
-    id: '8',
+    id: '7',
     name: 'More',
     icon: 'assets/icons/more.svg',
     type: ServiceType.more,

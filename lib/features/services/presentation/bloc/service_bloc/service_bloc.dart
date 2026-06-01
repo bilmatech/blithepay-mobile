@@ -5,12 +5,15 @@ part 'service_event.dart';
 part 'service_state.dart';
 
 class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
-  ServiceBloc({required ServiceConfig config})
-    : super(ServiceState.initial(config)) {
+  ServiceBloc({
+    required ServiceConfig config,
+    List<Beneficiary> initialBeneficiaries = const [],
+  }) : super(ServiceState.initial(config, initialBeneficiaries: initialBeneficiaries)) {
     on<ServiceRecipientChanged>(_onRecipientChanged);
     on<ServiceProviderSelected>(_onProviderSelected);
     on<ServiceBeneficiaryListToggled>(_onBeneficiaryListToggled);
     on<ServiceBeneficiarySelected>(_onBeneficiarySelected);
+    on<ServiceNetworkDetected>(_onNetworkDetected);
     on<ServicePlanSelected>(_onPlanSelected);
     on<ServiceAmountSelected>(_onAmountSelected);
     //  on<ServiceReviewRequested>(_onReviewRequested);
@@ -25,7 +28,10 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     ServiceRecipientChanged event,
     Emitter<ServiceState> emit,
   ) {
-    emit(state.copyWith(recipient: event.recipient));
+    emit(state.copyWith(
+      recipient: event.recipient,
+      phoneNumber: event.recipient,
+    ));
   }
 
   void _onProviderSelected(
@@ -109,6 +115,29 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     emit(
       state.copyWith(isBeneficiaryListVisible: !state.isBeneficiaryListVisible),
     );
+  }
+
+  void _onNetworkDetected(
+    ServiceNetworkDetected event,
+    Emitter<ServiceState> emit,
+  ) {
+    // Bypass copyWith because null must clear the network, not fall back to prior value.
+    emit(ServiceState(
+      config: state.config,
+      recipient: state.recipient,
+      selectedProvider: state.selectedProvider,
+      amountKobo: state.amountKobo,
+      availableBalanceKobo: state.availableBalanceKobo,
+      pin: state.pin,
+      stage: state.stage,
+      selectedPlanIndex: state.selectedPlanIndex,
+      isBeneficiaryListVisible: state.isBeneficiaryListVisible,
+      phoneNumber: state.phoneNumber,
+      network: event.network,
+      beneficiaries: state.beneficiaries,
+      isProcessing: state.isProcessing,
+      errorMessage: state.errorMessage,
+    ));
   }
 
   void _onBeneficiarySelected(

@@ -77,3 +77,9 @@ class ServicePinSubmitted extends ServiceEvent {
 
   ServicePinSubmitted(this.pin);
 }
+
+class ServiceNetworkDetected extends ServiceEvent {
+  final ServiceNetwork? network;
+
+  ServiceNetworkDetected(this.network);
+}

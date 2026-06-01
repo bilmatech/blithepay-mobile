@@ -120,5 +120,6 @@ String _beneficiaryNetworkLabel(ServiceNetwork network) {
     ServiceNetwork.mtn => 'MTN',
     ServiceNetwork.glo => 'GLO',
     ServiceNetwork.airtel => 'Airtel',
+    ServiceNetwork.nineMobile => '9mobile',
   };
 }
