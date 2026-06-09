@@ -27,6 +27,7 @@ abstract class AppRoutes {
   static const String fundWallet = '/fund-wallet';
   static const String linkedStudents = '/linked-students';
   static const String transactions = '/transactions';
+  static const String transactionsList = '/transactions-list';
   static const String feeTransactions = '/feeTransactions';
   static const String transactionReceiptView = '/transactionReceiptView';
 
@@ -59,6 +60,5 @@ abstract class AppRoutes {
   static const String reocurringPayment = '/reoccurring-payment';
   static const String createReocurringPayment = '/create-recurring-payment';
   static const String serviceReview = '/service/review';
-    static const String betting = '/service/betting';
-
+  static const String betting = '/service/betting';
 }

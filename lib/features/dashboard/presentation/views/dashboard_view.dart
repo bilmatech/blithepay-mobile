@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/shared/widgets/layouts/spacing.dart';
 import 'package:blithepay/core/storage/auth_local_storage.dart';
@@ -11,6 +12,7 @@ import 'package:blithepay/features/auth/data/models/auth_response_model.dart';
 import 'package:blithepay/features/wallet/presentation/bloc/wallet_bloc.dart';
 import 'package:blithepay/features/wallet/presentation/bloc/wallet_event.dart';
 import 'package:blithepay/shared/widgets/loaders/shimmer_dashboard_loader.dart';
+import 'package:blithepay/features/transaction/data/model/transaction_model.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
@@ -20,8 +22,7 @@ import 'package:blithepay/features/dashboard/presentation/widgets/activity_item.
 import 'package:blithepay/features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/widgets/dashboard_header.dart';
 import 'package:blithepay/features/transaction/presentation/bloc/transaction_event.dart';
-import 'package:blithepay/features/dashboard/presentation/widgets/financial_summary_card.dart'
-    show AppLocalDataSource, FinancialSummaryCard;
+import 'package:blithepay/features/dashboard/presentation/widgets/financial_summary_card.dart';
 
 class DashboardView extends StatelessWidget {
   final Widget child;
@@ -155,11 +156,7 @@ class _HomeViewState extends State<HomeView> {
                       children: [
                         const Text('Activity', style: AppTextStyles.bodyLarge),
                         GestureDetector(
-                          onTap: () {
-                            ScaffoldMessenger.of(
-                              context,
-                            ).showSnackBar(const SnackBar(content: Text('View History')));
-                          },
+                          onTap: () => context.push(AppRoutes.transactions),
                           child: Text(
                             'See History',
                             style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary),
@@ -169,28 +166,79 @@ class _HomeViewState extends State<HomeView> {
                     ),
                   ),
                 ),
-                // Recent Activity
-                const SliverPadding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                // Recent Activity (static sample list - preserved UI). Tapping opens details.
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   sliver: SliverToBoxAdapter(
                     child: Column(
                       children: [
-                        ActivityItem(
-                          title: 'Airtime Recharge',
-                          date: 'Jun 17, 2024, 11:15pm',
-                          amount: 3000.00,
+                        GestureDetector(
+                          onTap: () {
+                            final tx = TransactionModel(
+                              name: 'Airtime Recharge',
+                              transactionAt: DateTime(2024, 6, 17, 23, 15),
+                              amount: 'N3,000',
+                              netAmount: 'N3,000',
+                              reference: 'REF001',
+                              status: TransactionStatus.successful,
+                              flow: TransactionFlow.outflow,
+                              type: TransactionType.airtime,
+                              icon: '📱',
+                              fees: 0,
+                            );
+                            context.push(AppRoutes.transactionDetail, extra: tx);
+                          },
+                          child: ActivityItem(
+                            title: 'Airtime Recharge',
+                            date: 'Jun 17, 2024, 11:15pm',
+                            amount: 3000.00,
+                          ),
                         ),
-                        SizedBox(height: 12),
-                        ActivityItem(
-                          title: 'DSTV Subscription',
-                          date: 'Jul 19, 2024, 11:15pm',
-                          amount: 3000.00,
+                        const SizedBox(height: 12),
+                        GestureDetector(
+                          onTap: () {
+                            final tx = TransactionModel(
+                              name: 'DSTV Subscription',
+                              transactionAt: DateTime(2024, 7, 19, 23, 15),
+                              amount: 'N3,000',
+                              netAmount: 'N3,000',
+                              reference: 'REF002',
+                              status: TransactionStatus.successful,
+                              flow: TransactionFlow.outflow,
+                              type: TransactionType.cable,
+                              icon: '📺',
+                              fees: 0,
+                            );
+                            context.push(AppRoutes.transactionDetail, extra: tx);
+                          },
+                          child: ActivityItem(
+                            title: 'DSTV Subscription',
+                            date: 'Jul 19, 2024, 11:15pm',
+                            amount: 3000.00,
+                          ),
                         ),
-                        SizedBox(height: 12),
-                        ActivityItem(
-                          title: 'Electricity',
-                          date: 'Jun 17, 2024, 11:15pm',
-                          amount: 2000.00,
+                        const SizedBox(height: 12),
+                        GestureDetector(
+                          onTap: () {
+                            final tx = TransactionModel(
+                              name: 'Electricity',
+                              transactionAt: DateTime(2024, 6, 17, 23, 15),
+                              amount: 'N2,000',
+                              netAmount: 'N2,000',
+                              reference: 'REF003',
+                              status: TransactionStatus.successful,
+                              flow: TransactionFlow.outflow,
+                              type: TransactionType.electricity,
+                              icon: '⚡',
+                              fees: 0,
+                            );
+                            context.push(AppRoutes.transactionDetail, extra: tx);
+                          },
+                          child: ActivityItem(
+                            title: 'Electricity',
+                            date: 'Jun 17, 2024, 11:15pm',
+                            amount: 2000.00,
+                          ),
                         ),
                       ],
                     ),
