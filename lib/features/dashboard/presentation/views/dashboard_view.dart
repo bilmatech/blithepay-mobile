@@ -75,9 +75,13 @@ class _HomeViewState extends State<HomeView> {
         if (state is DashboardLoaded) {
           return RefreshIndicator(
             onRefresh: () async {
-              context.read<DashboardBloc>().add(const FetchDashboardData(forceRefresh: true));
+              context.read<DashboardBloc>().add(
+                const FetchDashboardData(forceRefresh: true),
+              );
               context.read<WalletBloc>().add(const FetchWalletDataEvent());
-              context.read<WalletTransactionBloc>().add(GetTransactionsEvent(refresh: true));
+              context.read<WalletTransactionBloc>().add(
+                GetTransactionsEvent(refresh: true),
+              );
             },
             child: CustomScrollView(
               slivers: [
@@ -91,10 +95,12 @@ class _HomeViewState extends State<HomeView> {
                       final user = snapshot.data;
 
                       final userName = user != null
-                          ? '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim()
+                          ? '${user.firstName ?? ''} ${user.lastName ?? ''}'
+                                .trim()
                           : state.dashboard.userName;
 
-                      final avatarUrl = user?.profileImage ?? state.dashboard.avatarUrl;
+                      final avatarUrl =
+                          user?.profileImage ?? state.dashboard.avatarUrl;
 
                       return DashboardHeader(
                         greeting: state.dashboard.greeting,
@@ -120,28 +126,29 @@ class _HomeViewState extends State<HomeView> {
                 const SliverPadding(
                   padding: EdgeInsets.fromLTRB(16, 12, 16, 12),
                   sliver: SliverToBoxAdapter(
-                    child: Text('Quick Services', style: AppTextStyles.bodyLarge),
+                    child: Text(
+                      'Quick Actions',
+                      style: AppTextStyles.bodyLarge,
+                    ),
                   ),
                 ),
                 // Services Grid
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 6,
-                      childAspectRatio: 0.8,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 6,
+                          childAspectRatio: 0.8,
+                        ),
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final service = services[index];
                       return ServiceCard(
                         service: service,
                         onTap: () {
                           context.push(service.route);
-                          // ScaffoldMessenger.of(context).showSnackBar(
-                          //   SnackBar(content: Text('${service.name} selected')),
-                          // );
                         },
                       );
                     }, childCount: services.length),
@@ -159,7 +166,9 @@ class _HomeViewState extends State<HomeView> {
                           onTap: () => context.push(AppRoutes.transactions),
                           child: Text(
                             'See History',
-                            style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.primary,
+                            ),
                           ),
                         ),
                       ],
@@ -168,7 +177,10 @@ class _HomeViewState extends State<HomeView> {
                 ),
                 // Recent Activity (static sample list - preserved UI). Tapping opens details.
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
                   sliver: SliverToBoxAdapter(
                     child: Column(
                       children: [
@@ -186,9 +198,12 @@ class _HomeViewState extends State<HomeView> {
                               icon: '📱',
                               fees: 0,
                             );
-                            context.push(AppRoutes.transactionDetail, extra: tx);
+                            context.push(
+                              AppRoutes.transactionDetail,
+                              extra: tx,
+                            );
                           },
-                          child: ActivityItem(
+                          child: const ActivityItem(
                             title: 'Airtime Recharge',
                             date: 'Jun 17, 2024, 11:15pm',
                             amount: 3000.00,
@@ -209,9 +224,12 @@ class _HomeViewState extends State<HomeView> {
                               icon: '📺',
                               fees: 0,
                             );
-                            context.push(AppRoutes.transactionDetail, extra: tx);
+                            context.push(
+                              AppRoutes.transactionDetail,
+                              extra: tx,
+                            );
                           },
-                          child: ActivityItem(
+                          child: const ActivityItem(
                             title: 'DSTV Subscription',
                             date: 'Jul 19, 2024, 11:15pm',
                             amount: 3000.00,
@@ -232,9 +250,12 @@ class _HomeViewState extends State<HomeView> {
                               icon: '⚡',
                               fees: 0,
                             );
-                            context.push(AppRoutes.transactionDetail, extra: tx);
+                            context.push(
+                              AppRoutes.transactionDetail,
+                              extra: tx,
+                            );
                           },
-                          child: ActivityItem(
+                          child: const ActivityItem(
                             title: 'Electricity',
                             date: 'Jun 17, 2024, 11:15pm',
                             amount: 2000.00,
@@ -249,43 +270,6 @@ class _HomeViewState extends State<HomeView> {
                   padding: EdgeInsets.only(bottom: 20),
                   sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
                 ),
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //   children: [
-                //     const HeadingMd('Quick Services'),
-                //     AppTextButton(
-                //       label: 'See All',
-                //       onPressed: () => context.push(AppRoutes.service),
-                //       foregroundColor: AppColors.primaryDark,
-                //     ),
-                //   ],
-                // ),
-                // const VSpaceBase(),
-                // SizedBox(height: 100, child: _buildServicesList(context)),
-                // const VSpaceXl(),
-
-                // // Activity Section
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //   children: [
-                //     const HeadingMd('Activity'),
-                //     AppTextButton(
-                //       label: 'See History',
-                //       onPressed: () {},
-                //       foregroundColor: AppColors.primaryDark,
-                //     ),
-                //   ],
-                // ),
-                // const VSpaceBase(),
-
-                // // Empty state
-                // const Center(
-                //   child: BodyMd(
-                //     'No activity yet',
-                //     color: AppColors.textSecondary,
-                //   ),
-                // ),
-                // const VSpaceXxl(),
               ],
             ),
           );
@@ -316,7 +300,10 @@ class RecentTransactionsShimmer extends StatelessWidget {
             height: 16,
             width: 150,
             margin: const EdgeInsets.symmetric(vertical: 8),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(6),
+            ),
           ),
         ),
         const VSpaceBase(),
@@ -354,9 +341,17 @@ class RecentTransactionsShimmer extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(height: 14, width: 120, color: Colors.white),
+                            Container(
+                              height: 14,
+                              width: 120,
+                              color: Colors.white,
+                            ),
                             const VSpaceXs(),
-                            Container(height: 12, width: 80, color: Colors.white),
+                            Container(
+                              height: 12,
+                              width: 80,
+                              color: Colors.white,
+                            ),
                           ],
                         ),
                       ],

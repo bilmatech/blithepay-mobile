@@ -1,6 +1,6 @@
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/navigation/index.dart';
-import 'package:blithepay/features/services/presentation/views/airtime/widget/amount_entry_card.dart';
+import 'package:blithepay/features/services/presentation/views/airtime/widgets/amount_entry_card.dart';
 import 'package:blithepay/features/services/presentation/widgets/service_phone_section.dart';
 import 'package:blithepay/features/services/presentation/widgets/top_off_grid.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';

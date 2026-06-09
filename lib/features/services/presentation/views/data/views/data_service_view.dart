@@ -1,40 +1,154 @@
+import 'package:flutter/material.dart';
+import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/features/services/data/models/beneficiary_model.dart';
-import 'package:blithepay/features/services/presentation/views/shared/reusable_service_view.dart';
 import 'package:blithepay/features/services/presentation/views/shared/service_overlays.dart';
 import 'package:blithepay/features/services/presentation/widgets/service_phone_section.dart';
-import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
-import 'package:flutter/material.dart';
+import 'package:blithepay/features/services/presentation/views/shared/reusable_service_view.dart';
 
 // ── Plans dataset ─────────────────────────────────────────────────────────────
 
 const _plans = [
   // Daily
-  ServicePlan(title: '300MB', description: 'Valid for 1 day', amountKobo: 10000, priceLabel: '₦100', category: ServicePlanCategory.daily),
-  ServicePlan(title: '1GB', description: 'Valid for 1 day', amountKobo: 35000, priceLabel: '₦350', category: ServicePlanCategory.daily),
-  ServicePlan(title: '2GB', description: 'Valid for 1 day', amountKobo: 50000, priceLabel: '₦500', category: ServicePlanCategory.daily),
-  ServicePlan(title: '3GB', description: 'Valid for 1 day', amountKobo: 70000, priceLabel: '₦700', category: ServicePlanCategory.daily),
-  ServicePlan(title: '5GB', description: 'Valid for 1 day', amountKobo: 100000, priceLabel: '₦1,000', category: ServicePlanCategory.daily),
+  ServicePlan(
+    title: '300MB',
+    description: 'Valid for 1 day',
+    amountKobo: 10000,
+    priceLabel: '₦100',
+    category: ServicePlanCategory.daily,
+  ),
+  ServicePlan(
+    title: '1GB',
+    description: 'Valid for 1 day',
+    amountKobo: 35000,
+    priceLabel: '₦350',
+    category: ServicePlanCategory.daily,
+  ),
+  ServicePlan(
+    title: '2GB',
+    description: 'Valid for 1 day',
+    amountKobo: 50000,
+    priceLabel: '₦500',
+    category: ServicePlanCategory.daily,
+  ),
+  ServicePlan(
+    title: '3GB',
+    description: 'Valid for 1 day',
+    amountKobo: 70000,
+    priceLabel: '₦700',
+    category: ServicePlanCategory.daily,
+  ),
+  ServicePlan(
+    title: '5GB',
+    description: 'Valid for 1 day',
+    amountKobo: 100000,
+    priceLabel: '₦1,000',
+    category: ServicePlanCategory.daily,
+  ),
   // Weekly
-  ServicePlan(title: '2GB', description: 'Valid for 7 days', amountKobo: 100000, priceLabel: '₦1,000', category: ServicePlanCategory.weekly),
-  ServicePlan(title: '5GB', description: 'Valid for 7 days', amountKobo: 200000, priceLabel: '₦2,000', category: ServicePlanCategory.weekly),
-  ServicePlan(title: '10GB', description: 'Valid for 7 days', amountKobo: 350000, priceLabel: '₦3,500', category: ServicePlanCategory.weekly),
-  ServicePlan(title: '20GB', description: 'Valid for 7 days', amountKobo: 500000, priceLabel: '₦5,000', category: ServicePlanCategory.weekly),
+  ServicePlan(
+    title: '2GB',
+    description: 'Valid for 7 days',
+    amountKobo: 100000,
+    priceLabel: '₦1,000',
+    category: ServicePlanCategory.weekly,
+  ),
+  ServicePlan(
+    title: '5GB',
+    description: 'Valid for 7 days',
+    amountKobo: 200000,
+    priceLabel: '₦2,000',
+    category: ServicePlanCategory.weekly,
+  ),
+  ServicePlan(
+    title: '10GB',
+    description: 'Valid for 7 days',
+    amountKobo: 350000,
+    priceLabel: '₦3,500',
+    category: ServicePlanCategory.weekly,
+  ),
+  ServicePlan(
+    title: '20GB',
+    description: 'Valid for 7 days',
+    amountKobo: 500000,
+    priceLabel: '₦5,000',
+    category: ServicePlanCategory.weekly,
+  ),
   // Monthly
-  ServicePlan(title: '5GB', description: 'Valid for 30 days', amountKobo: 200000, priceLabel: '₦2,000', category: ServicePlanCategory.monthly),
-  ServicePlan(title: '15GB', description: 'Valid for 30 days', amountKobo: 500000, priceLabel: '₦5,000', category: ServicePlanCategory.monthly),
-  ServicePlan(title: '30GB', description: 'Valid for 30 days', amountKobo: 800000, priceLabel: '₦8,000', category: ServicePlanCategory.monthly),
-  ServicePlan(title: '50GB', description: 'Valid for 30 days', amountKobo: 1200000, priceLabel: '₦12,000', category: ServicePlanCategory.monthly),
-  ServicePlan(title: '100GB', description: 'Valid for 30 days', amountKobo: 2000000, priceLabel: '₦20,000', category: ServicePlanCategory.monthly),
+  ServicePlan(
+    title: '5GB',
+    description: 'Valid for 30 days',
+    amountKobo: 200000,
+    priceLabel: '₦2,000',
+    category: ServicePlanCategory.monthly,
+  ),
+  ServicePlan(
+    title: '15GB',
+    description: 'Valid for 30 days',
+    amountKobo: 500000,
+    priceLabel: '₦5,000',
+    category: ServicePlanCategory.monthly,
+  ),
+  ServicePlan(
+    title: '30GB',
+    description: 'Valid for 30 days',
+    amountKobo: 800000,
+    priceLabel: '₦8,000',
+    category: ServicePlanCategory.monthly,
+  ),
+  ServicePlan(
+    title: '50GB',
+    description: 'Valid for 30 days',
+    amountKobo: 1200000,
+    priceLabel: '₦12,000',
+    category: ServicePlanCategory.monthly,
+  ),
+  ServicePlan(
+    title: '100GB',
+    description: 'Valid for 30 days',
+    amountKobo: 2000000,
+    priceLabel: '₦20,000',
+    category: ServicePlanCategory.monthly,
+  ),
   // Yearly
-  ServicePlan(title: '120GB', description: 'Valid for 365 days', amountKobo: 5000000, priceLabel: '₦50,000', category: ServicePlanCategory.yearly),
-  ServicePlan(title: '500GB', description: 'Valid for 365 days', amountKobo: 15000000, priceLabel: '₦150,000', category: ServicePlanCategory.yearly),
+  ServicePlan(
+    title: '120GB',
+    description: 'Valid for 365 days',
+    amountKobo: 5000000,
+    priceLabel: '₦50,000',
+    category: ServicePlanCategory.yearly,
+  ),
+  ServicePlan(
+    title: '500GB',
+    description: 'Valid for 365 days',
+    amountKobo: 15000000,
+    priceLabel: '₦150,000',
+    category: ServicePlanCategory.yearly,
+  ),
   // Unlimited
-  ServicePlan(title: 'Unlimited', description: 'Valid for 1 day', amountKobo: 200000, priceLabel: '₦2,000', category: ServicePlanCategory.unlimited),
-  ServicePlan(title: 'Unlimited', description: 'Valid for 7 days', amountKobo: 500000, priceLabel: '₦5,000', category: ServicePlanCategory.unlimited),
-  ServicePlan(title: 'Unlimited', description: 'Valid for 30 days', amountKobo: 1500000, priceLabel: '₦15,000', category: ServicePlanCategory.unlimited),
+  ServicePlan(
+    title: 'Unlimited',
+    description: 'Valid for 1 day',
+    amountKobo: 200000,
+    priceLabel: '₦2,000',
+    category: ServicePlanCategory.unlimited,
+  ),
+  ServicePlan(
+    title: 'Unlimited',
+    description: 'Valid for 7 days',
+    amountKobo: 500000,
+    priceLabel: '₦5,000',
+    category: ServicePlanCategory.unlimited,
+  ),
+  ServicePlan(
+    title: 'Unlimited',
+    description: 'Valid for 30 days',
+    amountKobo: 1500000,
+    priceLabel: '₦15,000',
+    category: ServicePlanCategory.unlimited,
+  ),
 ];
 
 // ── Root view ─────────────────────────────────────────────────────────────────
@@ -58,9 +172,21 @@ class DataServiceView extends StatelessWidget {
         ),
         // TODO: replace with beneficiaries loaded from local storage / API
         initialBeneficiaries: const [
-          Beneficiary(id: '1', phoneNumber: '08031234567', network: ServiceNetwork.mtn),
-          Beneficiary(id: '2', phoneNumber: '08115678901', network: ServiceNetwork.glo),
-          Beneficiary(id: '3', phoneNumber: '08029876543', network: ServiceNetwork.airtel),
+          Beneficiary(
+            id: '1',
+            phoneNumber: '08031234567',
+            network: ServiceNetwork.mtn,
+          ),
+          Beneficiary(
+            id: '2',
+            phoneNumber: '08115678901',
+            network: ServiceNetwork.glo,
+          ),
+          Beneficiary(
+            id: '3',
+            phoneNumber: '08029876543',
+            network: ServiceNetwork.airtel,
+          ),
         ],
       ),
       child: const _DataServiceScreen(),
@@ -89,11 +215,12 @@ class _DataServiceScreenState extends State<_DataServiceScreen> {
   @override
   Widget build(BuildContext context) {
     return ServiceView<ServiceBloc, ServiceState>(
-      title: 'Data',
+      title: '',
       formBuilder: (context, state) => DataServiceForm(
         state: state,
-        phoneController:
-            _phoneController ??= TextEditingController(text: state.phoneNumber),
+        phoneController: _phoneController ??= TextEditingController(
+          text: state.phoneNumber,
+        ),
       ),
       overlayBuilder: (context, state) => ServiceStageOverlay(state: state),
     );
@@ -177,9 +304,9 @@ class _DataServiceFormState extends State<DataServiceForm> {
                   plan: plan,
                   isSelected:
                       globalIndex == (widget.state.selectedPlanIndex ?? 0),
-                  onTap: () => context
-                      .read<ServiceBloc>()
-                      .add(ServicePlanSelected(globalIndex)),
+                  onTap: () => context.read<ServiceBloc>().add(
+                    ServicePlanSelected(globalIndex),
+                  ),
                 );
               },
             ),
@@ -194,10 +321,7 @@ class _DataServiceFormState extends State<DataServiceForm> {
               ? 'Pay ${widget.state.formattedAmount}'
               : 'Pay',
           onPressed: () {
-            context.push(
-              '/service/review',
-              extra: context.read<ServiceBloc>(),
-            );
+            context.push('/service/review', extra: context.read<ServiceBloc>());
           },
         ),
       ],
@@ -381,10 +505,7 @@ class _RadioDot extends StatelessWidget {
       ),
       child: isSelected
           ? const Center(
-              child: CircleAvatar(
-                radius: 4,
-                backgroundColor: AppColors.white,
-              ),
+              child: CircleAvatar(radius: 4, backgroundColor: AppColors.white),
             )
           : null,
     );

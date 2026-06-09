@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/auth_response_model.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'package:blithepay/core/network/dio_error_mapper.dart';
-import 'package:blithepay/services/firebase_notifications.dart';
-import 'package:blithepay/services/firebase_auth_service.dart';
+import 'package:blithepay/core/services/firebase_notifications.dart';
+import 'package:blithepay/core/services/firebase_auth_service.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepositoryInterface _authRepository;
