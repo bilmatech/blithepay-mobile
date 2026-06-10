@@ -3,7 +3,7 @@
 <plist version="1.0">
 	<dict>
 		<key>NSContactsUsageDescription</key>
-		<string>BlithePay needs access to your contacts to make it easy to send airtime and payments to people you know.</string>
+		<string>BlithePay needs access to your contacts to make it easy to buy airtime and internet data for friends and family.</string>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
 		<key>CFBundleDevelopmentRegion</key>

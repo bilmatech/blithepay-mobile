@@ -45,7 +45,7 @@ dependencies:
   rxdart: ^0.28.0
   crypto: ^3.0.3
   flutter_svg: ^2.0.10+1
-  flutter_contacts: ^1.1.9+1
+  flutter_contacts: ^2.0.0
 
 dev_dependencies:
   flutter_test:
