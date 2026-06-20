@@ -1,5 +1,6 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/dashboard/presentation/models/service_model.dart'
     show ServiceEntity;
 import 'package:blithepay/features/services/data/models/service_model.dart'
@@ -9,11 +10,8 @@ import 'package:blithepay/features/services/presentation/views/airtime/widgets/a
 import 'package:blithepay/features/services/presentation/widgets/top_off_grid.dart';
 import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../bloc/service_bloc/service_bloc.dart';
-import '../../shared/reusable_service_view.dart';
-import '../../shared/service_overlays.dart';
+import '../shared/reusable_service_view.dart';
 
 class ElectricityServiceView extends StatelessWidget {
   final ServiceEntity? service;
@@ -35,7 +33,7 @@ class ElectricityServiceView extends StatelessWidget {
           plans: [
             ServicePlan(
               title: 'Prepaid',
-              bundleCode: '22',
+              bundleCode: '',
               description: 'Load tokens instantly',
               amountKobo: 300000,
               priceLabel: '₦3,000',
@@ -44,8 +42,7 @@ class ElectricityServiceView extends StatelessWidget {
               title: 'Postpaid',
               description: 'Pay your monthly bill',
               amountKobo: 850000,
-              bundleCode: '22',
-
+              bundleCode: '',
               priceLabel: '₦8,500',
             ),
           ],
@@ -53,7 +50,6 @@ class ElectricityServiceView extends StatelessWidget {
           availableBalanceKobo: 9455272,
         ),
       ),
-
       child: const _ElectricityServiceScreen(),
     );
   }
@@ -87,7 +83,6 @@ class _ElectricityServiceScreenState extends State<_ElectricityServiceScreen> {
         meterController: _ensureMeterController(state),
         amountController: _ensureAmountController(state),
       ),
-      overlayBuilder: (context, state) => ServiceStageOverlay(state: state),
     );
   }
 
@@ -149,10 +144,33 @@ class _ElectricityServiceFormState extends State<ElectricityServiceForm> {
 
   @override
   Widget build(BuildContext context) {
+    // ── PAYMENT VALIDATION GATES ──
+    // Assuming your state has tracking metrics for validation like:
+    // state.isMeterVerified or state.verifiedCustomerName != null
+    // Ensure your BLoC updates these whenever an external API query completes.
+
+    final bool hasValidMeterLength = widget.state.recipient.trim().length >= 10;
+
+    // Replace with your exact state property tracking verification success
+    final bool isVerified =
+        widget.state.transaction != null ||
+        (widget.state.errorMessage == null &&
+            widget.state.recipient.isNotEmpty &&
+            hasValidMeterLength);
+
+    final bool isLoadingVerification =
+        widget.state.isProcessing && hasValidMeterLength;
+
+    // Button is only clickable if verification passes and it isn't currently loading
+    final VoidCallback? onPayPressed = (isVerified && !isLoadingVerification)
+        ? () {
+            context.push('/service/review', extra: context.read<ServiceBloc>());
+          }
+        : null; // Setting to null natively disables the button in Flutter
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // const SizedBox(height: 24),
         const Text(
           'Distributor',
           style: TextStyle(
@@ -286,53 +304,104 @@ class _ElectricityServiceFormState extends State<ElectricityServiceForm> {
         ),
         const SizedBox(height: 28),
 
+        // ── METER NUMBER INPUT FIELD SECTION ──
         AppTextField(
           label: 'Meter Number',
           hint: 'Enter meter number',
           controller: widget.meterController,
           keyboardType: TextInputType.number,
           onChanged: (value) {
-            context.read<ServiceBloc>().add(ServiceRecipientChanged(value));
+            final normalizedValue = value.trim();
+
+            context.read<ServiceBloc>().add(
+              ServiceRecipientChanged(normalizedValue),
+            );
+
+            if (normalizedValue.length == 12) {
+              // Only call the API if the current input doesn't match the one we just verified
+              final isAlreadyVerified =
+                  widget.state.verifiedCustomerName != null;
+              final isCurrentInputSameAsState =
+                  widget.state.recipient == normalizedValue;
+
+              if (!isAlreadyVerified || !isCurrentInputSameAsState) {
+                context.read<ServiceBloc>().add(
+                  ServiceVerifyMeterRequested(normalizedValue),
+                );
+              }
+            } else {
+              // 3. CLEAN RETREAT: If the user deletes characters below 10,
+              // drop an event to instantly wipe out residual error or name caching layers!
+              if (widget.state.verifiedCustomerName != null ||
+                  widget.state.errorMessage != null) {}
+            }
           },
           textInputAction: TextInputAction.next,
         ),
+        // ── LIVE VERIFICATION CONTEXTUAL FEEDBACK AREA ──
+        if (hasValidMeterLength) ...[
+          const SizedBox(height: 8),
+          if (isLoadingVerification) ...[
+            const Row(
+              children: [
+                SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.primary,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  'Verifying account details...',
+                  style: TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+              ],
+            ),
+          ] else if (isVerified) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEDFAF1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFB7EBC4)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.green, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      // Replace with state variable if your BLoC saves customer name (e.g., state.customerName)
+                      'Verified: ${widget.state.verifiedCustomerName ?? "Valid Meter Account"}',
+                      style: TextStyle(
+                        color: Colors.green.shade900,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else if (widget.state.errorMessage != null) ...[
+            Text(
+              widget.state.errorMessage!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ],
+
         const SizedBox(height: 16),
         const Text('Top Off', style: AppTextStyles.bodyMedium),
         const SizedBox(height: 8),
 
-        // Wrap(
-        //   spacing: 12,
-        //   runSpacing: 12,
-        //   children: widget.state.config.presetAmounts.map((amountKobo) {
-        //     final amount = amountKobo ~/ 100;
-        //     return SizedBox(
-        //       width: 130,
-        //       height: 50,
-        //       child: OutlinedButton(
-        //         onPressed: () {
-        //           widget.amountController.text = _formatAmount(amountKobo);
-        //           context.read<ServiceBloc>().add(
-        //             ServiceAmountSelected(amountKobo),
-        //           );
-        //         },
-        //         style: OutlinedButton.styleFrom(
-        //           foregroundColor: AppColors.primary,
-        //           side: const BorderSide(color: Color(0xFFE3E7F2)),
-        //           shape: RoundedRectangleBorder(
-        //             borderRadius: BorderRadius.circular(12),
-        //           ),
-        //         ),
-        //         child: Text(
-        //           '₦${_formatAmountChip(amount)}',
-        //           style: const TextStyle(
-        //             fontSize: 14,
-        //             fontWeight: FontWeight.w600,
-        //           ),
-        //         ),
-        //       ),
-        //     );
-        //   }).toList(),
-        // ),
         TopOffGrid(
           selectedAmountKobo: widget.state.amountKobo,
           onAmountSelected: (value) {
@@ -351,79 +420,25 @@ class _ElectricityServiceFormState extends State<ElectricityServiceForm> {
           },
         ),
 
-        // Container(
-        //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        //   decoration: BoxDecoration(
-        //     color: const Color(0xFFF9FAFF),
-        //     borderRadius: BorderRadius.circular(14),
-        //     border: Border.all(color: const Color(0xFFE3E7F2)),
-        //   ),
-        //   child: Row(
-        //     children: [
-        //       const Text(
-        //         '₦',
-        //         style: TextStyle(
-        //           color: Color(0xFF061657),
-        //           fontSize: 20,
-        //           fontWeight: FontWeight.w700,
-        //         ),
-        //       ),
-        //       const SizedBox(width: 8),
-        //       Expanded(
-        //         child: TextField(
-        //           controller: widget.amountController,
-        //           onChanged: (value) {
-        //             final amountKobo = _parseAmountKobo(value);
-        //             if (amountKobo == null) return;
-        //             context.read<ServiceBloc>().add(
-        //               ServiceAmountSelected(amountKobo),
-        //             );
-        //           },
-        //           keyboardType: const TextInputType.numberWithOptions(
-        //             decimal: true,
-        //           ),
-        //           inputFormatters: [
-        //             FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-        //           ],
-        //           style: const TextStyle(
-        //             color: Color(0xFF061657),
-        //             fontSize: 18,
-        //             fontWeight: FontWeight.w600,
-        //           ),
-        //           decoration: const InputDecoration(
-        //             border: InputBorder.none,
-        //             hintText: '0.00',
-        //             isDense: true,
-        //             contentPadding: EdgeInsets.zero,
-        //           ),
-        //         ),
-        //       ),
-        //     ],
-        //   ),
-        // ),
-        const SizedBox(height: 16),
-        // Text(
-        //   selectedPlan.description,
-        //   style: const TextStyle(
-        //     color: Color(0xFF4B4B52),
-        //     fontSize: 15,
-        //     fontWeight: FontWeight.w400,
-        //   ),
-        // ),
         const SizedBox(height: 28),
+
+        // ── GUARDED SUBMIT ACTION PATH ──
         SizedBox(
           width: double.infinity,
           height: 56,
           child: FilledButton(
-            onPressed: () {
-              context.read<ServiceBloc>().add(ServiceReviewRequested());
-            },
+            onPressed: onPayPressed, // Handled dynamically above
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.white,
+              backgroundColor: onPayPressed == null
+                  ? const Color(0xFFE3E7F2)
+                  : AppColors.primary,
+              foregroundColor: onPayPressed == null
+                  ? const Color(0xFF9EA7BF)
+                  : AppColors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
+              elevation: onPayPressed == null ? 0 : 2,
             ),
             child: const Text(
               'Pay',
@@ -453,20 +468,6 @@ class _ElectricityServiceFormState extends State<ElectricityServiceForm> {
     final whole = amountKobo ~/ 100;
     final decimal = amountKobo.remainder(100).toString().padLeft(2, '0');
     return '$whole.$decimal';
-  }
-
-  String _formatAmountChip(int value) {
-    final digits = value.toString();
-    final buffer = StringBuffer();
-
-    for (var index = 0; index < digits.length; index++) {
-      if (index > 0 && (digits.length - index) % 3 == 0) {
-        buffer.write(',');
-      }
-      buffer.write(digits[index]);
-    }
-
-    return buffer.toString();
   }
 }
 
@@ -525,3 +526,6 @@ class _MeterTypeTabs extends StatelessWidget {
     );
   }
 }
+
+
+// 295119324101

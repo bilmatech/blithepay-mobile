@@ -1,3 +1,6 @@
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/features/services/data/models/service_purchase_response.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:flutter/material.dart';
@@ -5,13 +8,15 @@ import 'package:flutter/material.dart';
 class SuccessPanel extends StatelessWidget {
   final String title;
   final String description;
-  final VoidCallback onDownloadReceipt;
+  final ServiceTransactionModel? transaction;
+  final Future<void> Function() onDownloadReceipt;
   final VoidCallback onGoHome;
 
   const SuccessPanel({
     super.key,
     required this.title,
     required this.description,
+    this.transaction,
     required this.onDownloadReceipt,
     required this.onGoHome,
   });
@@ -22,15 +27,51 @@ class SuccessPanel extends StatelessWidget {
       child: Wrap(
         children: [
           Container(
-            padding: const EdgeInsets.fromLTRB(40, 40, 40, 30),
+            padding: const EdgeInsets.fromLTRB(28, 32, 28, 36),
             decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.check_circle, size: 80, color: Colors.green),
+                // ── Drag handle ──────────────────────────────────────────
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 24),
+                    decoration: BoxDecoration(
+                      color: AppColors.border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+
+                // ── Success icon ──────────────────────────────────────────
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade500,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.check_rounded,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 20),
 
                 Text(
@@ -38,29 +79,72 @@ class SuccessPanel extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
+                    color: Color(0xFF061657),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  description,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyRegular.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                // ── Transaction summary snippet ────────────────────────────
+                if (transaction != null) ...[
+                  const SizedBox(height: 20),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF6F8FF),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFE3E7F2)),
+                    ),
+                    child: Column(
+                      children: [
+                        _SummaryRow(
+                          'Reference',
+                          transaction!.reference,
+                        ),
+                        _SummaryRow(
+                          'Amount',
+                          '₦${transaction!.amount.toStringAsFixed(2)}',
+                        ),
+                        _SummaryRow('Status', transaction!.status),
+                        if (transaction!.metadata.receiver.number.isNotEmpty)
+                          _SummaryRow(
+                            'Recipient',
+                            transaction!.metadata.receiver.number,
+                          ),
+                        if (transaction!.token?.isNotEmpty == true)
+                          _SummaryRow('Token', transaction!.token!),
+                      ],
+                    ),
+                  ),
+                ],
 
-                Text(description),
-
-                const SizedBox(height: 30),
+                const SizedBox(height: 28),
 
                 Row(
                   children: [
                     Expanded(
                       child: SecondaryOutlinedButton(
+                        height: 52,
                         onPressed: onDownloadReceipt,
                         label: 'Download Receipt',
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: PrimaryButton(
-                        height: 40,
+                        height: 52,
                         onPressed: onGoHome,
-                        label: 'Cancel',
+                        label: 'Done',
                       ),
                     ),
                   ],
@@ -74,94 +158,40 @@ class SuccessPanel extends StatelessWidget {
   }
 }
 
-// class _SuccessPanel extends StatelessWidget {
-//   final ServiceState state;
+class _SummaryRow extends StatelessWidget {
+  final String label;
+  final String value;
 
-//   const _SuccessPanel({required this.state});
+  const _SummaryRow(this.label, this.value);
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return _BottomPanel(
-//       maxHeightFactor: 0.42,
-//       child: Padding(
-//         padding: const EdgeInsets.fromLTRB(40, 64, 40, 42),
-//         child: Column(
-//           children: [
-//             const Center(
-//               child: Icon(Icons.check, color: AppColors.white, size: 45),
-//             ),
-
-//             // Container(
-//             //   width: 150,
-//             //   height: 150,
-//             //   decoration: const BoxDecoration(
-//             //     color: Color(0xFFEAFBF1),
-//             //     shape: BoxShape.circle,
-//             //   ),
-//             //   child: Center(
-//             //     child: Container(
-//             //       width: 63,
-//             //       height: 63,
-//             //       decoration: const BoxDecoration(
-//             //         color: AppColors.primary,
-//             //         shape: BoxShape.circle,
-//             //       ),
-//             //       child: const Icon(
-//             //         Icons.check,
-//             //         color: AppColors.white,
-//             //         size: 45,
-//             //       ),
-//             //     ),
-//             //   ),
-//             // ),
-//             // const SizedBox(height: 22),
-//             const Text(
-//               'Successful',
-//               style: TextStyle(
-//                 color: Colors.black,
-//                 fontSize: 26,
-//                 fontWeight: FontWeight.w800,
-//               ),
-//             ),
-//             const SizedBox(height: 12),
-//             Text(
-//               '${state.config.title} payment completed',
-//               textAlign: TextAlign.center,
-//               style: const TextStyle(
-//                 color: Color(0xFF4B4B52),
-//                 fontSize: 16,
-//                 fontWeight: FontWeight.w500,
-//               ),
-//             ),
-//             const SizedBox(height: 24),
-//             Row(
-//               children: [
-//                 Expanded(
-//                   child: SecondaryOutlinedButton(
-//                     onPressed: () {
-//                       context.read<ServiceBloc>().add(
-//                         ServiceSuccessDismissed(),
-//                       );
-//                     },
-//                     label: 'Download receipt',
-//                   ),
-//                 ),
-//                 Expanded(
-//                   child: PrimaryButton(
-//                     onPressed: () {
-//                       context.read<ServiceBloc>().add(
-//                         ServiceSuccessDismissed(),
-//                       );
-//                     },
-
-//                     label: 'Done',
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                color: Color(0xFF061657),
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

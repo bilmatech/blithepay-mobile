@@ -2,8 +2,7 @@ import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
 import 'package:blithepay/features/services/data/repositories/service_repository.dart';
 import 'package:blithepay/features/services/presentation/views/shared/reusable_service_view.dart';
-import 'package:blithepay/features/services/presentation/views/shared/service_overlays.dart';
-import 'package:blithepay/features/services/presentation/widgets/phone_number_container.dart';
+import 'package:blithepay/features/services/presentation/views/airtime/widgets/phone_number_container.dart';
 import 'package:flutter/material.dart';
 
 class AirtimeServiceView extends StatelessWidget {
@@ -70,7 +69,6 @@ class _AirtimeViewState extends State<_AirtimeView> {
         phoneController: _ensurePhoneController(state),
         amountController: _ensureAmountController(state),
       ),
-      overlayBuilder: (context, state) => ServiceStageOverlay(state: state),
     );
   }
 

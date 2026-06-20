@@ -8,8 +8,9 @@ class CableTvSmartcardChanged extends CableTvEvent {
 }
 
 class CableTvProviderSelected extends CableTvEvent {
-  final String provider;
-  CableTvProviderSelected(this.provider);
+  final String provider; // provider name (for display/state)
+  final String providerId; // provider id (for API calls)
+  CableTvProviderSelected(this.provider, {required this.providerId});
 }
 
 class CableTvVerifyRequested extends CableTvEvent {}

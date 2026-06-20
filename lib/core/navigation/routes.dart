@@ -1,5 +1,6 @@
 import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
+import 'package:blithepay/features/services/presentation/views/service_review_view.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 
 class AppRouterConfig {

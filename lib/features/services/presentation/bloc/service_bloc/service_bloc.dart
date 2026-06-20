@@ -1,7 +1,11 @@
+import 'dart:async';
+
+import 'package:blithepay/core/network/dio_error_mapper.dart';
 import 'package:blithepay/features/services/data/models/beneficiary_model.dart';
 import 'package:blithepay/features/services/data/models/service_model.dart';
 import 'package:blithepay/features/services/data/models/service_purchase_response.dart';
 import 'package:blithepay/features/services/data/repositories/service_repository.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'service_event.dart';
@@ -45,6 +49,8 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     on<ServicePinSubmitted>(_onServicePinSubmitted);
     on<ServiceResetRequested>(_onServiceResetRequested);
 
+    on<ServiceVerifyMeterRequested>(_onVerifyMeterRequested);
+    on<ServiceInitRequested>(_onInitRequested);
     if (serviceId != null && serviceId!.isNotEmpty) {
       add(ServiceProvidersRequested(serviceId!));
     }
@@ -55,7 +61,11 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     Emitter<ServiceState> emit,
   ) {
     emit(
-      state.copyWith(recipient: event.recipient, phoneNumber: event.recipient),
+      state.copyWith(
+        recipient: event.recipient,
+        phoneNumber: event.recipient,
+        selectedPlanIndex: null,
+      ),
     );
   }
 
@@ -67,6 +77,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
       state.copyWith(
         selectedProvider: event.provider,
         selectedProviderId: event.providerId ?? state.selectedProviderId,
+        bundleCode: event.bundleCode,
       ),
     );
 
@@ -109,7 +120,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
       emit(
         state.copyWith(
           isProvidersLoading: false,
-          errorMessage: error.toString(),
+          errorMessage: extractError(error),
         ),
       );
     }
@@ -119,15 +130,33 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     ServiceProductsRequested event,
     Emitter<ServiceState> emit,
   ) async {
-    emit(state.copyWith(isProductsLoading: true, errorMessage: null));
+    emit(
+      state.copyWith(
+        isProductsLoading: true,
+        errorMessage: null,
+
+        // reset old selection
+        selectedPlanIndex: null,
+        bundleCode: null,
+        amountKobo: 0,
+      ),
+    );
+
     try {
       final products = await _serviceRepository.getProviderProducts(
         event.providerId,
       );
+
       emit(
         state.copyWith(
           isProductsLoading: false,
           products: products,
+
+          // ensure clean state
+          selectedPlanIndex: null,
+          bundleCode: null,
+          amountKobo: 0,
+
           errorMessage: null,
         ),
       );
@@ -135,21 +164,32 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
       emit(
         state.copyWith(
           isProductsLoading: false,
-          errorMessage: error.toString(),
+          errorMessage: extractError(error),
         ),
       );
     }
   }
 
   void _onPlanSelected(ServicePlanSelected event, Emitter<ServiceState> emit) {
-    final plan = state.config.plans[event.index];
-    emit(
-      state.copyWith(
-        selectedPlanIndex: event.index,
-        amountKobo: plan.amountKobo,
-        bundleCode: plan.bundleCode,
-      ),
-    );
+    if (state.products.isNotEmpty && event.index < state.products.length) {
+      final product = state.products[event.index];
+      emit(
+        state.copyWith(
+          selectedPlanIndex: event.index,
+          amountKobo: product.amountKobo,
+        ),
+      );
+    } else if (event.index < state.config.plans.length) {
+      final plan = state.config.plans[event.index];
+      emit(
+        state.copyWith(
+          selectedPlanIndex: event.index,
+          amountKobo: plan.amountKobo,
+          bundleCode: plan.bundleCode,
+          meterType: plan.title.toLowerCase(),
+        ),
+      );
+    }
   }
 
   void _onAmountSelected(
@@ -205,7 +245,21 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     ServiceSuccessDismissed event,
     Emitter<ServiceState> emit,
   ) {
-    emit(ServiceState.initial(state.config));
+    emit(
+      state.copyWith(
+        recipient: '',
+        selectedProvider: null,
+        selectedProviderId: null,
+        products: [],
+        selectedPlanIndex: null,
+        amountKobo: 0,
+        pin: '',
+        stage: ServiceStage.entry,
+        errorMessage: null,
+        transaction: null,
+        verifiedCustomerName: null,
+      ),
+    );
   }
 
   void _onBeneficiaryListToggled(
@@ -288,30 +342,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     ServicePinSubmitted event,
     Emitter<ServiceState> emit,
   ) async {
-    emit(state.copyWith(isProcessing: true, errorMessage: null));
-
-    try {
-      await _performServicePurchase(event.pin, emit);
-      emit(
-        state.copyWith(
-          isProcessing: false,
-          stage: ServiceStage.success,
-          errorMessage: null,
-        ),
-      );
-    } catch (error) {
-      final errorMessage = error is Exception
-          ? error.toString()
-          : 'Payment failed';
-      emit(
-        state.copyWith(
-          isProcessing: false,
-          stage: ServiceStage.entry,
-          pin: '',
-          errorMessage: errorMessage,
-        ),
-      );
-    }
+    await _performServicePurchase(event.pin, emit);
   }
 
   Future<void> _performServicePurchase(
@@ -344,21 +375,30 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
           break;
         case 'data':
         case 'internet':
+          if (state.selectedPlanIndex == null ||
+              state.selectedPlanIndex! >= state.products.length) {
+            throw Exception('Select a bundle');
+          }
+
+          final selectedProduct = state.products[state.selectedPlanIndex!];
+
+          debugPrint('BUYING -> ${selectedProduct.bundleCode}');
+
           transactionResult = await _serviceRepository.purchaseInternet(
             serviceId: serviceId,
+            providerId: providerId,
             recipient: state.recipient,
-            bundleCode: state.bundleCode,
-            amountKobo: state.amountKobo,
+
+            // use source of truth
+            bundleCode: selectedProduct.bundleCode,
+
+            amountKobo: selectedProduct.amountKobo,
             challengeToken: token,
           );
+
           break;
         case 'electricity':
         case 'utility':
-          await _serviceRepository.verifyMeter(
-            serviceId: serviceId,
-            meterNumber: state.recipient,
-            providerId: providerId,
-          );
           transactionResult = await _serviceRepository.purchaseUtility(
             serviceId: serviceId,
             meterNumber: state.recipient,
@@ -375,7 +415,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
         state.copyWith(
           isProcessing: false,
           stage: ServiceStage.success,
-          transaction: transactionResult, 
+          transaction: transactionResult,
           errorMessage: null,
         ),
       );
@@ -383,8 +423,8 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
       emit(
         state.copyWith(
           isProcessing: false,
-          stage: ServiceStage.entry, 
-          errorMessage: error.toString().replaceAll('Exception:', '').trim(),
+          stage: ServiceStage.entry,
+          errorMessage: extractError(error),
           transaction: null,
         ),
       );
@@ -396,7 +436,105 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     Emitter<ServiceState> emit,
   ) {
     emit(
-      ServiceState.initial(state.config),
-    ); // Keep config settings but wipe input values
+      state.copyWith(
+        recipient: '',
+        selectedProvider: null,
+        selectedProviderId: null,
+        products: [],
+        selectedPlanIndex: null,
+        amountKobo: 0,
+        pin: '',
+        stage: ServiceStage.entry,
+        errorMessage: null,
+        transaction: null,
+        verifiedCustomerName: null,
+      ),
+    );
+  }
+
+  Future<void> _onVerifyMeterRequested(
+    ServiceVerifyMeterRequested event,
+    Emitter<ServiceState> emit,
+  ) async {
+    final currentServiceId = serviceId;
+    final providerId = state.selectedProviderId ?? state.selectedProvider;
+
+    if (currentServiceId == null || currentServiceId.isEmpty) {
+      emit(
+        state.copyWith(
+          isProcessing: false,
+          errorMessage: 'Missing service configuration identifier.',
+        ),
+      );
+      return;
+    }
+
+    // 1. Enter validation processing state (wipes old remnants immediately)
+    emit(
+      state.copyWith(
+        isProcessing: true,
+        errorMessage: null,
+        verifiedCustomerName: null,
+      ),
+    );
+
+    try {
+      // 2. Await the Map<String, dynamic> response from the Repository
+      final Map<String, dynamic> responseData = await _serviceRepository
+          .verifyMeter(
+            serviceId: currentServiceId,
+            meterNumber: event.meterNumber,
+            providerId: providerId,
+          );
+
+      if (responseData['success'] == false ||
+          responseData['status'] == 'failed') {
+        final backendError =
+            responseData['message'] ?? 'Meter verification failed.';
+        throw Exception(backendError);
+      }
+
+      // 3. EXTRACT THE CUSTOMER NAME
+      // Adapt the key string based on your specific backend JSON response body payload keys:
+      // Common variations: responseData['customerName'], responseData['data']['name'], responseData['name']
+      final dynamic dataObject = responseData['data'] ?? responseData;
+
+      final String customerName =
+          dataObject['customerName'] ??
+          dataObject['name'] ??
+          dataObject['customer_name'] ??
+          'Valid Meter Account';
+
+      // 4. SUCCESS EMISSION
+      emit(
+        state.copyWith(
+          isProcessing: false,
+          verifiedCustomerName: customerName,
+          errorMessage: null,
+        ),
+      );
+    } catch (error) {
+      // 5. ATOMIC FAILURE RETREAT
+      emit(
+        state.copyWith(
+          isProcessing: false,
+          verifiedCustomerName: null, // Keeps pay button completely locked
+          errorMessage: extractError(error),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onInitRequested(
+    ServiceInitRequested event,
+    Emitter<ServiceState> emit,
+  ) async {
+    emit(state.copyWith(isProvidersLoading: true));
+
+    final providers = await _serviceRepository.getServiceProviders(
+      event.serviceId,
+    );
+
+    emit(state.copyWith(isProvidersLoading: false, providers: providers));
   }
 }

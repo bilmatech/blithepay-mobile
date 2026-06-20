@@ -17,13 +17,11 @@ class ServiceView<TBloc extends BlocBase<TState>, TState>
   final String title;
 
   final Widget Function(BuildContext, TState) formBuilder;
-  final Widget Function(BuildContext, TState) overlayBuilder;
 
   const ServiceView({
     super.key,
     required this.title,
     required this.formBuilder,
-    required this.overlayBuilder,
   });
 
   @override
@@ -42,32 +40,27 @@ class ServiceView<TBloc extends BlocBase<TState>, TState>
                 state is ServiceState &&
                 state.selectedProvider != null &&
                 state.selectedProvider!.isNotEmpty;
-            return Stack(
-              children: [
-                SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 22, 24, 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: AppTextStyles.h4.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      buildProviderSelection(context, state),
-                      const SizedBox(height: 24),
-                      if (hasSelectedProvider) ...[
-                        const SizedBox(height: 24),
-                        formBuilder(context, state),
-                      ],
-                    ],
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 22, 24, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTextStyles.h4.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                overlayBuilder(context, state),
-              ],
+                  const SizedBox(height: 24),
+                  buildProviderSelection(context, state),
+                  const SizedBox(height: 24),
+                  if (hasSelectedProvider) ...[
+                    const SizedBox(height: 24),
+                    formBuilder(context, state),
+                  ],
+                ],
+              ),
             );
           },
         ),
@@ -202,7 +195,10 @@ Widget buildProviderSelection(BuildContext context, dynamic state) {
                 // Polymorphic Event Dispatching matching the accurate state engine
                 if (state is CableTvState) {
                   context.read<CableTvBloc>().add(
-                    CableTvProviderSelected(provider.id),
+                    CableTvProviderSelected(
+                      provider.name,
+                      providerId: provider.id,
+                    ),
                   );
                 } else if (state is ServiceState) {
                   context.read<ServiceBloc>().add(

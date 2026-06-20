@@ -11,8 +11,9 @@ class ServiceRecipientChanged extends ServiceEvent {
 class ServiceProviderSelected extends ServiceEvent {
   final String provider;
   final String? providerId;
+  final String? bundleCode;
 
-  ServiceProviderSelected(this.provider, {this.providerId});
+  ServiceProviderSelected(this.provider, {this.providerId, this.bundleCode});
 }
 
 class ServiceProvidersRequested extends ServiceEvent {
@@ -99,4 +100,18 @@ class ServiceNetworkDetected extends ServiceEvent {
 
 class ServiceResetRequested extends ServiceEvent {
   ServiceResetRequested();
+}
+
+class ServiceVerifyMeterRequested extends ServiceEvent {
+  final String meterNumber;
+  ServiceVerifyMeterRequested(this.meterNumber);
+
+  @override
+  List<Object?> get props => [meterNumber];
+}
+
+
+class ServiceInitRequested extends ServiceEvent {
+  final String serviceId;
+  ServiceInitRequested(this.serviceId);
 }

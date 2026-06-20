@@ -198,7 +198,7 @@ class SuccessPPanel extends StatelessWidget {
       child: SuccessPanel(
         title: 'Payment Successful',
         description: '${state.config.title} payment completed',
-        onDownloadReceipt: () {
+        onDownloadReceipt: () async {
           context.read<ServiceBloc>().add(ServiceSuccessDismissed());
         },
         onGoHome: () {

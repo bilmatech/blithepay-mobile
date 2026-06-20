@@ -68,6 +68,7 @@ class ServiceState {
   final ServiceTransactionModel? transaction;
   final String bundleCode;
   final String meterType;
+  final String? verifiedCustomerName;
 
   const ServiceState({
     required this.config,
@@ -92,6 +93,7 @@ class ServiceState {
     this.transaction,
     required this.bundleCode,
     required this.meterType,
+    this.verifiedCustomerName, // Initialize parameter
   });
 
   factory ServiceState.initial(
@@ -121,7 +123,7 @@ class ServiceState {
       errorMessage: null,
       transaction: null,
       bundleCode: '',
-      meterType: '',
+      meterType: hasPlans ? config.plans.first.title.toLowerCase() : '',
     );
   }
 
@@ -166,6 +168,7 @@ class ServiceState {
     ServiceTransactionModel? transaction,
     String? bundleCode,
     String? meterType,
+    String? verifiedCustomerName, // Add selector to copyWith
   }) {
     return ServiceState(
       config: config ?? this.config,
@@ -191,6 +194,7 @@ class ServiceState {
       transaction: transaction ?? this.transaction,
       bundleCode: bundleCode ?? this.bundleCode,
       meterType: meterType ?? this.meterType,
+      verifiedCustomerName: verifiedCustomerName ?? this.verifiedCustomerName,
     );
   }
 

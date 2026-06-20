@@ -115,11 +115,12 @@ class CableTvState {
     bool? isSuccess,
     bool clearCustomer = false,
     bool clearVerifyError = false,
-    bool isProvidersLoading = false,
-    String? errorMessage = '',
-    List<ServiceProviderModel> providers = const [],
-    bool isProductsLoading = false,
-    final ServiceTransactionModel? transaction,
+    bool? isProvidersLoading,
+    String? errorMessage,
+    List<ServiceProviderModel>? providers,
+    bool? isProductsLoading,
+    ServiceTransactionModel? transaction,
+    bool clearTransaction = false,
   }) {
     return CableTvState(
       step: step ?? this.step,
@@ -135,11 +136,11 @@ class CableTvState {
       recentSmartcards: recentSmartcards ?? this.recentSmartcards,
       isProcessing: isProcessing ?? this.isProcessing,
       isSuccess: isSuccess ?? this.isSuccess,
-      isProvidersLoading: isProvidersLoading,
-      providers: providers,
-      isProductsLoading: isProductsLoading,
+      isProvidersLoading: isProvidersLoading ?? this.isProvidersLoading,
+      providers: providers ?? this.providers,
+      isProductsLoading: isProductsLoading ?? this.isProductsLoading,
       errorMessage: errorMessage ?? this.errorMessage,
-      transaction: transaction ?? this.transaction,
+      transaction: clearTransaction ? null : (transaction ?? this.transaction),
     );
   }
 }

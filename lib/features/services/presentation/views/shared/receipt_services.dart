@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:blithepay/core/utils/helpers.dart';
 import 'package:blithepay/features/services/data/models/service_purchase_response.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -14,29 +13,152 @@ class ReceiptService {
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
-
+        margin: const pw.EdgeInsets.all(40),
         build: (_) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
-
             children: [
-              pw.Text(
-                'Transaction Receipt',
-                style: pw.TextStyle(
-                  fontSize: 22,
-                  fontWeight: pw.FontWeight.bold,
+              // Header
+              pw.Container(
+                padding: const pw.EdgeInsets.all(16),
+                decoration: pw.BoxDecoration(
+                  color: PdfColor.fromHex('#061657'),
+                  borderRadius: pw.BorderRadius.circular(8),
+                ),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          'BlithePay',
+                          style: pw.TextStyle(
+                            color: PdfColors.white,
+                            fontSize: 22,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                        pw.SizedBox(height: 4),
+                        pw.Text(
+                          'Transaction Receipt',
+                          style: pw.TextStyle(
+                            color: PdfColors.white,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                    pw.Container(
+                      padding: const pw.EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: pw.BoxDecoration(
+                        color: PdfColors.green100,
+                        borderRadius: pw.BorderRadius.circular(4),
+                      ),
+                      child: pw.Text(
+                        transaction.status.toUpperCase(),
+                        style: pw.TextStyle(
+                          color: PdfColors.green800,
+                          fontSize: 11,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
-              pw.SizedBox(height: 20),
+              pw.SizedBox(height: 24),
 
+              // Amount section
+              pw.Center(
+                child: pw.Column(
+                  children: [
+                    pw.Text(
+                      'TOTAL AMOUNT',
+                      style: const pw.TextStyle(
+                        color: PdfColors.grey600,
+                        fontSize: 11,
+                      ),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      '\u20a6${transaction.amount.toStringAsFixed(2)}',
+                      style: pw.TextStyle(
+                        color: PdfColor.fromHex('#061657'),
+                        fontSize: 32,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              pw.SizedBox(height: 24),
+              pw.Divider(),
+              pw.SizedBox(height: 16),
+
+              // Transaction details
               _row('Reference', transaction.reference),
-
               _row('Status', transaction.status),
+              _row('Amount', '\u20a6${transaction.amount.toStringAsFixed(2)}'),
+              _row('Date', _formatDate(transaction.createdAt)),
 
-              _row('Amount', '₦${transaction.amount}'),
+              if (transaction.metadata.receiver.number.isNotEmpty)
+                _row('Recipient', transaction.metadata.receiver.number),
 
-              _row('Date', Helpers.formatDate(transaction.createdAt)),
+              if (transaction.metadata.receiver.name?.isNotEmpty == true)
+                _row('Account Name', transaction.metadata.receiver.name!),
+
+              if (transaction.token?.isNotEmpty == true) ...[
+                pw.SizedBox(height: 12),
+                pw.Divider(),
+                pw.SizedBox(height: 8),
+                pw.Text(
+                  'ELECTRICITY TOKEN',
+                  style: pw.TextStyle(
+                    color: PdfColor.fromHex('#061657'),
+                    fontSize: 11,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 8),
+                _row('Token', transaction.token!),
+                if (transaction.tokenUnits?.isNotEmpty == true)
+                  _row('Units', transaction.tokenUnits!),
+              ],
+
+              if (transaction.metadata.discoDetails != null) ...[
+                pw.SizedBox(height: 12),
+                _row(
+                  'Distribution Company',
+                  transaction.metadata.discoDetails!.disco,
+                ),
+                _row(
+                  'Units',
+                  transaction.metadata.discoDetails!.units.toStringAsFixed(2),
+                ),
+                _row(
+                  'Tax',
+                  '\u20a6${transaction.metadata.discoDetails!.tax.toStringAsFixed(2)}',
+                ),
+              ],
+
+              pw.SizedBox(height: 24),
+              pw.Divider(),
+              pw.SizedBox(height: 12),
+              pw.Center(
+                child: pw.Text(
+                  'Thank you for using BlithePay',
+                  style: const pw.TextStyle(
+                    color: PdfColors.grey600,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
             ],
           );
         },
@@ -47,18 +169,38 @@ class ReceiptService {
 
     await Printing.sharePdf(
       bytes: bytes,
-      filename: 'receipt_${transaction.reference}.pdf',
+      filename: 'blithepay_receipt_${transaction.reference}.pdf',
     );
+  }
+
+  static String _formatDate(DateTime date) {
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${date.day} ${months[date.month - 1]} ${date.year} '
+        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   static pw.Widget _row(String title, String value) {
     return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(vertical: 8),
-
+      padding: const pw.EdgeInsets.symmetric(vertical: 6),
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-
-        children: [pw.Text(title), pw.Text(value)],
+        children: [
+          pw.Text(
+            title,
+            style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 12),
+          ),
+          pw.Text(
+            value,
+            style: pw.TextStyle(
+              color: PdfColor.fromHex('#061657'),
+              fontSize: 12,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }

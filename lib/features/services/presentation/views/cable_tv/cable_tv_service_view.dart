@@ -1,12 +1,13 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
 import 'package:blithepay/features/services/data/models/cable_tv_models.dart';
 import 'package:blithepay/features/services/data/models/service_model.dart';
 import 'package:blithepay/features/services/data/repositories/service_repository.dart';
 import 'package:blithepay/features/services/presentation/bloc/cable_tv_bloc/cable_tv_bloc.dart';
 import 'package:blithepay/features/services/presentation/views/shared/receipt_services.dart';
-import 'package:blithepay/features/services/presentation/views/shared/reusable_service_view.dart';
 import 'package:blithepay/features/services/presentation/views/shared/success_panel.dart';
 import 'package:blithepay/features/fees/presentation/views/widgets/pin_bottom_sheet_content.dart';
 import 'package:blithepay/features/services/presentation/widgets/purchase_overlay.dart';
@@ -166,11 +167,19 @@ class _CableTvScreenState extends State<_CableTvScreen> {
       builder: (sheetCtx) => BlocProvider.value(
         value: bloc,
         child: BlocConsumer<CableTvBloc, CableTvState>(
-          listenWhen: (prev, curr) => prev.isSuccess != curr.isSuccess,
           listener: (modalCtx, state) {
-            if (state.isSuccess) {
-              Navigator.pop(modalCtx); // Close clean Pin Panel layout
-              _showSuccessPanel(context, state.transaction);
+            final hasTransaction = state.transaction != null;
+            final hasError =
+                state.errorMessage.isNotEmpty && !state.isProcessing;
+
+            if (hasTransaction) {
+              Navigator.of(modalCtx).pop();
+              _showSuccessPanel(context, state.transaction!);
+              return;
+            }
+
+            if (hasError) {
+              Navigator.of(modalCtx, rootNavigator: true).pop();
             }
           },
           builder: (modalCtx, state) {
@@ -201,9 +210,16 @@ class _CableTvScreenState extends State<_CableTvScreen> {
       builder: (_) => SuccessPanel(
         title: 'Payment Successful!',
         description: 'Your Cable TV subscription is now active.',
+        transaction: transaction,
         onDownloadReceipt: () async {
           if (transaction != null) {
-            await ReceiptService.download(transaction: transaction);
+            final currentState = context.read<CableTvBloc>().state;
+            await _showReceiptPreviewDialog(
+              context,
+              transaction,
+              smartcardNumber: currentState.smartcardNumber,
+              provider: currentState.selectedProvider,
+            );
           }
         },
         onGoHome: () {
@@ -214,7 +230,147 @@ class _CableTvScreenState extends State<_CableTvScreen> {
       ),
     );
   }
-}
+
+  Future<void> _showReceiptPreviewDialog(
+    BuildContext context,
+    dynamic transaction, {
+    String smartcardNumber = '',
+    String provider = '',
+  }) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogCtx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(20),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.receipt_long_rounded,
+                      color: AppColors.white,
+                      size: 40,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Receipt Preview',
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Ref: ${transaction.reference}',
+                      style: TextStyle(
+                        color: AppColors.white.withValues(alpha: 0.75),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.green.shade200),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.check_circle_rounded,
+                            color: Colors.green.shade700,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            (transaction.status as String).toUpperCase(),
+                            style: TextStyle(
+                              color: Colors.green.shade700,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '₦${(transaction.amount as double).toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(),
+                    const SizedBox(height: 8),
+                    _SummaryRow('Reference', transaction.reference as String),
+                    _SummaryRow('Status', transaction.status as String),
+                    if (smartcardNumber.isNotEmpty)
+                      _SummaryRow('Smartcard', smartcardNumber),
+                    if (provider.isNotEmpty) _SummaryRow('Provider', provider),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SecondaryOutlinedButton(
+                            onPressed: () => Navigator.pop(dialogCtx),
+                            label: 'Close',
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: PrimaryButton(
+                            label: 'Download PDF',
+                            onPressed: () async {
+                              Navigator.pop(dialogCtx);
+                              if (transaction != null) {
+                                await ReceiptService.download(
+                                  transaction: transaction,
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+} // end _CableTvScreenState
+
 // ── Step indicator ────────────────────────────────────────────────────────────
 
 enum _NodeState { completed, active, pending }
@@ -337,8 +493,15 @@ class _SmartcardStep extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Always show the dynamic reusable provider row/grid selection first
-        buildProviderSelection(context, state),
-
+        _ProviderChipRow(
+          providers: state.providers,
+          selected: state.selectedProvider,
+          onSelected: (provider) {
+            context.read<CableTvBloc>().add(
+              CableTvProviderSelected(provider.name, providerId: provider.id),
+            );
+          },
+        ),
         // Use an AnimatedSwitcher or visibility check to reveal the rest of the form
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
@@ -547,61 +710,88 @@ class _SmartcardStatusIcon extends StatelessWidget {
 }
 
 class _ProviderChipRow extends StatelessWidget {
+  final List<dynamic> providers;
   final String selected;
-  final ValueChanged<String> onSelected;
+  final ValueChanged<dynamic> onSelected;
 
-  const _ProviderChipRow({required this.selected, required this.onSelected});
-
-  static const _providers = ['DStv', 'GOtv', 'Startimes'];
+  const _ProviderChipRow({
+    required this.providers,
+    required this.selected,
+    required this.onSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: _providers.map((p) {
-        final isSelected = p == selected;
-        return Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: GestureDetector(
-            onTap: () => onSelected(p),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : const Color(0xFFF0F1F5),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (isSelected) ...[
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: _providerColor(p),
-                        shape: BoxShape.circle,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: providers.map((provider) {
+          final isSelected = provider.name == selected;
+          final hasLogo = provider.logo != null && provider.logo!.isNotEmpty;
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: GestureDetector(
+              onTap: () => onSelected(provider),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary
+                      : const Color(0xFFF0F1F5),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.primary
+                        : const Color(0xFFE3E7F2),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Network Logo Circle
+                    if (hasLogo) ...[
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Image.network(
+                          provider.logo!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.tv, size: 12),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      provider.name,
+                      style: TextStyle(
+                        color: isSelected
+                            ? AppColors.white
+                            : AppColors.textSecondary,
+                        fontSize: 13,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(width: 6),
                   ],
-                  Text(
-                    p,
-                    style: TextStyle(
-                      color: isSelected
-                          ? AppColors.white
-                          : AppColors.textSecondary,
-                      fontSize: 13,
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w500,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 }
@@ -1001,6 +1191,8 @@ class _WalletCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dashboardState = context.read<DashboardBloc>().state;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1023,7 +1215,9 @@ class _WalletCard extends StatelessWidget {
                 const Text('Wallet Balance', style: AppTextStyles.bodySmall),
                 const SizedBox(height: 2),
                 Text(
-                  state.formattedBalance,
+                  dashboardState is DashboardLoaded
+                      ? dashboardState.dashboard.walletBalance
+                      : '',
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 14,
@@ -1129,31 +1323,6 @@ class _BeneficiaryActionSheet extends StatelessWidget {
     );
   }
 }
-
-// ── PIN sheet wrapper ─────────────────────────────────────────────────────────
-
-// class _PinSheetWrapper extends StatelessWidget {
-//   final VoidCallback onSuccess;
-
-//   const _PinSheetWrapper({required this.onSuccess});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocConsumer<CableTvBloc, CableTvState>(
-//       listenWhen: (prev, curr) => !prev.isSuccess && curr.isSuccess,
-//       listener: (context, _) {
-//         Navigator.of(context).pop(); // close PIN sheet
-//         onSuccess();
-//       },
-//       builder: (context, state) => PinBottomSheetContent(
-//         isLoading: state.isProcessing,
-//         onSubmit: (pin) async {
-//           context.read<CableTvBloc>().add(CableTvPayRequested(pin));
-//         },
-//       ),
-//     );
-//   }
-// }
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 

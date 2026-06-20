@@ -7,7 +7,6 @@ import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
 import 'package:blithepay/features/services/data/models/beneficiary_model.dart';
 import 'package:blithepay/features/services/data/repositories/service_repository.dart';
-import 'package:blithepay/features/services/presentation/views/shared/service_overlays.dart';
 import 'package:blithepay/features/services/presentation/widgets/service_phone_section.dart';
 import 'package:blithepay/features/services/presentation/views/shared/reusable_service_view.dart';
 
@@ -20,7 +19,7 @@ const _plans = [
     description: 'Valid for 1 day',
     amountKobo: 10000,
     priceLabel: '₦100',
-    bundleCode: '22',
+    bundleCode: '',
     category: ServicePlanCategory.daily,
   ),
 ];
@@ -114,7 +113,6 @@ class _DataServiceScreenState extends State<_DataServiceScreen> {
       title: 'Data',
       formBuilder: (context, state) =>
           DataServiceForm(state: state, phoneController: _phoneController),
-      overlayBuilder: (context, state) => ServiceStageOverlay(state: state),
     );
   }
 }

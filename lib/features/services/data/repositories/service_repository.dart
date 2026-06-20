@@ -32,7 +32,7 @@ abstract class ServiceRepository {
   Future<ServiceTransactionModel> purchaseInternet({
     required String serviceId,
     required String recipient,
-    //  required String providerId,
+    required String providerId,
     required String bundleCode,
     required int amountKobo,
     required String challengeToken,
@@ -113,9 +113,9 @@ class ServiceRepositoryImpl implements ServiceRepository {
     final response = await _dioClient.post(
       ApiEndpoints.verifyMeter,
       data: {
-        'serviceId': serviceId,
+        // 'serviceId': serviceId,
         'meterNumber': meterNumber,
-        'providerId': providerId,
+        'serviceCategoryId': providerId,
       },
     );
     return _responseData(response);
@@ -128,7 +128,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
   }) async {
     final response = await _dioClient.post(
       ApiEndpoints.verifySmartCard,
-      data: {'provider': provider, 'smartcardNumber': smartcardNumber},
+      data: {'serviceCategoryId': provider, 'smartCardNumber': smartcardNumber},
     );
     return _responseData(response);
   }
@@ -160,7 +160,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
   Future<ServiceTransactionModel> purchaseInternet({
     required String serviceId,
     required String recipient,
-    //required String providerId,
+    required String providerId,
     required String bundleCode,
     required int amountKobo,
     required String challengeToken,
@@ -168,7 +168,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
     final response = await _dioClient.post(
       ApiEndpoints.purchaseInternet,
       data: {
-        'serviceCategoryId': serviceId,
+        'serviceCategoryId': providerId,
         'phoneNumber': recipient,
         // 'providerId': providerId,
         'bundleCode': bundleCode,

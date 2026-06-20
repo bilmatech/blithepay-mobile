@@ -45,8 +45,10 @@ class ApiEndpoints {
   static const String synToken = '/notification/sync_token';
 
   //wallet tramsaction
-  static const String getWalletTransaction = '/wallet/transactions';
+  //static const String getWalletTransaction = '/wallet/transactions';
+    static const String getWalletTransaction = '/transactions/app';
 
+// transactions/app?page=1&limit=10
   // Fees
   static String getfeesById(String id) => '/fees/$id';
 
