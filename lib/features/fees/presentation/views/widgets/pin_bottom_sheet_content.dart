@@ -5,10 +5,9 @@ import 'package:blithepay/shared/widgets/bottom_sheets/bottom_sheet_container.da
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
 
-
 class PinBottomSheetContent extends StatefulWidget {
   final int pinLength;
-  final Future<void> Function(String pin) onSubmit;
+  final Future<void> Function(String pin) onSubmit; // Kept your exact signature
   final VoidCallback? onForgotPin;
   final bool isLoading;
   final String? errorMessage;
@@ -23,19 +22,20 @@ class PinBottomSheetContent extends StatefulWidget {
   });
 
   @override
-  State<PinBottomSheetContent> createState() =>
-      _PinBottomSheetContentState();
+  State<PinBottomSheetContent> createState() => _PinBottomSheetContentState();
 }
 
-class _PinBottomSheetContentState
-    extends State<PinBottomSheetContent> {
+class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
   late final List<TextEditingController> _controllers;
   late final List<FocusNode> _focusNodes;
 
   @override
   void initState() {
     super.initState();
-    _controllers = List.generate(widget.pinLength, (_) => TextEditingController());
+    _controllers = List.generate(
+      widget.pinLength,
+      (_) => TextEditingController(),
+    );
     _focusNodes = List.generate(widget.pinLength, (_) => FocusNode());
   }
 
@@ -47,11 +47,19 @@ class _PinBottomSheetContentState
   }
 
   void _onKeyPressed(String value) {
+    if (widget.isLoading) return; // Freeze entry while submitting
+
     for (int i = 0; i < _controllers.length; i++) {
       if (_controllers[i].text.isEmpty) {
         _controllers[i].text = value;
         if (i < _focusNodes.length - 1) {
           _focusNodes[i + 1].requestFocus();
+        } else {
+          // AUTO-SUBMIT: Last field populated, evaluate string instantly
+          final fullPin = _controllers.map((c) => c.text).join();
+          if (fullPin.length == widget.pinLength) {
+            widget.onSubmit(fullPin);
+          }
         }
         break;
       }
@@ -59,6 +67,8 @@ class _PinBottomSheetContentState
   }
 
   void _onDeletePressed() {
+    if (widget.isLoading) return;
+
     for (int i = _controllers.length - 1; i >= 0; i--) {
       if (_controllers[i].text.isNotEmpty) {
         _controllers[i].clear();
@@ -101,7 +111,7 @@ class _PinBottomSheetContentState
           if (widget.onForgotPin != null) ...[
             const SizedBox(height: 16),
             GestureDetector(
-              onTap: widget.onForgotPin,
+              onTap: widget.isLoading ? null : widget.onForgotPin,
               child: Text(
                 'Forgot PIN? Reset',
                 style: AppTextStyles.bodySmall.copyWith(
@@ -114,15 +124,19 @@ class _PinBottomSheetContentState
 
           const SizedBox(height: 18),
 
-          NumericKeypad(
-            onKeyTap: _onKeyPressed,
-            onDelete: _onDeletePressed,
+          Opacity(
+            opacity: widget.isLoading ? 0.6 : 1.0,
+            child: NumericKeypad(
+              onKeyTap: _onKeyPressed,
+              onDelete: _onDeletePressed,
+            ),
           ),
 
           if (widget.errorMessage != null) ...[
             const SizedBox(height: 12),
             Text(
               widget.errorMessage!,
+              textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.red),
             ),
           ],
@@ -134,7 +148,6 @@ class _PinBottomSheetContentState
             isLoading: widget.isLoading,
             onPressed: () async {
               final pin = _controllers.map((c) => c.text).join();
-
               if (pin.length == widget.pinLength) {
                 await widget.onSubmit(pin);
               }
@@ -145,7 +158,6 @@ class _PinBottomSheetContentState
     );
   }
 }
-
 // class PinBottomSheetContent extends StatefulWidget {
 //   const PinBottomSheetContent({super.key});
 

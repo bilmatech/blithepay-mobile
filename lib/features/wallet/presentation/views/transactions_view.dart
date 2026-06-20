@@ -36,9 +36,9 @@ class _WalletTransactionsViewState extends State<WalletTransactionsView> {
       if (state is WalletTransactionLoaded &&
           state.nextPage != null &&
           !state.isFetchingMore) {
-        context.read<WalletTransactionBloc>().add(
-          GetTransactionsEvent(page: state.nextPage!, limit: 20),
-        );
+        // context.read<WalletTransactionBloc>().add(
+        //   GetTransactionsEvent(page: state.nextPage!, limit: 20),
+        // );
       }
     }
   }
@@ -155,13 +155,13 @@ class _WalletTransactionsViewState extends State<WalletTransactionsView> {
                           )
                         : RefreshIndicator(
                             onRefresh: () async {
-                              context.read<WalletTransactionBloc>().add(
-                                GetTransactionsEvent(
-                                  page: 1,
-                                  limit: 20,
-                                  refresh: true,
-                                ),
-                              );
+                              // context.read<WalletTransactionBloc>().add(
+                              //   GetTransactionsEvent(
+                              //     page: 1,
+                              //     limit: 20,
+                              //     refresh: true,
+                              //   ),
+                              // );
                             },
                             child: ListView.separated(
                               controller: _scrollController,

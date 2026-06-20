@@ -30,6 +30,8 @@ class ServicePlan {
   final String title;
   final String description;
   final int amountKobo;
+  final String bundleCode;
+
   final String priceLabel;
   final ServicePlanCategory? category;
 
@@ -37,6 +39,7 @@ class ServicePlan {
     required this.title,
     required this.description,
     required this.amountKobo,
+    required this.bundleCode,
     required this.priceLabel,
     this.category,
   });
@@ -46,6 +49,11 @@ class ServiceState {
   final ServiceConfig config;
   final String recipient;
   final String selectedProvider;
+  final String? selectedProviderId;
+  final List<ServiceProviderModel> providers;
+  final bool isProvidersLoading;
+  final List<ServiceProductModel> products;
+  final bool isProductsLoading;
   final int amountKobo;
   final int availableBalanceKobo;
   final String pin;
@@ -57,11 +65,19 @@ class ServiceState {
   final List<Beneficiary> beneficiaries;
   final bool isProcessing;
   final String? errorMessage;
+  final ServiceTransactionModel? transaction;
+  final String bundleCode;
+  final String meterType;
 
   const ServiceState({
     required this.config,
     required this.recipient,
     required this.selectedProvider,
+    required this.selectedProviderId,
+    required this.providers,
+    required this.isProvidersLoading,
+    required this.products,
+    required this.isProductsLoading,
     required this.amountKobo,
     required this.availableBalanceKobo,
     required this.pin,
@@ -73,6 +89,9 @@ class ServiceState {
     required this.beneficiaries,
     this.isProcessing = false,
     this.errorMessage = '',
+    this.transaction,
+    required this.bundleCode,
+    required this.meterType,
   });
 
   factory ServiceState.initial(
@@ -83,7 +102,12 @@ class ServiceState {
     return ServiceState(
       config: config,
       recipient: '',
-      selectedProvider: config.providerOptions.first,
+      selectedProvider: '',
+      selectedProviderId: null,
+      providers: const [],
+      isProvidersLoading: false,
+      products: const [],
+      isProductsLoading: false,
       amountKobo: hasPlans ? config.plans.first.amountKobo : 0,
       availableBalanceKobo: config.availableBalanceKobo,
       pin: '',
@@ -95,6 +119,9 @@ class ServiceState {
       beneficiaries: initialBeneficiaries,
       isProcessing: false,
       errorMessage: null,
+      transaction: null,
+      bundleCode: '',
+      meterType: '',
     );
   }
 
@@ -120,6 +147,11 @@ class ServiceState {
     ServiceConfig? config,
     String? recipient,
     String? selectedProvider,
+    String? selectedProviderId,
+    List<ServiceProviderModel>? providers,
+    bool? isProvidersLoading,
+    List<ServiceProductModel>? products,
+    bool? isProductsLoading,
     int? amountKobo,
     int? availableBalanceKobo,
     String? pin,
@@ -131,11 +163,19 @@ class ServiceState {
     List<Beneficiary>? beneficiaries,
     bool? isProcessing,
     String? errorMessage,
+    ServiceTransactionModel? transaction,
+    String? bundleCode,
+    String? meterType,
   }) {
     return ServiceState(
       config: config ?? this.config,
       recipient: recipient ?? this.recipient,
       selectedProvider: selectedProvider ?? this.selectedProvider,
+      selectedProviderId: selectedProviderId ?? this.selectedProviderId,
+      providers: providers ?? this.providers,
+      isProvidersLoading: isProvidersLoading ?? this.isProvidersLoading,
+      products: products ?? this.products,
+      isProductsLoading: isProductsLoading ?? this.isProductsLoading,
       amountKobo: amountKobo ?? this.amountKobo,
       availableBalanceKobo: availableBalanceKobo ?? this.availableBalanceKobo,
       pin: pin ?? this.pin,
@@ -148,6 +188,9 @@ class ServiceState {
       beneficiaries: beneficiaries ?? this.beneficiaries,
       isProcessing: isProcessing ?? this.isProcessing,
       errorMessage: errorMessage ?? this.errorMessage,
+      transaction: transaction ?? this.transaction,
+      bundleCode: bundleCode ?? this.bundleCode,
+      meterType: meterType ?? this.meterType,
     );
   }
 

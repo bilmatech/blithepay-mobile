@@ -2,6 +2,7 @@ import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/services/data/models/beneficiary_model.dart';
+import 'package:blithepay/features/services/data/models/service_model.dart';
 import 'package:blithepay/features/services/utils/network_detector.dart';
 import 'package:blithepay/shared/widgets/bottom_sheets/contact_picker_sheet.dart';
 import 'package:blithepay/shared/widgets/inputs/phone_number_field.dart';
@@ -28,6 +29,11 @@ class ServicePhoneSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentProvider = state.providers.firstWhere(
+      (p) => p.name == state.selectedProvider,
+      orElse: () => ServiceProviderModel(id: '', name: ''),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -37,10 +43,29 @@ class ServicePhoneSection extends StatelessWidget {
           detectedNetwork: state.network,
           onChanged: (value) {
             context.read<ServiceBloc>().add(ServiceRecipientChanged(value));
-            context
-                .read<ServiceBloc>()
-                .add(ServiceNetworkDetected(detectNigerianNetwork(value)));
+            context.read<ServiceBloc>().add(
+              ServiceNetworkDetected(detectNigerianNetwork(value)),
+            );
           },
+          prefixIcon: currentProvider.name.isNotEmpty
+              ? Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: const BoxDecoration(shape: BoxShape.circle),
+                    clipBehavior: Clip.antiAlias,
+                    child:
+                        currentProvider.logo != null &&
+                            currentProvider.logo!.isNotEmpty
+                        ? Image.network(
+                            currentProvider.logo!,
+                            fit: BoxFit.cover,
+                          )
+                        : Center(child: Text(currentProvider.name[0])),
+                  ),
+                )
+              : null,
           onContactPickerTap: () => _openContactPicker(context),
         ),
 
@@ -95,9 +120,7 @@ class ServicePhoneSection extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Contacts access is blocked. Enable it in Settings.',
-            ),
+            content: Text('Contacts access is blocked. Enable it in Settings.'),
             action: SnackBarAction(
               label: 'Settings',
               onPressed: openAppSettings,
@@ -132,10 +155,7 @@ class _RecentContacts extends StatelessWidget {
   final List<Beneficiary> beneficiaries;
   final ValueChanged<Beneficiary> onSelect;
 
-  const _RecentContacts({
-    required this.beneficiaries,
-    required this.onSelect,
-  });
+  const _RecentContacts({required this.beneficiaries, required this.onSelect});
 
   @override
   Widget build(BuildContext context) {
@@ -176,8 +196,9 @@ class _BeneficiaryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final number = beneficiary.phoneNumber;
-    final suffix =
-        number.length >= 4 ? number.substring(number.length - 4) : number;
+    final suffix = number.length >= 4
+        ? number.substring(number.length - 4)
+        : number;
 
     return GestureDetector(
       onTap: onTap,
@@ -190,10 +211,7 @@ class _BeneficiaryChip extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.primaryLight,
               shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.primary,
-                width: 1.5,
-              ),
+              border: Border.all(color: AppColors.primary, width: 1.5),
             ),
             child: Center(
               child: Text(

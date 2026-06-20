@@ -12,12 +12,17 @@ class CableTvState {
   final bool isVerifying;
   final CableTvCustomer? customer;
   final String? verifyError;
-  final List<CableTvPackage> packages;
+  final List<ServiceProductModel> packages;
   final int selectedPackageIndex;
   final int availableBalanceKobo;
   final List<CableTvSmartcard> recentSmartcards;
   final bool isProcessing;
   final bool isSuccess;
+  final bool isProvidersLoading;
+  final String errorMessage;
+  final List<ServiceProviderModel> providers;
+  final bool isProductsLoading;
+  final ServiceTransactionModel? transaction;
 
   const CableTvState({
     required this.step,
@@ -33,6 +38,11 @@ class CableTvState {
     required this.recentSmartcards,
     required this.isProcessing,
     required this.isSuccess,
+    required this.isProvidersLoading,
+    this.errorMessage = '',
+    this.providers = const [],
+    this.isProductsLoading = false,
+    this.transaction,
   });
 
   factory CableTvState.initial({
@@ -48,19 +58,23 @@ class CableTvState {
       isVerifying: false,
       customer: null,
       verifyError: null,
-      packages: kCableTvPackages[defaultProvider] ?? [],
+      packages: [],
       selectedPackageIndex: 0,
       availableBalanceKobo: availableBalanceKobo,
       recentSmartcards: recentSmartcards,
       isProcessing: false,
       isSuccess: false,
+      isProvidersLoading: false,
+      errorMessage: '',
+      providers: [],
+      isProductsLoading: false,
     );
   }
 
-  CableTvPackage? get selectedPackage =>
+  ServiceProductModel? get selectedPackage =>
       packages.isNotEmpty && selectedPackageIndex < packages.length
-          ? packages[selectedPackageIndex]
-          : null;
+      ? packages[selectedPackageIndex]
+      : null;
 
   String get formattedAmount {
     final kobo = selectedPackage?.amountKobo ?? 0;
@@ -93,7 +107,7 @@ class CableTvState {
     bool? isVerifying,
     CableTvCustomer? customer,
     String? verifyError,
-    List<CableTvPackage>? packages,
+    List<ServiceProductModel>? packages,
     int? selectedPackageIndex,
     int? availableBalanceKobo,
     List<CableTvSmartcard>? recentSmartcards,
@@ -101,6 +115,11 @@ class CableTvState {
     bool? isSuccess,
     bool clearCustomer = false,
     bool clearVerifyError = false,
+    bool isProvidersLoading = false,
+    String? errorMessage = '',
+    List<ServiceProviderModel> providers = const [],
+    bool isProductsLoading = false,
+    final ServiceTransactionModel? transaction,
   }) {
     return CableTvState(
       step: step ?? this.step,
@@ -116,6 +135,11 @@ class CableTvState {
       recentSmartcards: recentSmartcards ?? this.recentSmartcards,
       isProcessing: isProcessing ?? this.isProcessing,
       isSuccess: isSuccess ?? this.isSuccess,
+      isProvidersLoading: isProvidersLoading,
+      providers: providers ?? this.providers,
+      isProductsLoading: isProductsLoading,
+      errorMessage: errorMessage ?? this.errorMessage,
+      transaction: transaction ?? this.transaction,
     );
   }
 }

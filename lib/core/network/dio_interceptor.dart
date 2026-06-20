@@ -31,6 +31,7 @@ class DioInterceptor extends Interceptor {
   ) async {
     final token = await _localDataSource.getAccessToken();
 
+    print('DioInterceptor - Adding Authorization header with token: $token');
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
     }

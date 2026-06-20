@@ -10,7 +10,7 @@ class WalletTransactionBloc
 
   WalletTransactionBloc({required this.walletRepository})
     : super(WalletTransactionInitial()) {
-    on<GetTransactionsEvent>(_onGetTransactions);
+  //  on<GetTransactionsEvent>(_onGetTransactions);
   }
 
   Future<void> _onGetTransactions(
@@ -38,27 +38,27 @@ class WalletTransactionBloc
       emit(WalletTransactionLoading());
     }
 
-    try {
-      final result = await walletRepository.getWalletTransaction(
-        page: event.page,
-        limit: event.limit,
-      );
+    // try {
+    //   final result = await walletRepository.getWalletTransaction(
+    //     page: event.page,
+    //     limit: event.limit,
+    //   );
 
-      emit(
-        WalletTransactionLoaded(
-          transactions: event.refresh
-              ? result.transactions
-              : [...oldTransactions, ...result.transactions],
-          nextPage: result.nextPage,
-          isFetchingMore: false,
-        ),
-      );
-    } catch (e) {
-      if (currentState is WalletTransactionLoaded) {
-        emit(currentState.copyWith(isFetchingMore: false));
-      } else {
-        emit(WalletTransactionError(e.toString()));
-      }
-    }
+    //   emit(
+    //     WalletTransactionLoaded(
+    //       transactions: event.refresh
+    //           ? result.transactions
+    //           : [...oldTransactions, ...result.transactions],
+    //       nextPage: result.nextPage,
+    //       isFetchingMore: false,
+    //     ),
+    //   );
+    // } catch (e) {
+    //   if (currentState is WalletTransactionLoaded) {
+    //     emit(currentState.copyWith(isFetchingMore: false));
+    //   } else {
+    //     emit(WalletTransactionError(e.toString()));
+    //   }
+    // }
   }
 }

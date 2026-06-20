@@ -1,4 +1,5 @@
 import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 
 class AppRouterConfig {
@@ -101,19 +102,31 @@ class AppRouterConfig {
             ),
             GoRoute(
               path: AppRoutes.airtimeService,
-              builder: (context, state) => const AirtimeServiceView(),
+              builder: (context, state) {
+                final service = state.extra as ServiceEntity?;
+                return AirtimeServiceView(service: service);
+              },
             ),
             GoRoute(
               path: AppRoutes.dataService,
-              builder: (context, state) => const DataServiceView(),
+              builder: (context, state) {
+                final service = state.extra as ServiceEntity?;
+                return DataServiceView(service: service);
+              },
             ),
             GoRoute(
               path: AppRoutes.cableTvService,
-              builder: (context, state) => const CableTvServiceView(),
+              builder: (context, state) {
+                final service = state.extra as ServiceEntity?;
+                return CableTvServiceView(service: service);
+              },
             ),
             GoRoute(
               path: AppRoutes.electricityService,
-              builder: (context, state) => const ElectricityServiceView(),
+              builder: (context, state) {
+                final service = state.extra as ServiceEntity?;
+                return ElectricityServiceView(service: service);
+              },
             ),
             GoRoute(
               path: AppRoutes.transactions,

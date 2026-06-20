@@ -1,9 +1,15 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
 import 'package:blithepay/features/services/data/models/cable_tv_models.dart';
+import 'package:blithepay/features/services/data/models/service_model.dart';
+import 'package:blithepay/features/services/data/repositories/service_repository.dart';
 import 'package:blithepay/features/services/presentation/bloc/cable_tv_bloc/cable_tv_bloc.dart';
+import 'package:blithepay/features/services/presentation/views/shared/receipt_services.dart';
+import 'package:blithepay/features/services/presentation/views/shared/reusable_service_view.dart';
 import 'package:blithepay/features/services/presentation/views/shared/success_panel.dart';
 import 'package:blithepay/features/fees/presentation/views/widgets/pin_bottom_sheet_content.dart';
+import 'package:blithepay/features/services/presentation/widgets/purchase_overlay.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
@@ -14,30 +20,40 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // ── Root ──────────────────────────────────────────────────────────────────────
 
 class CableTvServiceView extends StatelessWidget {
-  const CableTvServiceView({super.key});
+  final ServiceEntity? service;
+
+  const CableTvServiceView({super.key, this.service});
 
   @override
   Widget build(BuildContext context) {
+    // 1. Grab dynamic wallet balance from active Dashboard state provider scope
+
     return BlocProvider(
-      create: (_) => CableTvBloc(
-        // TODO: replace with smartcards loaded from local storage / API
-        recentSmartcards: const [
-          CableTvSmartcard(
-            id: '1',
-            smartcardNumber: '00012345678',
-            provider: 'DStv',
-            customerName: 'John Doe',
-            packageName: 'Compact',
-          ),
-          CableTvSmartcard(
-            id: '2',
-            smartcardNumber: '00056789012',
-            provider: 'GOtv',
-            customerName: 'Jane Smith',
-            packageName: 'Max',
-          ),
-        ],
-      ),
+      create: (context) =>
+          CableTvBloc(
+            serviceRepository: context.read<ServiceRepository>(),
+            serviceId: service
+                ?.id, // Pass service ID to trigger network providers endpoint
+            availableBalanceKobo: 9455272,
+            recentSmartcards: const [
+              CableTvSmartcard(
+                id: '1',
+                smartcardNumber: '00012345678',
+                provider: 'DStv',
+                customerName: 'John Doe',
+                packageName: 'Compact',
+              ),
+              CableTvSmartcard(
+                id: '2',
+                smartcardNumber: '00056789012',
+                provider: 'GOtv',
+                customerName: 'Jane Smith',
+                packageName: 'Max',
+              ),
+            ],
+          )..add(
+            CableTvInitRequested(),
+          ), // 2. Dispatch immediate initialization event
       child: const _CableTvScreen(),
     );
   }
@@ -64,13 +80,15 @@ class _CableTvScreenState extends State<_CableTvScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<CableTvBloc, CableTvState>(
+      listenWhen: (previous, current) =>
+          previous.isSuccess != current.isSuccess ||
+          previous.smartcardNumber != current.smartcardNumber,
       listener: (context, state) {
-        // Keep smartcard field in sync when beneficiary auto-fills it.
         if (_smartcardCtrl.text != state.smartcardNumber) {
           _smartcardCtrl.text = state.smartcardNumber;
         }
         if (state.isSuccess) {
-          _showSuccessPanel(context);
+          _showSuccessPanel(context, state.transaction);
         }
       },
       child: BlocBuilder<CableTvBloc, CableTvState>(
@@ -94,6 +112,7 @@ class _CableTvScreenState extends State<_CableTvScreen> {
                       'Cable TV',
                       style: AppTextStyles.h4.copyWith(
                         color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -120,19 +139,19 @@ class _CableTvScreenState extends State<_CableTvScreen> {
   Widget _buildStep(BuildContext context, CableTvState state) {
     return switch (state.step) {
       CableTvStep.smartcard => _SmartcardStep(
-          key: const ValueKey(CableTvStep.smartcard),
-          state: state,
-          controller: _smartcardCtrl,
-        ),
+        key: const ValueKey(CableTvStep.smartcard),
+        state: state,
+        controller: _smartcardCtrl,
+      ),
       CableTvStep.packageSelect => _PackageStep(
-          key: const ValueKey(CableTvStep.packageSelect),
-          state: state,
-        ),
+        key: const ValueKey(CableTvStep.packageSelect),
+        state: state,
+      ),
       CableTvStep.confirmation => _ConfirmationStep(
-          key: const ValueKey(CableTvStep.confirmation),
-          state: state,
-          onPay: () => _showPinSheet(context),
-        ),
+        key: const ValueKey(CableTvStep.confirmation),
+        state: state,
+        onPay: () => _showPinSheet(context),
+      ),
     };
   }
 
@@ -142,16 +161,37 @@ class _CableTvScreenState extends State<_CableTvScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      isDismissible: false,
+      enableDrag: false,
       builder: (sheetCtx) => BlocProvider.value(
         value: bloc,
-        child: _PinSheetWrapper(
-          onSuccess: () => _showSuccessPanel(context),
+        child: BlocConsumer<CableTvBloc, CableTvState>(
+          listenWhen: (prev, curr) => prev.isSuccess != curr.isSuccess,
+          listener: (modalCtx, state) {
+            if (state.isSuccess) {
+              Navigator.pop(modalCtx); // Close clean Pin Panel layout
+              _showSuccessPanel(context, state.transaction);
+            }
+          },
+          builder: (modalCtx, state) {
+            return PurchaseProcessingOverlay(
+              visible: state.isProcessing,
+              child: PinBottomSheetContent(
+                isLoading: state.isProcessing,
+                errorMessage: state.errorMessage,
+                onSubmit: (pin) async {
+                  modalCtx.read<CableTvBloc>().add(CableTvPayRequested(pin));
+                },
+                onForgotPin: () {},
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-  void _showSuccessPanel(BuildContext context) {
+  void _showSuccessPanel(BuildContext context, dynamic transaction) {
     final bloc = context.read<CableTvBloc>();
     showModalBottomSheet<void>(
       context: context,
@@ -161,22 +201,20 @@ class _CableTvScreenState extends State<_CableTvScreen> {
       builder: (_) => SuccessPanel(
         title: 'Payment Successful!',
         description: 'Your Cable TV subscription is now active.',
-        onDownloadReceipt: () {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Receipt download coming soon')),
-          );
+        onDownloadReceipt: () async {
+          if (transaction != null) {
+            await ReceiptService.download(transaction: transaction);
+          }
         },
         onGoHome: () {
           Navigator.pop(context); // close success sheet
-          Navigator.pop(context); // pop cable TV screen
+          Navigator.pop(context); // pop cable TV view screen
           bloc.add(CableTvSuccessDismissed());
         },
       ),
     );
   }
 }
-
 // ── Step indicator ────────────────────────────────────────────────────────────
 
 enum _NodeState { completed, active, pending }
@@ -200,17 +238,15 @@ class _StepIndicator extends StatelessWidget {
             nodeState: i < _idx
                 ? _NodeState.completed
                 : i == _idx
-                    ? _NodeState.active
-                    : _NodeState.pending,
+                ? _NodeState.active
+                : _NodeState.pending,
           ),
           if (i < labels.length - 1)
             Expanded(
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 height: 2,
-                color: i < _idx
-                    ? AppColors.primary
-                    : const Color(0xFFDCDFEB),
+                color: i < _idx ? AppColors.primary : const Color(0xFFDCDFEB),
               ),
             ),
         ],
@@ -250,8 +286,11 @@ class _StepNode extends StatelessWidget {
           ),
           child: Center(
             child: isCompleted
-                ? const Icon(Icons.check_rounded,
-                    color: AppColors.white, size: 14)
+                ? const Icon(
+                    Icons.check_rounded,
+                    color: AppColors.white,
+                    size: 14,
+                  )
                 : Text(
                     '${index + 1}',
                     style: TextStyle(
@@ -297,66 +336,73 @@ class _SmartcardStep extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Smartcard Number', style: AppTextStyles.headingSmall),
-        const SizedBox(height: 10),
+        // Always show the dynamic reusable provider row/grid selection first
+        buildProviderSelection(context, state),
 
-        _SmartcardField(
-          controller: controller,
-          state: state,
-          onChanged: (v) =>
-              context.read<CableTvBloc>().add(CableTvSmartcardChanged(v)),
-        ),
+        // Use an AnimatedSwitcher or visibility check to reveal the rest of the form
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: Column(
+            key: const ValueKey('smartcard_form_fields'),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 28),
+              const Text('Smartcard Number', style: AppTextStyles.headingSmall),
+              const SizedBox(height: 10),
 
-        if (state.verifyError != null) ...[
-          const SizedBox(height: 6),
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Row(
-              children: [
-                const Icon(Icons.error_outline_rounded,
-                    size: 13, color: AppColors.error),
-                const SizedBox(width: 4),
-                Text(
-                  state.verifyError!,
-                  style: const TextStyle(
-                    color: AppColors.error,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+              _SmartcardField(
+                controller: controller,
+                state: state,
+                onChanged: (v) =>
+                    context.read<CableTvBloc>().add(CableTvSmartcardChanged(v)),
+              ),
+
+              if (state.verifyError != null) ...[
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        size: 13,
+                        color: AppColors.error,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        state.verifyError!,
+                        style: const TextStyle(
+                          color: AppColors.error,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-            ),
+
+              if (state.recentSmartcards.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                _SmartcardChipsRow(
+                  smartcards: state.recentSmartcards,
+                  onTap: (sc) => _showBeneficiarySheet(context, sc),
+                ),
+              ],
+
+              const SizedBox(height: 32),
+
+              PrimaryButton(
+                label: 'Verify Smartcard',
+                isLoading: state.isVerifying,
+                onPressed: !state.isVerifying
+                    ? () => context.read<CableTvBloc>().add(
+                        CableTvVerifyRequested(),
+                      )
+                    : () {},
+              ),
+            ],
           ),
-        ],
-
-        const SizedBox(height: 24),
-        const Text('Provider', style: AppTextStyles.headingSmall),
-        const SizedBox(height: 10),
-
-        _ProviderChipRow(
-          selected: state.selectedProvider,
-          onSelected: (p) =>
-              context.read<CableTvBloc>().add(CableTvProviderSelected(p)),
-        ),
-
-        if (state.recentSmartcards.isNotEmpty) ...[
-          const SizedBox(height: 24),
-          _SmartcardChipsRow(
-            smartcards: state.recentSmartcards,
-            onTap: (sc) => _showBeneficiarySheet(context, sc),
-          ),
-        ],
-
-        const SizedBox(height: 28),
-
-        PrimaryButton(
-          label: 'Verify',
-          isLoading: state.isVerifying,
-          onPressed: () {
-            if (!state.isVerifying) {
-              context.read<CableTvBloc>().add(CableTvVerifyRequested());
-            }
-          },
         ),
       ],
     );
@@ -477,19 +523,26 @@ class _SmartcardStatusIcon extends StatelessWidget {
         width: 20,
         height: 20,
         child: CircularProgressIndicator(
-            strokeWidth: 2, color: AppColors.primary),
+          strokeWidth: 2,
+          color: AppColors.primary,
+        ),
       );
     }
     if (state.customer != null) {
-      return const Icon(Icons.check_circle_rounded,
-          color: AppColors.success, size: 20);
+      return const Icon(
+        Icons.check_circle_rounded,
+        color: AppColors.success,
+        size: 20,
+      );
     }
     if (state.verifyError != null) {
-      return const Icon(Icons.cancel_rounded,
-          color: AppColors.error, size: 20);
+      return const Icon(Icons.cancel_rounded, color: AppColors.error, size: 20);
     }
-    return const Icon(Icons.sim_card_outlined,
-        color: AppColors.textTertiary, size: 20);
+    return const Icon(
+      Icons.sim_card_outlined,
+      color: AppColors.textTertiary,
+      size: 20,
+    );
   }
 }
 
@@ -497,10 +550,7 @@ class _ProviderChipRow extends StatelessWidget {
   final String selected;
   final ValueChanged<String> onSelected;
 
-  const _ProviderChipRow({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ProviderChipRow({required this.selected, required this.onSelected});
 
   static const _providers = ['DStv', 'GOtv', 'Startimes'];
 
@@ -515,12 +565,9 @@ class _ProviderChipRow extends StatelessWidget {
             onTap: () => onSelected(p),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.primary
-                    : const Color(0xFFF0F1F5),
+                color: isSelected ? AppColors.primary : const Color(0xFFF0F1F5),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -563,10 +610,7 @@ class _SmartcardChipsRow extends StatelessWidget {
   final List<CableTvSmartcard> smartcards;
   final ValueChanged<CableTvSmartcard> onTap;
 
-  const _SmartcardChipsRow({
-    required this.smartcards,
-    required this.onTap,
-  });
+  const _SmartcardChipsRow({required this.smartcards, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -620,8 +664,7 @@ class _SmartcardChip extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.primaryLight,
               shape: BoxShape.circle,
-              border:
-                  Border.all(color: AppColors.primary, width: 1.5),
+              border: Border.all(color: AppColors.primary, width: 1.5),
             ),
             child: Center(
               child: Text(
@@ -663,7 +706,10 @@ class _PackageStep extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (state.customer != null) ...[
-          _CustomerCard(customer: state.customer!, provider: state.selectedProvider),
+          _CustomerCard(
+            customer: state.customer!,
+            provider: state.selectedProvider,
+          ),
           const SizedBox(height: 24),
         ],
 
@@ -687,9 +733,8 @@ class _PackageStep extends StatelessWidget {
               itemBuilder: (context, i) => _PackageCard(
                 package: state.packages[i],
                 isSelected: i == state.selectedPackageIndex,
-                onTap: () => context
-                    .read<CableTvBloc>()
-                    .add(CableTvPackageSelected(i)),
+                onTap: () =>
+                    context.read<CableTvBloc>().add(CableTvPackageSelected(i)),
               ),
             ),
           ),
@@ -699,9 +744,8 @@ class _PackageStep extends StatelessWidget {
 
         PrimaryButton(
           label: 'Continue',
-          onPressed: () => context
-              .read<CableTvBloc>()
-              .add(CableTvContinueToConfirmation()),
+          onPressed: () =>
+              context.read<CableTvBloc>().add(CableTvContinueToConfirmation()),
         ),
       ],
     );
@@ -712,10 +756,7 @@ class _CustomerCard extends StatelessWidget {
   final CableTvCustomer customer;
   final String provider;
 
-  const _CustomerCard({
-    required this.customer,
-    required this.provider,
-  });
+  const _CustomerCard({required this.customer, required this.provider});
 
   @override
   Widget build(BuildContext context) {
@@ -728,9 +769,7 @@ class _CustomerCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.primaryLight,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -750,7 +789,9 @@ class _CustomerCard extends StatelessWidget {
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: statusColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(4),
@@ -767,10 +808,7 @@ class _CustomerCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  'Due: ${customer.dueDate}',
-                  style: AppTextStyles.caption,
-                ),
+                Text('Due: ${customer.dueDate}', style: AppTextStyles.caption),
               ],
             ),
           ),
@@ -781,7 +819,7 @@ class _CustomerCard extends StatelessWidget {
 }
 
 class _PackageCard extends StatelessWidget {
-  final CableTvPackage package;
+  final ServiceProductModel package;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -811,8 +849,7 @@ class _PackageCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               children: [
                 _RadioDot(isSelected: isSelected),
@@ -822,7 +859,7 @@ class _PackageCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        package.title,
+                        package.name,
                         style: TextStyle(
                           color: isSelected
                               ? AppColors.primary
@@ -833,7 +870,7 @@ class _PackageCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        package.description,
+                        package.name,
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12,
@@ -918,7 +955,7 @@ class _OrderSummaryCard extends StatelessWidget {
           _SummaryRow('Smartcard', state.smartcardNumber),
           _SummaryRow('Customer', state.customer?.name ?? '—'),
           _SummaryRow('Provider', state.selectedProvider),
-          _SummaryRow('Package', pkg?.title ?? '—'),
+          _SummaryRow('Package', pkg?.name ?? '—'),
           _SummaryRow('Amount', pkg?.priceLabel ?? '—', isAmount: true),
         ],
       ),
@@ -969,21 +1006,21 @@ class _WalletCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF6F8FF),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.account_balance_wallet_outlined,
-              color: AppColors.primary, size: 24),
+          const Icon(
+            Icons.account_balance_wallet_outlined,
+            color: AppColors.primary,
+            size: 24,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Wallet Balance',
-                    style: AppTextStyles.bodySmall),
+                const Text('Wallet Balance', style: AppTextStyles.bodySmall),
                 const SizedBox(height: 2),
                 Text(
                   state.formattedBalance,
@@ -1085,10 +1122,7 @@ class _BeneficiaryActionSheet extends StatelessWidget {
               label: 'Change Package',
             ),
             const SizedBox(height: 12),
-            PrimaryButton(
-              label: 'Renew Plan',
-              onPressed: onRenew,
-            ),
+            PrimaryButton(label: 'Renew Plan', onPressed: onRenew),
           ],
         ),
       ),
@@ -1172,17 +1206,13 @@ class _RadioDot extends StatelessWidget {
         shape: BoxShape.circle,
         color: isSelected ? AppColors.primary : Colors.transparent,
         border: Border.all(
-          color:
-              isSelected ? AppColors.primary : const Color(0xFFBBC2D8),
+          color: isSelected ? AppColors.primary : const Color(0xFFBBC2D8),
           width: 1.8,
         ),
       ),
       child: isSelected
           ? const Center(
-              child: CircleAvatar(
-                radius: 4,
-                backgroundColor: AppColors.white,
-              ),
+              child: CircleAvatar(radius: 4, backgroundColor: AppColors.white),
             )
           : null,
     );
@@ -1190,8 +1220,8 @@ class _RadioDot extends StatelessWidget {
 }
 
 Color _providerColor(String provider) => switch (provider) {
-      'DStv' => const Color(0xFF00308F),
-      'GOtv' => const Color(0xFFE87722),
-      'Startimes' => const Color(0xFFD72027),
-      _ => AppColors.primary,
-    };
+  'DStv' => const Color(0xFF00308F),
+  'GOtv' => const Color(0xFFE87722),
+  'Startimes' => const Color(0xFFD72027),
+  _ => AppColors.primary,
+};

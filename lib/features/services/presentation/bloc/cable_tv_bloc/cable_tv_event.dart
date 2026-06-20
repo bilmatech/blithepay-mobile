@@ -39,3 +39,10 @@ class CableTvPayRequested extends CableTvEvent {
 }
 
 class CableTvSuccessDismissed extends CableTvEvent {}
+
+class CableTvProductsRequested extends CableTvEvent {
+  final String providerId;
+  CableTvProductsRequested(this.providerId);
+}
+
+class CableTvInitRequested extends CableTvEvent {}

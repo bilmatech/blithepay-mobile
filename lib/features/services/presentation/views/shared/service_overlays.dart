@@ -1,8 +1,8 @@
 import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/fees/presentation/views/widgets/pin_bottom_sheet_content.dart';
-import 'package:blithepay/features/services/presentation/views/shared/review_panel.dart';
 import 'package:blithepay/features/services/presentation/views/shared/success_panel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/service_bloc/service_bloc.dart';
 
@@ -54,37 +54,30 @@ class _ServiceStageOverlayState extends State<ServiceStageOverlay> {
     return const SizedBox.shrink(); // no UI anymore
   }
 
-  void _showReview() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      useRootNavigator: true, // IMPORTANT (fixes clipping)
-      builder: (_) => BlocProvider.value(
-        value: context.read<ServiceBloc>(),
-        child: ReviewPanel(state: widget.state),
-      ),
-    );
-  }
-
-  void _showPin() async {
-    final pin = await showModalBottomSheet<String>(
+  void _showPin() {
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       useRootNavigator: true,
       builder: (_) {
-        return PinBottomSheetContent(
-          isLoading: false,
-          errorMessage: widget.state.pin,
-          onSubmit: (pin) async {
-            print('pin submitted: $pin');
-            context.read<ServiceBloc>().add(ServicePinDigitPressed(pin));
-            // context.read<ServiceBloc>().add(ServicePinSubmitted(pin));
-          },
-          onForgotPin: () {
-            context.push(AppRoutes.setupOtp);
-          },
+        return BlocProvider.value(
+          value: context.read<ServiceBloc>(),
+          child: BlocBuilder<ServiceBloc, ServiceState>(
+            builder: (context, state) {
+              return PinBottomSheetContent(
+                isLoading: state.isProcessing,
+                errorMessage: state.errorMessage,
+                onSubmit: (pin) async {
+                  Navigator.of(context).pop();
+                  context.read<ServiceBloc>().add(ServicePinSubmitted(pin));
+                },
+                onForgotPin: () {
+                  context.push(AppRoutes.setupOtp);
+                },
+              );
+            },
+          ),
         );
       },
     );

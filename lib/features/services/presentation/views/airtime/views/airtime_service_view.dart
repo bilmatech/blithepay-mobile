@@ -1,5 +1,7 @@
 import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
 import 'package:blithepay/features/services/data/models/beneficiary_model.dart';
+import 'package:blithepay/features/services/data/repositories/service_repository.dart';
 import 'package:blithepay/features/services/presentation/bloc/service_bloc/service_bloc.dart'
     hide ServiceStage;
 import 'package:blithepay/features/services/presentation/views/shared/reusable_service_view.dart';
@@ -8,12 +10,16 @@ import 'package:blithepay/features/services/presentation/widgets/phone_number_co
 import 'package:flutter/material.dart';
 
 class AirtimeServiceView extends StatelessWidget {
-  const AirtimeServiceView({super.key});
+  final ServiceEntity? service;
+
+  const AirtimeServiceView({super.key, this.service});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ServiceBloc(
+      create: (context) => ServiceBloc(
+        serviceRepository: context.read<ServiceRepository>(),
+        serviceId: service?.id,
         config: const ServiceConfig(
           title: 'Airtime',
           recipientLabel: 'Phone Number',
@@ -24,13 +30,6 @@ class AirtimeServiceView extends StatelessWidget {
           presetAmounts: [300000, 500000, 850000, 1000000, 1500000, 2000000],
           availableBalanceKobo: 9455272,
         ),
-        // TODO: replace with beneficiaries loaded from local storage / API
-        initialBeneficiaries: const [
-          Beneficiary(id: '1', phoneNumber: '08031234567', network: ServiceNetwork.mtn),
-          Beneficiary(id: '2', phoneNumber: '08115678901', network: ServiceNetwork.glo),
-          Beneficiary(id: '3', phoneNumber: '08029876543', network: ServiceNetwork.airtel),
-          Beneficiary(id: '4', phoneNumber: '08091122334', network: ServiceNetwork.nineMobile),
-        ],
       ),
       child: const _AirtimeView(),
     );

@@ -10,8 +10,21 @@ class ServiceRecipientChanged extends ServiceEvent {
 
 class ServiceProviderSelected extends ServiceEvent {
   final String provider;
+  final String? providerId;
 
-  ServiceProviderSelected(this.provider);
+  ServiceProviderSelected(this.provider, {this.providerId});
+}
+
+class ServiceProvidersRequested extends ServiceEvent {
+  final String serviceId;
+
+  ServiceProvidersRequested(this.serviceId);
+}
+
+class ServiceProductsRequested extends ServiceEvent {
+  final String providerId;
+
+  ServiceProductsRequested(this.providerId);
 }
 
 class ServicePlanSelected extends ServiceEvent {
@@ -82,4 +95,8 @@ class ServiceNetworkDetected extends ServiceEvent {
   final ServiceNetwork? network;
 
   ServiceNetworkDetected(this.network);
+}
+
+class ServiceResetRequested extends ServiceEvent {
+  ServiceResetRequested();
 }

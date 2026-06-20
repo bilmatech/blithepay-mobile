@@ -1,9 +1,12 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/features/dashboard/presentation/models/service_model.dart'
+    show ServiceEntity;
+import 'package:blithepay/features/services/data/models/service_model.dart'
+    show ServiceProviderModel;
+import 'package:blithepay/features/services/data/repositories/service_repository.dart';
 import 'package:blithepay/features/services/presentation/views/airtime/widgets/amount_entry_card.dart';
 import 'package:blithepay/features/services/presentation/widgets/top_off_grid.dart';
-import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,12 +16,16 @@ import '../../shared/reusable_service_view.dart';
 import '../../shared/service_overlays.dart';
 
 class ElectricityServiceView extends StatelessWidget {
-  const ElectricityServiceView({super.key});
+  final ServiceEntity? service;
+
+  const ElectricityServiceView({super.key, this.service});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ServiceBloc(
+      create: (context) => ServiceBloc(
+        serviceRepository: context.read<ServiceRepository>(),
+        serviceId: service?.id,
         config: const ServiceConfig(
           title: 'Electricity',
           recipientLabel: 'Meter Number',
@@ -28,6 +35,7 @@ class ElectricityServiceView extends StatelessWidget {
           plans: [
             ServicePlan(
               title: 'Prepaid',
+              bundleCode: '22',
               description: 'Load tokens instantly',
               amountKobo: 300000,
               priceLabel: '₦3,000',
@@ -36,6 +44,8 @@ class ElectricityServiceView extends StatelessWidget {
               title: 'Postpaid',
               description: 'Pay your monthly bill',
               amountKobo: 850000,
+              bundleCode: '22',
+
               priceLabel: '₦8,500',
             ),
           ],
@@ -139,10 +149,6 @@ class _ElectricityServiceFormState extends State<ElectricityServiceForm> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedPlan = widget.state.selectedPlanIndex != null
-        ? widget.state.config.plans[widget.state.selectedPlanIndex!]
-        : widget.state.config.plans.first;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -196,6 +202,8 @@ class _ElectricityServiceFormState extends State<ElectricityServiceForm> {
 
         if (_isDistributorListVisible) ...[
           const SizedBox(height: 8),
+          if (widget.state.isProvidersLoading)
+            const LinearProgressIndicator(minHeight: 4),
           Container(
             decoration: BoxDecoration(
               color: AppColors.white,
@@ -203,43 +211,59 @@ class _ElectricityServiceFormState extends State<ElectricityServiceForm> {
               border: Border.all(color: const Color(0xFFE3E7F2)),
             ),
             child: Column(
-              children: widget.state.config.providerOptions.map((provider) {
-                return InkWell(
-                  onTap: () {
-                    context.read<ServiceBloc>().add(
-                      ServiceProviderSelected(provider),
-                    );
-                    setState(() {
-                      _isDistributorListVisible = false;
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          provider,
-                          style: const TextStyle(
-                            color: Color(0xFF061657),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+              children:
+                  (widget.state.providers.isNotEmpty
+                          ? widget.state.providers
+                          : widget.state.config.providerOptions
+                                .map(
+                                  (name) => ServiceProviderModel(
+                                    id: name,
+                                    name: name,
+                                  ),
+                                )
+                                .toList())
+                      .map((provider) {
+                        return InkWell(
+                          onTap: () {
+                            context.read<ServiceBloc>().add(
+                              ServiceProviderSelected(
+                                provider.name,
+                                providerId: provider.id,
+                              ),
+                            );
+                            setState(() {
+                              _isDistributorListVisible = false;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  provider.name,
+                                  style: const TextStyle(
+                                    color: Color(0xFF061657),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                if (provider.name ==
+                                    widget.state.selectedProvider)
+                                  const Icon(
+                                    Icons.check_circle,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
+                              ],
+                            ),
                           ),
-                        ),
-                        if (provider == widget.state.selectedProvider)
-                          const Icon(
-                            Icons.check_circle,
-                            color: AppColors.primary,
-                            size: 20,
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
+                        );
+                      })
+                      .toList(),
             ),
           ),
         ],

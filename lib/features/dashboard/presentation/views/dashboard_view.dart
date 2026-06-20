@@ -1,3 +1,5 @@
+import 'package:blithepay/features/services/presentation/bloc/services_cubit/services_cubit.dart';
+import 'package:blithepay/features/services/presentation/bloc/services_cubit/services_state.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -62,7 +64,7 @@ class _HomeViewState extends State<HomeView> {
     context.read<WalletBloc>().add(const FetchWalletDataEvent());
 
     // Fetch transactions separately
-    context.read<WalletTransactionBloc>().add(GetTransactionsEvent());
+    //context.read<WalletTransactionBloc>().add(GetTransactionsEvent());
     context.read<DashboardBloc>().add(const FetchDashboardData());
   }
 
@@ -70,7 +72,37 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
-        if (state is DashboardLoading) return const ShimmerDashboardLoader();
+        if (state is DashboardLoading || state is DashboardInitial) {
+          return const ShimmerDashboardLoader();
+        }
+
+        if (state is DashboardError) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Unable to load dashboard',
+                    style: AppTextStyles.bodyLarge,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(state.message, textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<DashboardBloc>().add(
+                        const FetchDashboardData(forceRefresh: true),
+                      );
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
         if (state is DashboardLoaded) {
           return RefreshIndicator(
@@ -79,9 +111,9 @@ class _HomeViewState extends State<HomeView> {
                 const FetchDashboardData(forceRefresh: true),
               );
               context.read<WalletBloc>().add(const FetchWalletDataEvent());
-              context.read<WalletTransactionBloc>().add(
-                GetTransactionsEvent(refresh: true),
-              );
+              // context.read<WalletTransactionBloc>().add(
+              //   GetTransactionsEvent(refresh: true),
+              // );
             },
             child: CustomScrollView(
               slivers: [
@@ -135,26 +167,33 @@ class _HomeViewState extends State<HomeView> {
                 // Services Grid
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 6,
-                          childAspectRatio: 0.8,
-                        ),
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final service = services[index];
-                      return ServiceCard(
-                        service: service,
-                        onTap: () {
-                          context.push(service.route);
-                        },
+                  sliver: BlocBuilder<ServicesCubit, ServicesState>(
+                    builder: (context, state) {
+                      final filteredServices = state.toDisplayList(
+                        includeMore: true,
                       );
-                    }, childCount: services.length),
+
+                      return SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 4,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 6,
+                              childAspectRatio: 0.8,
+                            ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final service = filteredServices[index];
+                          return ServiceCard(
+                            service: service,
+                            onTap: () {
+                              context.push(service.route, extra: service);
+                            },
+                          );
+                        }, childCount: filteredServices.length),
+                      );
+                    },
                   ),
-                ),
-                // Activity Title
+                ), // Activity Title
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                   sliver: SliverToBoxAdapter(
@@ -275,7 +314,7 @@ class _HomeViewState extends State<HomeView> {
           );
         }
 
-        return const SizedBox();
+        return const ShimmerDashboardLoader();
       },
     );
   }

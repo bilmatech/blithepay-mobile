@@ -1,9 +1,12 @@
+import 'package:blithepay/features/services/data/models/service_model.dart';
 import 'package:flutter/material.dart';
 import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
+import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
 import 'package:blithepay/features/services/data/models/beneficiary_model.dart';
+import 'package:blithepay/features/services/data/repositories/service_repository.dart';
 import 'package:blithepay/features/services/presentation/views/shared/service_overlays.dart';
 import 'package:blithepay/features/services/presentation/widgets/service_phone_section.dart';
 import 'package:blithepay/features/services/presentation/views/shared/reusable_service_view.dart';
@@ -17,149 +20,24 @@ const _plans = [
     description: 'Valid for 1 day',
     amountKobo: 10000,
     priceLabel: '₦100',
+    bundleCode: '22',
     category: ServicePlanCategory.daily,
-  ),
-  ServicePlan(
-    title: '1GB',
-    description: 'Valid for 1 day',
-    amountKobo: 35000,
-    priceLabel: '₦350',
-    category: ServicePlanCategory.daily,
-  ),
-  ServicePlan(
-    title: '2GB',
-    description: 'Valid for 1 day',
-    amountKobo: 50000,
-    priceLabel: '₦500',
-    category: ServicePlanCategory.daily,
-  ),
-  ServicePlan(
-    title: '3GB',
-    description: 'Valid for 1 day',
-    amountKobo: 70000,
-    priceLabel: '₦700',
-    category: ServicePlanCategory.daily,
-  ),
-  ServicePlan(
-    title: '5GB',
-    description: 'Valid for 1 day',
-    amountKobo: 100000,
-    priceLabel: '₦1,000',
-    category: ServicePlanCategory.daily,
-  ),
-  // Weekly
-  ServicePlan(
-    title: '2GB',
-    description: 'Valid for 7 days',
-    amountKobo: 100000,
-    priceLabel: '₦1,000',
-    category: ServicePlanCategory.weekly,
-  ),
-  ServicePlan(
-    title: '5GB',
-    description: 'Valid for 7 days',
-    amountKobo: 200000,
-    priceLabel: '₦2,000',
-    category: ServicePlanCategory.weekly,
-  ),
-  ServicePlan(
-    title: '10GB',
-    description: 'Valid for 7 days',
-    amountKobo: 350000,
-    priceLabel: '₦3,500',
-    category: ServicePlanCategory.weekly,
-  ),
-  ServicePlan(
-    title: '20GB',
-    description: 'Valid for 7 days',
-    amountKobo: 500000,
-    priceLabel: '₦5,000',
-    category: ServicePlanCategory.weekly,
-  ),
-  // Monthly
-  ServicePlan(
-    title: '5GB',
-    description: 'Valid for 30 days',
-    amountKobo: 200000,
-    priceLabel: '₦2,000',
-    category: ServicePlanCategory.monthly,
-  ),
-  ServicePlan(
-    title: '15GB',
-    description: 'Valid for 30 days',
-    amountKobo: 500000,
-    priceLabel: '₦5,000',
-    category: ServicePlanCategory.monthly,
-  ),
-  ServicePlan(
-    title: '30GB',
-    description: 'Valid for 30 days',
-    amountKobo: 800000,
-    priceLabel: '₦8,000',
-    category: ServicePlanCategory.monthly,
-  ),
-  ServicePlan(
-    title: '50GB',
-    description: 'Valid for 30 days',
-    amountKobo: 1200000,
-    priceLabel: '₦12,000',
-    category: ServicePlanCategory.monthly,
-  ),
-  ServicePlan(
-    title: '100GB',
-    description: 'Valid for 30 days',
-    amountKobo: 2000000,
-    priceLabel: '₦20,000',
-    category: ServicePlanCategory.monthly,
-  ),
-  // Yearly
-  ServicePlan(
-    title: '120GB',
-    description: 'Valid for 365 days',
-    amountKobo: 5000000,
-    priceLabel: '₦50,000',
-    category: ServicePlanCategory.yearly,
-  ),
-  ServicePlan(
-    title: '500GB',
-    description: 'Valid for 365 days',
-    amountKobo: 15000000,
-    priceLabel: '₦150,000',
-    category: ServicePlanCategory.yearly,
-  ),
-  // Unlimited
-  ServicePlan(
-    title: 'Unlimited',
-    description: 'Valid for 1 day',
-    amountKobo: 200000,
-    priceLabel: '₦2,000',
-    category: ServicePlanCategory.unlimited,
-  ),
-  ServicePlan(
-    title: 'Unlimited',
-    description: 'Valid for 7 days',
-    amountKobo: 500000,
-    priceLabel: '₦5,000',
-    category: ServicePlanCategory.unlimited,
-  ),
-  ServicePlan(
-    title: 'Unlimited',
-    description: 'Valid for 30 days',
-    amountKobo: 1500000,
-    priceLabel: '₦15,000',
-    category: ServicePlanCategory.unlimited,
   ),
 ];
 
 // ── Root view ─────────────────────────────────────────────────────────────────
 
 class DataServiceView extends StatelessWidget {
-  const DataServiceView({super.key});
+  final ServiceEntity? service;
+
+  const DataServiceView({super.key, this.service});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ServiceBloc(
+      create: (context) => ServiceBloc(
+        serviceRepository: context.read<ServiceRepository>(),
+        serviceId: service?.id,
         config: const ServiceConfig(
           title: 'Data',
           recipientLabel: 'Recipient Phone',
@@ -204,29 +82,42 @@ class _DataServiceScreen extends StatefulWidget {
 }
 
 class _DataServiceScreenState extends State<_DataServiceScreen> {
-  TextEditingController? _phoneController;
+  late TextEditingController _phoneController;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the controller safely before the first build frame
+    final initialState = context.read<ServiceBloc>().state;
+    _phoneController = TextEditingController(text: initialState.phoneNumber);
+  }
+
+  @override
+  void didUpdateWidget(covariant _DataServiceScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Keep the controller in sync if the BLoC state changes the phoneNumber externally
+    final currentState = context.read<ServiceBloc>().state;
+    if (_phoneController.text != currentState.phoneNumber) {
+      _phoneController.text = currentState.phoneNumber;
+    }
+  }
 
   @override
   void dispose() {
-    _phoneController?.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return ServiceView<ServiceBloc, ServiceState>(
-      title: '',
-      formBuilder: (context, state) => DataServiceForm(
-        state: state,
-        phoneController: _phoneController ??= TextEditingController(
-          text: state.phoneNumber,
-        ),
-      ),
+      title: 'Data',
+      formBuilder: (context, state) =>
+          DataServiceForm(state: state, phoneController: _phoneController),
       overlayBuilder: (context, state) => ServiceStageOverlay(state: state),
     );
   }
 }
-
 // ── Form ──────────────────────────────────────────────────────────────────────
 
 class DataServiceForm extends StatefulWidget {
@@ -246,9 +137,12 @@ class DataServiceForm extends StatefulWidget {
 class _DataServiceFormState extends State<DataServiceForm> {
   // null = "All" tab
   ServicePlanCategory? _activeCategory;
+  List<(int globalIndex, ServiceProductModel plan)> get _visiblePlans {
+    // Read from network products array if available; otherwise use dummy plans safely
+    final allPlans = widget.state.products;
 
-  List<(int globalIndex, ServicePlan plan)> get _visiblePlans {
-    final allPlans = widget.state.config.plans;
+    if (allPlans.isEmpty) return const [];
+
     return [
       for (var i = 0; i < allPlans.length; i++)
         if (_activeCategory == null || allPlans[i].category == _activeCategory)
@@ -316,12 +210,33 @@ class _DataServiceFormState extends State<DataServiceForm> {
         const SizedBox(height: 20),
 
         // ── Pay ────────────────────────────────────────────────────────────
-        PrimaryButton(
-          label: widget.state.amountKobo > 0
-              ? 'Pay ${widget.state.formattedAmount}'
-              : 'Pay',
-          onPressed: () {
-            context.push('/service/review', extra: context.read<ServiceBloc>());
+        Builder(
+          builder: (context) {
+            final products = widget.state.products;
+            final selectedIdx = widget.state.selectedPlanIndex;
+
+            final selectedPlan =
+                (selectedIdx != null &&
+                    selectedIdx >= 0 &&
+                    selectedIdx < products.length)
+                ? products[selectedIdx]
+                : null;
+
+            final buttonLabel = selectedPlan != null
+                ? 'Pay ${selectedPlan.priceLabel}'
+                : 'Pay';
+
+            return PrimaryButton(
+              label: buttonLabel,
+              onPressed: selectedPlan != null
+                  ? () {
+                      context.push(
+                        '/service/review',
+                        extra: context.read<ServiceBloc>(),
+                      );
+                    }
+                  : () {},
+            );
           },
         ),
       ],
@@ -406,7 +321,7 @@ class _TabChip extends StatelessWidget {
 // ── Plan card ─────────────────────────────────────────────────────────────────
 
 class _PlanCard extends StatelessWidget {
-  final ServicePlan plan;
+  final ServiceProductModel plan;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -446,7 +361,7 @@ class _PlanCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        plan.title,
+                        plan.name,
                         style: TextStyle(
                           color: isSelected
                               ? AppColors.primary
@@ -457,7 +372,7 @@ class _PlanCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        plan.description,
+                        plan.validity,
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 13,

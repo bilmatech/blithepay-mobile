@@ -1,5 +1,7 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:blithepay/features/services/presentation/bloc/service_bloc/service_bloc.dart';
 import 'package:blithepay/features/services/presentation/views/shared/bottom_panel.dart';
 import 'package:blithepay/features/services/presentation/views/shared/success_panel.dart';
@@ -124,6 +126,8 @@ class BalancePaymentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dashboardState = context.read<DashboardBloc>().state;
+
     return Container(
       height: 140,
       decoration: BoxDecoration(
@@ -146,28 +150,26 @@ class BalancePaymentCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Available balance',
-                    style: TextStyle(
+                  Text(
+                    dashboardState is DashboardLoaded
+                        ? 'Available balance'
+                        : 'Loading balance...',
+
+                    style: const TextStyle(
                       color: Color(0xFF55555D),
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    state.formattedBalance,
-                    style: const TextStyle(
-                      color: Color(0xFF061657),
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
+
                   const Spacer(),
                   const Divider(color: Color(0xFFE4E7F1), height: 1),
                   const SizedBox(height: 14),
                   Text(
-                    state.formattedDebit,
+                    dashboardState is DashboardLoaded
+                        ? dashboardState.dashboard.walletBalance
+                        : '',
                     style: const TextStyle(
                       color: Color(0xFF061657),
                       fontSize: 14,

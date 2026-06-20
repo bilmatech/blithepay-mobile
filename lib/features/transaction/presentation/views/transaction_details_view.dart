@@ -236,6 +236,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
       ),
     );
   }
+
 }
 
 Widget _buildDetailsCard(TransactionModel transaction) {
