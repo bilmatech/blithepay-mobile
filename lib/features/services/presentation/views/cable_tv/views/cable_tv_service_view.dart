@@ -1132,28 +1132,28 @@ class _BeneficiaryActionSheet extends StatelessWidget {
 
 // ── PIN sheet wrapper ─────────────────────────────────────────────────────────
 
-class _PinSheetWrapper extends StatelessWidget {
-  final VoidCallback onSuccess;
+// class _PinSheetWrapper extends StatelessWidget {
+//   final VoidCallback onSuccess;
 
-  const _PinSheetWrapper({required this.onSuccess});
+//   const _PinSheetWrapper({required this.onSuccess});
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<CableTvBloc, CableTvState>(
-      listenWhen: (prev, curr) => !prev.isSuccess && curr.isSuccess,
-      listener: (context, _) {
-        Navigator.of(context).pop(); // close PIN sheet
-        onSuccess();
-      },
-      builder: (context, state) => PinBottomSheetContent(
-        isLoading: state.isProcessing,
-        onSubmit: (pin) async {
-          context.read<CableTvBloc>().add(CableTvPayRequested(pin));
-        },
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocConsumer<CableTvBloc, CableTvState>(
+//       listenWhen: (prev, curr) => !prev.isSuccess && curr.isSuccess,
+//       listener: (context, _) {
+//         Navigator.of(context).pop(); // close PIN sheet
+//         onSuccess();
+//       },
+//       builder: (context, state) => PinBottomSheetContent(
+//         isLoading: state.isProcessing,
+//         onSubmit: (pin) async {
+//           context.read<CableTvBloc>().add(CableTvPayRequested(pin));
+//         },
+//       ),
+//     );
+//   }
+// }
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 

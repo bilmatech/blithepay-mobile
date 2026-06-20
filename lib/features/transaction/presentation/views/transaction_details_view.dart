@@ -295,7 +295,6 @@ Widget _buildDetailsCard(TransactionModel transaction) {
           ),
         ),
       );
-      ;
     }),
   );
 }
