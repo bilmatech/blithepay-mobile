@@ -1,4 +1,4 @@
-import 'package:blithepay/features/services/data/models/service_model.dart';
+import 'package:blithepay/features/vas/core/data/models/service_model.dart';
 import 'package:equatable/equatable.dart';
 
 enum ServiceType {

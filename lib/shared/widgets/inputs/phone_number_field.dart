@@ -1,7 +1,7 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/features/services/data/models/beneficiary_model.dart';
-import 'package:blithepay/features/services/utils/network_detector.dart';
+import 'package:blithepay/features/vas/core/data/models/beneficiary_model.dart';
+import 'package:blithepay/features/vas/core/utils/network_detector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

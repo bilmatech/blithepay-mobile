@@ -13,6 +13,7 @@ abstract class AppLocalDataSource {
   Future<AuthResponseModel?> getSession();
   Future<String?> getAccessToken();
   Future<String?> getRefreshToken();
+  Future<DateTime?> getExpiresAt();
 
   Future<void> clearSession();
   Stream<UserModel?> get userStream;
@@ -89,6 +90,12 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
   @override
   Future<String?> getRefreshToken() {
     return _storage.read(key: _refreshTokenKey);
+  }
+
+  @override
+  Future<DateTime?> getExpiresAt() async {
+    final expiresAtRaw = await _storage.read(key: _expiresAtKey);
+    return expiresAtRaw != null ? DateTime.parse(expiresAtRaw) : null;
   }
 
   @override

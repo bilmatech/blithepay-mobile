@@ -1,5 +1,5 @@
-import 'package:blithepay/features/services/presentation/bloc/services_cubit/services_cubit.dart';
-import 'package:blithepay/features/services/presentation/bloc/services_cubit/services_state.dart';
+import 'package:blithepay/features/vas/core/presentation/bloc/services_cubit/services_cubit.dart';
+import 'package:blithepay/features/vas/core/presentation/bloc/services_cubit/services_state.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

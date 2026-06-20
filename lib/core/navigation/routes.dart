@@ -1,6 +1,6 @@
 import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
-import 'package:blithepay/features/services/presentation/views/service_review_view.dart';
+import 'package:blithepay/features/vas/core/presentation/views/service_review_view.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 
 class AppRouterConfig {
@@ -99,34 +99,34 @@ class AppRouterConfig {
             // ),
             GoRoute(
               path: AppRoutes.service,
-              builder: (context, state) => const ServicesScreen(),
+              builder: (context, state) => const ServicesCatalogScreen(),
             ),
             GoRoute(
               path: AppRoutes.airtimeService,
               builder: (context, state) {
                 final service = state.extra as ServiceEntity?;
-                return AirtimeServiceView(service: service);
+                return AirtimePurchaseView(service: service);
               },
             ),
             GoRoute(
               path: AppRoutes.dataService,
               builder: (context, state) {
                 final service = state.extra as ServiceEntity?;
-                return DataServiceView(service: service);
+                return DataBundlePurchaseView(service: service);
               },
             ),
             GoRoute(
               path: AppRoutes.cableTvService,
               builder: (context, state) {
                 final service = state.extra as ServiceEntity?;
-                return CableTvServiceView(service: service);
+                return CableTvPurchaseView(service: service);
               },
             ),
             GoRoute(
               path: AppRoutes.electricityService,
               builder: (context, state) {
                 final service = state.extra as ServiceEntity?;
-                return ElectricityServiceView(service: service);
+                return ElectricityPurchaseView(service: service);
               },
             ),
             GoRoute(
@@ -341,7 +341,7 @@ class AppRouterConfig {
         GoRoute(
           path: AppRoutes.service,
           builder: (context, state) {
-            return const ServicesScreen();
+            return const ServicesCatalogScreen();
           },
         ),
 
@@ -379,7 +379,7 @@ class AppRouterConfig {
         ),
         GoRoute(
           path: AppRoutes.betting,
-          builder: (_, __) => const BettingServiceView(),
+          builder: (_, __) => const BettingsPurchaseView(),
         ),
 
         GoRoute(
