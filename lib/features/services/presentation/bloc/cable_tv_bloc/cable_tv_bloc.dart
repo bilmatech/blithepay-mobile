@@ -94,12 +94,8 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
     Emitter<CableTvState> emit,
   ) {
     emit(state.copyWith(selectedProvider: event.provider, clearCustomer: true));
-
-    print('Selected provider: ${event.provider}'); // Debugging log
-    if (event.provider != null) {
-      add(CableTvProductsRequested(event.provider));
+    add(CableTvProductsRequested(event.provider));
     }
-  }
 
   // ── Step 2 Flow: Fetch specific plan/package bouquet products ────────
   Future<void> _onProductsRequested(
@@ -269,7 +265,7 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
         state.copyWith(
           isProcessing: false,
           isSuccess: true,
-          //  transaction: transaction,
+           transaction: transaction,
         ),
       );
     } catch (error) {

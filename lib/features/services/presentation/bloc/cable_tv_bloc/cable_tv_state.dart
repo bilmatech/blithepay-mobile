@@ -136,7 +136,7 @@ class CableTvState {
       isProcessing: isProcessing ?? this.isProcessing,
       isSuccess: isSuccess ?? this.isSuccess,
       isProvidersLoading: isProvidersLoading,
-      providers: providers ?? this.providers,
+      providers: providers,
       isProductsLoading: isProductsLoading,
       errorMessage: errorMessage ?? this.errorMessage,
       transaction: transaction ?? this.transaction,

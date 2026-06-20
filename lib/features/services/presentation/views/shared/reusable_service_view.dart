@@ -221,25 +221,25 @@ Widget buildProviderSelection(BuildContext context, dynamic state) {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppColors.primary.withOpacity(0.05)
+                      ? AppColors.primary.withValues(alpha: 0.05)
                       : AppColors.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isSelected
                         ? AppColors.primary
-                        : AppColors.border.withOpacity(0.7),
+                        : AppColors.border.withValues(alpha: 0.7),
                     width: isSelected ? 2.0 : 1.0,
                   ),
                   boxShadow: [
                     if (isSelected)
                       BoxShadow(
-                        color: AppColors.primary.withOpacity(0.12),
+                        color: AppColors.primary.withValues(alpha: 0.12),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       )
                     else
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.015),
+                        color: Colors.black.withValues(alpha: 0.015),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -267,8 +267,9 @@ Widget buildProviderSelection(BuildContext context, dynamic state) {
                                       _buildPlaceholderLetter(provider.name),
                                   loadingBuilder:
                                       (context, child, loadingProgress) {
-                                        if (loadingProgress == null)
+                                        if (loadingProgress == null) {
                                           return child;
+                                        }
                                         return Center(
                                           child: SizedBox(
                                             width: 16,
@@ -278,7 +279,7 @@ Widget buildProviderSelection(BuildContext context, dynamic state) {
                                               valueColor:
                                                   AlwaysStoppedAnimation<Color>(
                                                     AppColors.primary
-                                                        .withOpacity(0.5),
+                                                        .withValues(alpha: 0.5),
                                                   ),
                                             ),
                                           ),
@@ -322,7 +323,7 @@ Widget _buildPlaceholderLetter(String name) {
     displayLetter,
     style: TextStyle(
       fontWeight: FontWeight.w900,
-      color: AppColors.primary.withOpacity(0.6),
+      color: AppColors.primary.withValues(alpha: 0.6),
       fontSize: 16,
     ),
   );

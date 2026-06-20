@@ -126,9 +126,6 @@ class ServiceRepositoryImpl implements ServiceRepository {
     required String provider,
     required String smartcardNumber,
   }) async {
-    final token = await const FlutterSecureStorage().read(
-      key: 'xPinChallengeToken',
-    );
     final response = await _dioClient.post(
       ApiEndpoints.verifySmartCard,
       data: {'provider': provider, 'smartcardNumber': smartcardNumber},

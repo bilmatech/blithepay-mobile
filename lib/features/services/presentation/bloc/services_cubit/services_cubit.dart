@@ -1,7 +1,6 @@
 import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
 import 'package:blithepay/features/services/data/repositories/service_repository.dart';
 import 'package:blithepay/features/services/presentation/bloc/services_cubit/services_state.dart';
-import 'package:blithepay/features/services/data/models/service_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ServicesCubit extends Cubit<ServicesState> {
