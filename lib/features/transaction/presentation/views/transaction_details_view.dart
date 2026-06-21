@@ -140,10 +140,11 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: (isSuccess ? AppColors.success : AppColors.error).withValues(alpha: 0.4),
+                                    color: (isSuccess ? AppColors.success : AppColors.error)
+                                        .withValues(alpha: 0.4),
                                     blurRadius: 4,
                                     spreadRadius: 1,
-                                  )
+                                  ),
                                 ],
                               ),
                             ),
@@ -181,10 +182,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF1E293B),
-                          Color(0xFF0F172A),
-                        ],
+                        colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -194,7 +192,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                           color: Colors.black.withValues(alpha: 0.12),
                           blurRadius: 12,
                           offset: const Offset(0, 6),
-                        )
+                        ),
                       ],
                     ),
                     clipBehavior: Clip.antiAlias,
@@ -259,8 +257,8 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                                   30,
                                   (index) => Expanded(
                                     child: Container(
-                                      color: index.isEven 
-                                          ? Colors.white.withValues(alpha: 0.15) 
+                                      color: index.isEven
+                                          ? Colors.white.withValues(alpha: 0.15)
                                           : Colors.transparent,
                                       height: 1.5,
                                     ),
@@ -273,7 +271,10 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                                 children: [
                                   if (vas.tokenUnits != null && vas.tokenUnits!.isNotEmpty)
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: Colors.white.withValues(alpha: 0.08),
                                         borderRadius: BorderRadius.circular(6),
@@ -306,7 +307,10 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                                     },
                                     borderRadius: BorderRadius.circular(20),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: Colors.amber.shade400,
                                         borderRadius: BorderRadius.circular(20),
@@ -383,7 +387,10 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
         ).format(DateTime.tryParse(tx.createdAt)?.toLocal() ?? DateTime.now()),
       },
       {'label': 'Reference', 'value': tx.reference},
-      {'label': 'Amount', 'value': Helpers.formattedAmount(tx.amount.toString()).replaceAll('₦', 'N')},
+      {
+        'label': 'Amount',
+        'value': Helpers.formattedAmount(tx.amount.toString()).replaceAll('₦', 'N'),
+      },
     ];
 
     if (vas != null) {
@@ -438,7 +445,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
             color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       clipBehavior: Clip.antiAlias,
