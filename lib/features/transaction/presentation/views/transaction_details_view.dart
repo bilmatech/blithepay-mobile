@@ -16,6 +16,7 @@ import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart'
 import 'package:blithepay/features/wallet/data/repositories/wallet_repository.dart';
 import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
 import 'package:blithepay/features/wallet/data/models/transaction_detail_response_model.dart';
+import 'package:blithepay/shared/widgets/loaders/shimmer_transaction_details_loader.dart';
 
 class TransactionDetailView extends StatefulWidget {
   final WalletTransactionModel transaction;
@@ -50,9 +51,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
         future: _detailsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
-            );
+            return const ShimmerTransactionDetailsLoader();
           }
 
           if (snapshot.hasError) {
