@@ -22,6 +22,12 @@ import 'package:blithepay/features/vas/core/data/models/beneficiary_model.dart';
 ///   builder: (_) => const ContactPickerSheet(),
 /// );
 /// ```
+class ContactPickerResult {
+  final String name;
+  final String phoneNumber;
+  const ContactPickerResult({required this.name, required this.phoneNumber});
+}
+
 class ContactPickerSheet extends StatefulWidget {
   const ContactPickerSheet({super.key});
 
@@ -217,7 +223,13 @@ class _ContactPickerSheetState extends State<ContactPickerSheet> {
           const Divider(height: 1, indent: 72, endIndent: 16, color: AppColors.border),
       itemBuilder: (_, i) => _ContactTile(
         item: _filtered[i],
-        onTap: () => Navigator.pop(context, _filtered[i].rawNumber),
+        onTap: () => Navigator.pop(
+          context,
+          ContactPickerResult(
+            name: _filtered[i].name,
+            phoneNumber: _filtered[i].rawNumber,
+          ),
+        ),
       ),
     );
   }

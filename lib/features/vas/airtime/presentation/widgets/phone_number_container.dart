@@ -108,6 +108,7 @@ class PhoneNumberContainer extends StatelessWidget {
           providerId: currentState.selectedProviderId ?? currentState.selectedProvider,
           amountKobo: currentState.amountKobo,
           challengeToken: token,
+          contactName: currentState.contactName,
         );
       },
       onCancel: () => bloc.add(ServiceResetRequested()),

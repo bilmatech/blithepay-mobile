@@ -20,6 +20,11 @@ class CableTvPackageSelected extends CableTvEvent {
   CableTvPackageSelected(this.index);
 }
 
+class CableTvAmountSelected extends CableTvEvent {
+  final int amountKobo;
+  CableTvAmountSelected(this.amountKobo);
+}
+
 class CableTvContinueToConfirmation extends CableTvEvent {}
 
 class CableTvBack extends CableTvEvent {}
@@ -51,4 +56,11 @@ class CableTvInitRequested extends CableTvEvent {}
 class CableTvBalanceUpdated extends CableTvEvent {
   final int balanceKobo;
   CableTvBalanceUpdated(this.balanceKobo);
+}
+
+class CableTvBeneficiariesRequested extends CableTvEvent {}
+
+class CableTvBeneficiarySelected extends CableTvEvent {
+  final CableTvBeneficiary beneficiary;
+  CableTvBeneficiarySelected(this.beneficiary);
 }

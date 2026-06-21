@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:blithepay/core/navigation/app_routes.dart';
+import 'package:blithepay/core/network/dio_error_mapper.dart';
 
 // ── Service Review Args ──────────────────────────────────────────────────────
 
@@ -387,8 +388,8 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
       context: parentContext,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      isDismissible: false,
-      enableDrag: false,
+      isDismissible: true,
+      enableDrag: true,
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (modalCtx, setModalState) {
@@ -411,7 +412,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                     Navigator.pop(sheetContext);
                     _showSuccess(parentContext, transaction);
                   } catch (e) {
-                    final errStr = e.toString().replaceFirst('Exception: ', '');
+                    final errStr = extractError(e);
                     setModalState(() {
                       _isProcessing = false;
                       _errorMessage = errStr;
@@ -422,7 +423,6 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                     });
                   }
                 },
-                onForgotPin: () {},
               ),
             );
           },

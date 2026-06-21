@@ -2,6 +2,7 @@ import 'package:blithepay/core/network/dio_error_mapper.dart';
 import 'package:blithepay/features/vas/cable_tv/data/models/cable_tv_models.dart';
 import 'package:blithepay/features/vas/core/data/models/service_model.dart';
 import 'package:blithepay/features/vas/core/data/models/service_purchase_response.dart';
+import 'package:blithepay/features/vas/core/data/models/cable_tv_beneficiary_model.dart';
 import 'package:blithepay/features/vas/core/data/repositories/service_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -47,6 +48,11 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
     on<CableTvPayRequested>(_onPayRequested);
     on<CableTvSuccessDismissed>(_onSuccessDismissed);
     on<CableTvBalanceUpdated>(_onBalanceUpdated);
+    on<CableTvBeneficiariesRequested>(_onBeneficiariesRequested);
+    on<CableTvBeneficiarySelected>(_onBeneficiarySelected);
+    on<CableTvAmountSelected>((event, emit) {
+      emit(state.copyWith(amountKobo: event.amountKobo));
+    });
   }
 
   // ── Initial Setup Action: Fetch available providers instantly ─────────
@@ -82,8 +88,8 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
     emit(
       state.copyWith(
         smartcardNumber: event.value,
-        // clearCustomer: true,
-        // clearVerifyError: true,
+        clearCustomer: true,
+        clearVerifyError: true,
       ),
     );
   }
@@ -92,21 +98,16 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
     CableTvProviderSelected event,
     Emitter<CableTvState> emit,
   ) {
-    dynamic matchedProvider;
-    try {
-      matchedProvider = state.providers.firstWhere(
-        (p) => p.name == event.provider,
-      );
-    } catch (_) {
-      matchedProvider = null;
-    }
-
-    final String targetIdForApi = matchedProvider != null
-        ? matchedProvider.id
-        : event.provider;
-
-    emit(state.copyWith(selectedProvider: event.provider));
-    add(CableTvProductsRequested(targetIdForApi));
+    emit(state.copyWith(
+      selectedProvider: event.provider,
+      selectedProviderId: event.providerId,
+      clearCustomer: true,
+      clearVerifyError: true,
+      selectedPackageIndex: 0,
+      amountKobo: 0,
+      packages: [],
+    ));
+    add(CableTvProductsRequested(event.providerId));
   }
 
   // ── Step 2 Flow: Fetch specific plan/package bouquet products ────────
@@ -124,6 +125,7 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
           isProductsLoading: false,
           packages: products,
           selectedPackageIndex: 0,
+          amountKobo: products.isNotEmpty ? products[0].amountKobo.toInt() : 0,
           errorMessage: null,
         ),
       );
@@ -205,7 +207,6 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
             status: dataObject['status'] ?? 'Active',
             dueDate: dataObject['dueDate'] ?? dataObject['due_date'] ?? '--',
           ),
-          step: CableTvStep.packageSelect,
           entryPath: CableTvEntryPath.fresh,
         ),
       );
@@ -224,7 +225,13 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
     CableTvPackageSelected event,
     Emitter<CableTvState> emit,
   ) {
-    emit(state.copyWith(selectedPackageIndex: event.index));
+    final package = event.index >= 0 && event.index < state.packages.length
+        ? state.packages[event.index]
+        : null;
+    emit(state.copyWith(
+      selectedPackageIndex: event.index,
+      amountKobo: package?.amountKobo.toInt() ?? 0,
+    ));
   }
 
   void _onContinueToConfirmation(
@@ -256,13 +263,30 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
     Emitter<CableTvState> emit,
   ) {
     final sc = event.smartcard;
+    dynamic matchedProvider;
+    try {
+      matchedProvider = state.providers.firstWhere(
+        (p) =>
+            p.name.toLowerCase() == sc.provider.toLowerCase() ||
+            p.id.toLowerCase() == sc.provider.toLowerCase(),
+      );
+    } catch (_) {
+      matchedProvider = null;
+    }
+    final String providerId = matchedProvider != null
+        ? matchedProvider.id
+        : sc.provider;
+
     final pkgIdx = state.packages.indexWhere((p) => p.name == sc.packageName);
+    final package = pkgIdx >= 0 && pkgIdx < state.packages.length ? state.packages[pkgIdx] : null;
 
     emit(
       state.copyWith(
         smartcardNumber: sc.smartcardNumber,
-        selectedProvider: sc.provider,
+        selectedProvider: matchedProvider != null ? matchedProvider.name : sc.provider,
+        selectedProviderId: providerId,
         selectedPackageIndex: pkgIdx < 0 ? 0 : pkgIdx,
+        amountKobo: package?.amountKobo.toInt() ?? 0,
         customer: CableTvCustomer(
           name: sc.customerName,
           currentPackage: sc.packageName,
@@ -273,6 +297,8 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
         step: CableTvStep.confirmation,
       ),
     );
+
+    add(CableTvProductsRequested(providerId));
   }
 
   void _onBeneficiaryChangeSelected(
@@ -280,13 +306,30 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
     Emitter<CableTvState> emit,
   ) {
     final sc = event.smartcard;
+    dynamic matchedProvider;
+    try {
+      matchedProvider = state.providers.firstWhere(
+        (p) =>
+            p.name.toLowerCase() == sc.provider.toLowerCase() ||
+            p.id.toLowerCase() == sc.provider.toLowerCase(),
+      );
+    } catch (_) {
+      matchedProvider = null;
+    }
+    final String providerId = matchedProvider != null
+        ? matchedProvider.id
+        : sc.provider;
+
     final pkgIdx = state.packages.indexWhere((p) => p.name == sc.packageName);
+    final package = pkgIdx >= 0 && pkgIdx < state.packages.length ? state.packages[pkgIdx] : null;
 
     emit(
       state.copyWith(
         smartcardNumber: sc.smartcardNumber,
-        selectedProvider: sc.provider,
+        selectedProvider: matchedProvider != null ? matchedProvider.name : sc.provider,
+        selectedProviderId: providerId,
         selectedPackageIndex: pkgIdx < 0 ? 0 : pkgIdx,
+        amountKobo: package?.amountKobo.toInt() ?? 0,
         customer: CableTvCustomer(
           name: sc.customerName,
           currentPackage: sc.packageName,
@@ -297,6 +340,8 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
         step: CableTvStep.packageSelect,
       ),
     );
+
+    add(CableTvProductsRequested(providerId));
   }
 
   Future<void> _onPayRequested(
@@ -311,9 +356,9 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
       }
       final token = await _serviceRepository.verifyPin(event.pin);
       final transaction = await _serviceRepository.subscribeCableTv(
-        provider: state.selectedProvider,
+        provider: state.selectedProviderId.isNotEmpty ? state.selectedProviderId : state.selectedProvider,
         smartcardNumber: state.smartcardNumber.replaceAll(RegExp(r'\s+'), ''),
-        amountKobo: package.amountKobo.toInt(),
+        amountKobo: state.amountKobo,
         pin: event.pin,
         bundleCode: package.bundleCode,
         challengeToken: token,
@@ -341,6 +386,11 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
       CableTvState.initial(
         recentSmartcards: state.recentSmartcards,
         availableBalanceKobo: state.availableBalanceKobo,
+      ).copyWith(
+        providers: state.providers,
+        beneficiaries: state.beneficiaries,
+        beneficiariesPage: state.beneficiariesPage,
+        hasReachedMaxBeneficiaries: state.hasReachedMaxBeneficiaries,
       ),
     );
   }
@@ -350,6 +400,83 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
     Emitter<CableTvState> emit,
   ) {
     emit(state.copyWith(availableBalanceKobo: event.balanceKobo));
+  }
+
+  Future<void> _onBeneficiariesRequested(
+    CableTvBeneficiariesRequested event,
+    Emitter<CableTvState> emit,
+  ) async {
+    if (state.hasReachedMaxBeneficiaries) return;
+    if (state.isFetchingMoreBeneficiaries) return;
+
+    final isInitial = state.beneficiaries.isEmpty;
+    final nextPage = isInitial ? 1 : state.beneficiariesPage + 1;
+
+    try {
+      if (isInitial) {
+        emit(state.copyWith(isProvidersLoading: true));
+      } else {
+        emit(state.copyWith(isFetchingMoreBeneficiaries: true));
+      }
+
+      final list = await _serviceRepository.getCableTvBeneficiaries(
+        page: nextPage,
+        limit: 10,
+      );
+
+      final hasReachedMax = list.length < 10;
+      final updatedList = List<CableTvBeneficiary>.from(state.beneficiaries)
+        ..addAll(list);
+
+      emit(
+        state.copyWith(
+          beneficiaries: updatedList,
+          beneficiariesPage: nextPage,
+          hasReachedMaxBeneficiaries: hasReachedMax,
+          isFetchingMoreBeneficiaries: false,
+          isProvidersLoading: false,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isFetchingMoreBeneficiaries: false,
+          isProvidersLoading: false,
+        ),
+      );
+    }
+  }
+
+  void _onBeneficiarySelected(
+    CableTvBeneficiarySelected event,
+    Emitter<CableTvState> emit,
+  ) {
+    final beneficiary = event.beneficiary;
+    String providerName = '';
+    try {
+      final p = state.providers.firstWhere((prov) => prov.id == beneficiary.serviceCategoryId);
+      providerName = p.name;
+    } catch (_) {}
+
+    emit(
+      state.copyWith(
+        smartcardNumber: beneficiary.smartcardNumber,
+        selectedProvider: providerName,
+        selectedProviderId: beneficiary.serviceCategoryId,
+        customer: CableTvCustomer(
+          name: beneficiary.customerName,
+          currentPackage: beneficiary.bundleCode ?? 'Unknown',
+          status: 'Active',
+          dueDate: 'N/A',
+        ),
+        clearVerifyError: true,
+        selectedPackageIndex: 0,
+        amountKobo: 0,
+        packages: [],
+      ),
+    );
+
+    add(CableTvProductsRequested(beneficiary.serviceCategoryId));
   }
 }
 // class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {

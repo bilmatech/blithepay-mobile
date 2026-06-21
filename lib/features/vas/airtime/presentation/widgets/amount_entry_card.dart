@@ -9,6 +9,7 @@ class AmountEntryCard extends StatelessWidget {
   final String currencySymbol;
   final String label;
   final int? availableBalanceKobo;
+  final bool enabled;
 
   const AmountEntryCard({
     super.key,
@@ -17,6 +18,7 @@ class AmountEntryCard extends StatelessWidget {
     this.currencySymbol = '₦',
     this.label = 'ENTER AMOUNT',
     this.availableBalanceKobo,
+    this.enabled = true,
   });
 
   @override
@@ -93,12 +95,13 @@ class AmountEntryCard extends StatelessWidget {
                     onAmountChanged?.call(amount);
                   },
                   keyboardType: TextInputType.number,
+                  enabled: enabled,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
                     CurrencyInputFormatter(),
                   ],
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: enabled ? AppColors.textPrimary : AppColors.textSecondary,
                     fontSize: 34,
                     fontWeight: FontWeight.w700,
                     height: 1.1,

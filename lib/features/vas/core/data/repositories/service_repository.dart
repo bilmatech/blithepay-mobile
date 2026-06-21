@@ -2,6 +2,9 @@ import 'package:blithepay/core/network/api_endpoints.dart';
 import 'package:blithepay/core/network/dio_client.dart';
 import 'package:blithepay/features/vas/core/data/models/service_model.dart';
 import 'package:blithepay/features/vas/core/data/models/service_purchase_response.dart';
+import 'package:blithepay/features/vas/core/data/models/utility_beneficiary_model.dart';
+import 'package:blithepay/features/vas/core/data/models/cable_tv_beneficiary_model.dart';
+import 'package:blithepay/features/vas/core/data/models/contact_beneficiary_model.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -28,6 +31,7 @@ abstract class ServiceRepository {
     required String providerId,
     required int amountKobo,
     required String challengeToken,
+    String? contactName,
   });
   Future<ServiceTransactionModel> purchaseInternet({
     required String serviceId,
@@ -36,6 +40,7 @@ abstract class ServiceRepository {
     required String bundleCode,
     required int amountKobo,
     required String challengeToken,
+    String? contactName,
   });
   Future<ServiceTransactionModel> purchaseUtility({
     required String serviceId,
@@ -54,6 +59,9 @@ abstract class ServiceRepository {
     required String bundleCode,
     required String challengeToken,
   });
+  Future<List<UtilityBeneficiary>> getUtilityBeneficiaries({int page = 1, int limit = 10});
+  Future<List<CableTvBeneficiary>> getCableTvBeneficiaries({int page = 1, int limit = 10});
+  Future<List<ContactBeneficiary>> getContactBeneficiaries({int page = 1, int limit = 10, required String filter});
 }
 
 class ServiceRepositoryImpl implements ServiceRepository {
@@ -139,17 +147,18 @@ class ServiceRepositoryImpl implements ServiceRepository {
     required String recipient,
     required String providerId,
     required int amountKobo,
-    required String challengeToken, // Accept the token cleanly here
+    required String challengeToken,
+    String? contactName,
   }) async {
     final response = await _dioClient.post(
       ApiEndpoints.purchaseAirtime,
       data: {
         'serviceCategoryId': providerId,
         'phoneNumber': recipient,
-        //'providerId': providerId,
         'amount': (amountKobo / 100).toStringAsFixed(2),
+        if (contactName != null && contactName.isNotEmpty) 'contactName': contactName,
         'idempotencyKey':
-            '${DateTime.now().millisecondsSinceEpoch}', // Add idempotency key to prevent duplicate transactions
+            '${DateTime.now().millisecondsSinceEpoch}',
       },
       options: Options(headers: {'X-PIN-CHALLENGE': challengeToken}),
     );
@@ -164,15 +173,16 @@ class ServiceRepositoryImpl implements ServiceRepository {
     required String bundleCode,
     required int amountKobo,
     required String challengeToken,
+    String? contactName,
   }) async {
     final response = await _dioClient.post(
       ApiEndpoints.purchaseInternet,
       data: {
         'serviceCategoryId': providerId,
         'phoneNumber': recipient,
-        // 'providerId': providerId,
         'bundleCode': bundleCode,
         'amount': (amountKobo / 100).toStringAsFixed(2),
+        if (contactName != null && contactName.isNotEmpty) 'contactName': contactName,
         'idempotencyKey': '${DateTime.now().millisecondsSinceEpoch}',
       },
       options: Options(headers: {'X-PIN-CHALLENGE': challengeToken}),
@@ -196,7 +206,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
         'meterNumber': meterNumber,
         // 'providerId': providerId,
         'amount': (amountKobo / 100).toStringAsFixed(2),
-        'meterType': meterType,
+        'meterType': meterType.toUpperCase(),
         'idempotencyKey': '${DateTime.now().millisecondsSinceEpoch}',
       },
       options: Options(headers: {'X-PIN-CHALLENGE': challengeToken}),
@@ -284,5 +294,51 @@ class ServiceRepositoryImpl implements ServiceRepository {
         )
         .toList();
     return products ?? [];
+  }
+
+  @override
+  Future<List<UtilityBeneficiary>> getUtilityBeneficiaries({
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final response = await _dioClient.get(
+      ApiEndpoints.getUtilityBeneficiaries,
+      queryParameters: {'page': page, 'limit': limit},
+    );
+    final data = response.data['data']['data'] ?? [];
+    return (data as List<dynamic>)
+        .map((json) => UtilityBeneficiary.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
+  Future<List<CableTvBeneficiary>> getCableTvBeneficiaries({
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final response = await _dioClient.get(
+      ApiEndpoints.getCableTvBeneficiaries,
+      queryParameters: {'page': page, 'limit': limit},
+    );
+    final data = response.data['data']['data'] ?? [];
+    return (data as List<dynamic>)
+        .map((json) => CableTvBeneficiary.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
+  Future<List<ContactBeneficiary>> getContactBeneficiaries({
+    int page = 1,
+    int limit = 10,
+    required String filter,
+  }) async {
+    final response = await _dioClient.get(
+      ApiEndpoints.getContactBeneficiaries,
+      queryParameters: {'page': page, 'limit': limit, 'filter': filter},
+    );
+    final data = response.data['data']['data'] ?? [];
+    return (data as List<dynamic>)
+        .map((json) => ContactBeneficiary.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 }

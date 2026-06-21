@@ -4,6 +4,11 @@ import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/app_bar.dart';
 import 'package:blithepay/shared/widgets/layouts/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:blithepay/features/transaction/presentation/bloc/transaction_bloc.dart';
+import 'package:blithepay/features/transaction/presentation/bloc/transaction_event.dart';
+import 'package:blithepay/features/transaction/presentation/bloc/transaction_state.dart';
+import 'package:blithepay/core/utils/helpers.dart';
+import 'package:blithepay/shared/widgets/loaders/shimmer_table_loader.dart';
 
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
@@ -13,69 +18,105 @@ class TransactionsScreen extends StatefulWidget {
 }
 
 class _TransactionsScreenState extends State<TransactionsScreen> {
-  final List<TransactionModel> transactions = [
-    TransactionModel(
-      name: 'Airtime Recharge',
-      transactionAt: DateTime(2024, 6, 17, 23, 15),
-      amount: 'N3,000',
-      netAmount: 'N3,000',
-      reference: 'REF001',
-      status: TransactionStatus.successful,
-      flow: TransactionFlow.outflow,
-      type: TransactionType.airtime,
-      icon: '📱',
-      fees: 0,
-    ),
-    TransactionModel(
-      name: 'Dstv Subscription',
-      transactionAt: DateTime(2024, 7, 19, 23, 15),
-      amount: 'N3,000',
-      netAmount: 'N3,000',
-      reference: 'REF002',
-      status: TransactionStatus.successful,
-      flow: TransactionFlow.outflow,
-      type: TransactionType.cable,
-      icon: '📺',
-      fees: 0,
-    ),
-    TransactionModel(
-      name: 'Electricity',
-      transactionAt: DateTime(2024, 6, 17, 23, 15),
-      amount: 'N2,000',
-      netAmount: 'N2,000',
-      reference: 'REF003',
-      status: TransactionStatus.successful,
-      flow: TransactionFlow.outflow,
-      type: TransactionType.electricity,
-      icon: '⚡',
-      fees: 0,
-    ),
-    TransactionModel(
-      name: 'Electricity',
-      transactionAt: DateTime(2024, 6, 17, 23, 15),
-      amount: 'N2,000',
-      netAmount: 'N2,000',
-      reference: 'REF004',
-      status: TransactionStatus.failed,
-      flow: TransactionFlow.outflow,
-      type: TransactionType.electricity,
-      icon: '⚡',
-      fees: 0,
-    ),
-    TransactionModel(
-      name: 'Airtime Recharge',
-      transactionAt: DateTime(2024, 6, 17, 23, 15),
-      amount: 'N3,000',
-      netAmount: 'N3,000',
-      reference: 'REF005',
-      status: TransactionStatus.successful,
-      flow: TransactionFlow.outflow,
-      type: TransactionType.airtime,
-      icon: '📱',
-      fees: 0,
-    ),
-  ];
-  String sortBy = 'Recent';
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<WalletTransactionBloc>().add(
+      GetTransactionsEvent(page: 1, limit: 20, refresh: true),
+    );
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 100) {
+      final state = context.read<WalletTransactionBloc>().state;
+
+      if (state is WalletTransactionLoaded &&
+          state.nextPage != null &&
+          !state.isFetchingMore) {
+        context.read<WalletTransactionBloc>().add(
+          GetTransactionsEvent(page: state.nextPage!, limit: 20),
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  TransactionModel _mapToTransactionModel(WalletTransactionModel walletTx) {
+    TransactionType type = TransactionType.other;
+    String name = walletTx.name;
+    String icon = '💸';
+
+    final desc = (walletTx.description ?? '').toLowerCase();
+    final typeStr = walletTx.type.toLowerCase();
+
+    if (desc.contains('airtime') || typeStr.contains('airtime') || desc.contains('recharge')) {
+      type = TransactionType.airtime;
+      name = 'Airtime Recharge';
+      icon = '📱';
+    } else if (desc.contains('data') || desc.contains('internet') || typeStr.contains('data') || typeStr.contains('internet')) {
+      type = TransactionType.data;
+      name = 'Data Bundle';
+      icon = '📶';
+    } else if (desc.contains('dstv') || desc.contains('gotv') || desc.contains('startimes') || desc.contains('cable') || typeStr.contains('cable')) {
+      type = TransactionType.cable;
+      name = desc.contains('gotv') ? 'GOtv Subscription' : (desc.contains('dstv') ? 'DStv Subscription' : 'Cable TV Subscription');
+      icon = '📺';
+    } else if (desc.contains('electricity') || desc.contains('meter') || desc.contains('power') || typeStr.contains('electricity') || typeStr.contains('utility')) {
+      type = TransactionType.electricity;
+      name = 'Electricity';
+      icon = '⚡';
+    } else if (typeStr == 'deposit' || typeStr == 'inflow') {
+      type = TransactionType.other;
+      name = 'Deposit';
+      icon = '💰';
+    } else {
+      type = TransactionType.other;
+      name = 'Withdrawal';
+      icon = '💸';
+    }
+
+    TransactionStatus status = TransactionStatus.pending;
+    final statusLower = walletTx.status.toLowerCase();
+    if (statusLower == 'success' || statusLower == 'successful') {
+      status = TransactionStatus.successful;
+    } else if (statusLower == 'failed') {
+      status = TransactionStatus.failed;
+    }
+
+    TransactionFlow flow = walletTx.flow.toLowerCase() == 'inflow'
+        ? TransactionFlow.inflow
+        : TransactionFlow.outflow;
+
+    final double amountVal = double.tryParse(walletTx.amount) ?? 0.0;
+    final double netAmountVal = double.tryParse(walletTx.netAmount) ?? 0.0;
+    final double feesVal = double.tryParse(walletTx.fees) ?? 0.0;
+
+    final formattedAmount = Helpers.formattedAmount(amountVal.toString()).replaceAll('₦', 'N');
+    final formattedNetAmount = Helpers.formattedAmount(netAmountVal.toString()).replaceAll('₦', 'N');
+
+    return TransactionModel(
+      name: name,
+      desc: walletTx.description ?? '',
+      transactionAt: DateTime.tryParse(walletTx.transactionAt) ?? DateTime.now(),
+      amount: formattedAmount,
+      netAmount: formattedNetAmount,
+      reference: walletTx.reference,
+      status: status,
+      flow: flow,
+      type: type,
+      icon: icon,
+      fees: feesVal,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,11 +166,68 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             const SizedBox(height: 20),
             // Transactions List
             Expanded(
-              child: ListView.builder(
-                itemCount: transactions.length,
-                itemBuilder: (context, index) {
-                  final transaction = transactions[index];
-                  return _TransactionCard(transaction: transaction);
+              child: BlocBuilder<WalletTransactionBloc, WalletTransactionState>(
+                builder: (context, state) {
+                  if (state is WalletTransactionLoading) {
+                    return const ShimmerTableLoader();
+                  }
+
+                  if (state is WalletTransactionError) {
+                    return Center(
+                      child: Text(
+                        state.message,
+                        style: const TextStyle(color: AppColors.error),
+                      ),
+                    );
+                  }
+
+                  if (state is WalletTransactionLoaded) {
+                    final list = state.transactions;
+                    if (list.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'No transactions found.',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                      );
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<WalletTransactionBloc>().add(
+                          GetTransactionsEvent(page: 1, limit: 20, refresh: true),
+                        );
+                      },
+                      child: ListView.separated(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: list.length + (state.isFetchingMore ? 1 : 0),
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          if (index < list.length) {
+                            final rawTx = list[index];
+                            final txModel = _mapToTransactionModel(rawTx);
+                            return _TransactionCard(
+                              transaction: txModel,
+                              rawTransaction: rawTx,
+                            );
+                          }
+
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  }
+
+                  return const SizedBox.shrink();
                 },
               ),
             ),
@@ -142,14 +240,18 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
 class _TransactionCard extends StatelessWidget {
   final TransactionModel transaction;
+  final WalletTransactionModel rawTransaction;
 
-  const _TransactionCard({required this.transaction});
+  const _TransactionCard({
+    required this.transaction,
+    required this.rawTransaction,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.push(AppRoutes.transactionDetail, extra: transaction);
+        context.push(AppRoutes.transactionDetail, extra: rawTransaction);
       },
       behavior: HitTestBehavior.opaque,
       child: Container(

@@ -259,10 +259,6 @@ class AppRouterConfig {
           builder: (_, __) => const FundWalletView(),
         ),
         GoRoute(
-          path: AppRoutes.transactions,
-          builder: (_, __) => const WalletTransactionsView(),
-        ),
-        GoRoute(
           path: AppRoutes.transactionReceiptView,
           builder: (context, state) {
             final transaction = state.extra as WalletTransactionModel;
@@ -290,14 +286,14 @@ class AppRouterConfig {
           path: AppRoutes.wallettransactionDetail,
           builder: (context, state) {
             final transaction = state.extra as WalletTransactionModel;
-            return WalletTransactionDetailView(transaction: transaction);
+            return TransactionDetailView(transaction: transaction);
           },
         ),
 
         GoRoute(
           path: AppRoutes.transactionDetail,
           builder: (context, state) {
-            final transaction = state.extra as TransactionModel;
+            final transaction = state.extra as WalletTransactionModel;
             return TransactionDetailView(transaction: transaction);
           },
         ),

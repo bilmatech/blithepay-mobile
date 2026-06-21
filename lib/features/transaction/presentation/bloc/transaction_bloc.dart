@@ -10,7 +10,7 @@ class WalletTransactionBloc
 
   WalletTransactionBloc({required this.walletRepository})
     : super(WalletTransactionInitial()) {
-  //  on<GetTransactionsEvent>(_onGetTransactions);
+    on<GetTransactionsEvent>(_onGetTransactions);
   }
 
   Future<void> _onGetTransactions(

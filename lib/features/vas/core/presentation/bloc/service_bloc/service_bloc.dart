@@ -4,6 +4,8 @@ import 'package:blithepay/core/network/dio_error_mapper.dart';
 import 'package:blithepay/features/vas/core/data/models/beneficiary_model.dart';
 import 'package:blithepay/features/vas/core/data/models/service_model.dart';
 import 'package:blithepay/features/vas/core/data/models/service_purchase_response.dart';
+import 'package:blithepay/features/vas/core/data/models/utility_beneficiary_model.dart';
+import 'package:blithepay/features/vas/core/data/models/contact_beneficiary_model.dart';
 import 'package:blithepay/features/vas/core/data/repositories/service_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,8 +54,17 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     on<ServiceVerifyMeterRequested>(_onVerifyMeterRequested);
     on<ServiceInitRequested>(_onInitRequested);
     on<ServiceBalanceUpdated>(_onBalanceUpdated);
+    on<ServiceUtilityBeneficiariesRequested>(_onUtilityBeneficiariesRequested);
+    on<ServiceUtilityBeneficiarySelected>(_onUtilityBeneficiarySelected);
+    on<ServiceContactBeneficiariesRequested>(_onContactBeneficiariesRequested);
+    on<ServiceContactBeneficiarySelected>(_onContactBeneficiarySelected);
+
     if (serviceId != null && serviceId!.isNotEmpty) {
       add(ServiceProvidersRequested(serviceId!));
+    }
+    final title = config.title.toLowerCase().trim();
+    if (title == 'airtime' || title == 'data' || title == 'internet') {
+      add(ServiceContactBeneficiariesRequested());
     }
   }
 
@@ -61,11 +72,19 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     ServiceRecipientChanged event,
     Emitter<ServiceState> emit,
   ) {
+    final isElectricity =
+        state.config.title.toLowerCase().trim() == 'electricity' ||
+        state.config.title.toLowerCase().trim() == 'utility';
+
     emit(
       state.copyWith(
         recipient: event.recipient,
         phoneNumber: event.recipient,
         selectedPlanIndex: null,
+        verifiedCustomerName: isElectricity ? null : state.verifiedCustomerName,
+        minVendAmountKobo: isElectricity ? null : state.minVendAmountKobo,
+        contactName: event.contactName,
+        clearContactName: event.contactName == null,
       ),
     );
   }
@@ -74,11 +93,17 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     ServiceProviderSelected event,
     Emitter<ServiceState> emit,
   ) {
+    final isElectricity =
+        state.config.title.toLowerCase().trim() == 'electricity';
+
     emit(
       state.copyWith(
         selectedProvider: event.provider,
         selectedProviderId: event.providerId ?? state.selectedProviderId,
         bundleCode: event.bundleCode,
+        verifiedCustomerName: isElectricity ? null : state.verifiedCustomerName,
+        minVendAmountKobo: isElectricity ? null : state.minVendAmountKobo,
+        recipient: isElectricity ? '' : state.recipient,
       ),
     );
 
@@ -259,6 +284,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
         errorMessage: null,
         transaction: null,
         verifiedCustomerName: null,
+        clearContactName: true,
       ),
     );
   }
@@ -296,10 +322,19 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
         phoneNumber: state.phoneNumber,
         network: event.network,
         beneficiaries: state.beneficiaries,
+        utilityBeneficiaries: state.utilityBeneficiaries,
+        utilityBeneficiariesPage: state.utilityBeneficiariesPage,
+        hasReachedMaxUtilityBeneficiaries: state.hasReachedMaxUtilityBeneficiaries,
+        isFetchingMoreUtilityBeneficiaries: state.isFetchingMoreUtilityBeneficiaries,
+        contactBeneficiaries: state.contactBeneficiaries,
+        contactBeneficiariesPage: state.contactBeneficiariesPage,
+        hasReachedMaxContactBeneficiaries: state.hasReachedMaxContactBeneficiaries,
+        isFetchingMoreContactBeneficiaries: state.isFetchingMoreContactBeneficiaries,
         isProcessing: state.isProcessing,
         errorMessage: state.errorMessage,
         bundleCode: state.bundleCode,
         meterType: state.meterType,
+        contactName: state.contactName,
       ),
     );
   }
@@ -374,6 +409,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
             providerId: providerId,
             amountKobo: state.amountKobo,
             challengeToken: token,
+            contactName: state.contactName,
           );
           break;
         case 'data':
@@ -397,13 +433,14 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
 
             amountKobo: selectedProduct.amountKobo,
             challengeToken: token,
+            contactName: state.contactName,
           );
 
           break;
         case 'electricity':
         case 'utility':
           transactionResult = await _serviceRepository.purchaseUtility(
-            serviceId: serviceId,
+            serviceId: providerId.isNotEmpty ? providerId : serviceId,
             meterNumber: cleanRecipient,
             meterType: state.meterType,
             amountKobo: state.amountKobo,
@@ -445,6 +482,12 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
       ).copyWith(
         availableBalanceKobo: state.availableBalanceKobo,
         providers: state.providers,
+        utilityBeneficiaries: state.utilityBeneficiaries,
+        utilityBeneficiariesPage: state.utilityBeneficiariesPage,
+        hasReachedMaxUtilityBeneficiaries: state.hasReachedMaxUtilityBeneficiaries,
+        contactBeneficiaries: state.contactBeneficiaries,
+        contactBeneficiariesPage: state.contactBeneficiariesPage,
+        hasReachedMaxContactBeneficiaries: state.hasReachedMaxContactBeneficiaries,
       ),
     );
   }
@@ -472,6 +515,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
         isProcessing: true,
         errorMessage: null,
         verifiedCustomerName: null,
+        minVendAmountKobo: null,
       ),
     );
 
@@ -502,11 +546,45 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
           dataObject['customer_name'] ??
           'Valid Meter Account';
 
+      final dynamic minVendVal = dataObject['minVendAmount'];
+      int? minVendKobo;
+      if (minVendVal is num) {
+        minVendKobo = (minVendVal * 100).round();
+      }
+
+      final dynamic vendTypeVal = dataObject['vendType'];
+      int? matchedIndex;
+      String? matchedMeterType;
+      int? defaultAmountKobo;
+      String? defaultBundleCode;
+
+      if (vendTypeVal is String) {
+        final normalizedType = vendTypeVal.toUpperCase().trim();
+        if (normalizedType == 'PREPAID') {
+          matchedIndex = 0;
+          matchedMeterType = 'prepaid';
+        } else if (normalizedType == 'POSTPAID') {
+          matchedIndex = 1;
+          matchedMeterType = 'postpaid';
+        }
+
+        if (matchedIndex != null && matchedIndex < state.config.plans.length) {
+          final plan = state.config.plans[matchedIndex];
+          defaultAmountKobo = plan.amountKobo;
+          defaultBundleCode = plan.bundleCode;
+        }
+      }
+
       // 4. SUCCESS EMISSION
       emit(
         state.copyWith(
           isProcessing: false,
           verifiedCustomerName: customerName,
+          minVendAmountKobo: minVendKobo,
+          selectedPlanIndex: matchedIndex ?? state.selectedPlanIndex,
+          meterType: matchedMeterType ?? state.meterType,
+          amountKobo: defaultAmountKobo ?? state.amountKobo,
+          bundleCode: defaultBundleCode ?? state.bundleCode,
           errorMessage: null,
         ),
       );
@@ -516,6 +594,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
         state.copyWith(
           isProcessing: false,
           verifiedCustomerName: null, // Keeps pay button completely locked
+          minVendAmountKobo: null,
           errorMessage: extractError(error),
         ),
       );
@@ -540,5 +619,162 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     Emitter<ServiceState> emit,
   ) {
     emit(state.copyWith(availableBalanceKobo: event.balanceKobo));
+  }
+
+  Future<void> _onUtilityBeneficiariesRequested(
+    ServiceUtilityBeneficiariesRequested event,
+    Emitter<ServiceState> emit,
+  ) async {
+    if (state.hasReachedMaxUtilityBeneficiaries) return;
+    if (state.isFetchingMoreUtilityBeneficiaries) return;
+
+    final isInitial = state.utilityBeneficiaries.isEmpty;
+    final nextPage = isInitial ? 1 : state.utilityBeneficiariesPage + 1;
+
+    try {
+      if (isInitial) {
+        emit(state.copyWith(isProvidersLoading: true));
+      } else {
+        emit(state.copyWith(isFetchingMoreUtilityBeneficiaries: true));
+      }
+
+      final beneficiaries = await _serviceRepository.getUtilityBeneficiaries(
+        page: nextPage,
+        limit: 10,
+      );
+
+      final hasReachedMax = beneficiaries.length < 10;
+      final updatedList = List<UtilityBeneficiary>.from(state.utilityBeneficiaries)
+        ..addAll(beneficiaries);
+
+      emit(
+        state.copyWith(
+          utilityBeneficiaries: updatedList,
+          utilityBeneficiariesPage: nextPage,
+          hasReachedMaxUtilityBeneficiaries: hasReachedMax,
+          isFetchingMoreUtilityBeneficiaries: false,
+          isProvidersLoading: false,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Failed to fetch utility beneficiaries: $e');
+      emit(
+        state.copyWith(
+          isFetchingMoreUtilityBeneficiaries: false,
+          isProvidersLoading: false,
+        ),
+      );
+    }
+  }
+
+  void _onUtilityBeneficiarySelected(
+    ServiceUtilityBeneficiarySelected event,
+    Emitter<ServiceState> emit,
+  ) {
+    final beneficiary = event.beneficiary;
+    final normalizedType = beneficiary.meterType.toUpperCase().trim();
+    int matchedIndex = 0;
+    String matchedMeterType = 'prepaid';
+
+    if (normalizedType == 'PREPAID') {
+      matchedIndex = 0;
+      matchedMeterType = 'prepaid';
+    } else if (normalizedType == 'POSTPAID') {
+      matchedIndex = 1;
+      matchedMeterType = 'postpaid';
+    }
+
+    final minVendKobo = (beneficiary.minAmount * 100).round();
+
+    emit(
+      state.copyWith(
+        selectedProvider: beneficiary.providerName,
+        selectedProviderId: beneficiary.serviceCategoryId,
+        recipient: beneficiary.meterNumber,
+        verifiedCustomerName: beneficiary.customerName,
+        minVendAmountKobo: minVendKobo,
+        selectedPlanIndex: matchedIndex,
+        meterType: matchedMeterType,
+        errorMessage: null,
+      ),
+    );
+  }
+
+  Future<void> _onContactBeneficiariesRequested(
+    ServiceContactBeneficiariesRequested event,
+    Emitter<ServiceState> emit,
+  ) async {
+    if (state.hasReachedMaxContactBeneficiaries) return;
+    if (state.isFetchingMoreContactBeneficiaries) return;
+
+    final isInitial = state.contactBeneficiaries.isEmpty;
+    final nextPage = isInitial ? 1 : state.contactBeneficiariesPage + 1;
+    final title = state.config.title.toUpperCase().trim();
+    final filter = (title == 'DATA' || title == 'INTERNET') ? 'INTERNET' : 'AIRTIME';
+
+    try {
+      if (isInitial) {
+        emit(state.copyWith(isProvidersLoading: true));
+      } else {
+        emit(state.copyWith(isFetchingMoreContactBeneficiaries: true));
+      }
+
+      final beneficiaries = await _serviceRepository.getContactBeneficiaries(
+        page: nextPage,
+        limit: 10,
+        filter: filter,
+      );
+
+      final hasReachedMax = beneficiaries.length < 10;
+      final updatedList = List<ContactBeneficiary>.from(state.contactBeneficiaries)
+        ..addAll(beneficiaries);
+
+      emit(
+        state.copyWith(
+          contactBeneficiaries: updatedList,
+          contactBeneficiariesPage: nextPage,
+          hasReachedMaxContactBeneficiaries: hasReachedMax,
+          isFetchingMoreContactBeneficiaries: false,
+          isProvidersLoading: false,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Failed to fetch contact beneficiaries: $e');
+      emit(
+        state.copyWith(
+          isFetchingMoreContactBeneficiaries: false,
+          isProvidersLoading: false,
+        ),
+      );
+    }
+  }
+
+  void _onContactBeneficiarySelected(
+    ServiceContactBeneficiarySelected event,
+    Emitter<ServiceState> emit,
+  ) {
+    final beneficiary = event.beneficiary;
+    String providerName = '';
+    try {
+      final p = state.providers.firstWhere((prov) => prov.id == beneficiary.serviceCategoryId);
+      providerName = p.name;
+    } catch (_) {}
+
+    emit(
+      state.copyWith(
+        recipient: beneficiary.phone,
+        phoneNumber: beneficiary.phone,
+        selectedProvider: providerName,
+        selectedProviderId: beneficiary.serviceCategoryId,
+        contactName: beneficiary.contactName,
+        errorMessage: null,
+      ),
+    );
+
+    final title = state.config.title.toLowerCase().trim();
+    final isAirtime = title == 'airtime' || title == 'electricity';
+    if (!isAirtime && beneficiary.serviceCategoryId.isNotEmpty) {
+      add(ServiceProductsRequested(beneficiary.serviceCategoryId));
+    }
   }
 }

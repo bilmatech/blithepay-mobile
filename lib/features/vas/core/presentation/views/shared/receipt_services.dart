@@ -15,6 +15,13 @@ class ReceiptService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(40),
         build: (_) {
+          final rawMeta = transaction.metadata.rawJson;
+          final nestedMeta = rawMeta['metaData'] is Map ? rawMeta['metaData'] as Map : null;
+
+          final discoVal = rawMeta['disco'] ?? nestedMeta?['disco'];
+          final unitsVal = rawMeta['units'] ?? nestedMeta?['units'];
+          final taxVal = rawMeta['tax'] ?? nestedMeta?['tax'];
+
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
@@ -131,25 +138,24 @@ class ReceiptService {
                   _row('Units', transaction.tokenUnits!),
               ],
 
-              if (transaction.metadata.rawJson['disco'] != null ||
-                  transaction.metadata.rawJson['units'] != null) ...[
+              if (discoVal != null || unitsVal != null) ...[
                 pw.SizedBox(height: 12),
-                if (transaction.metadata.rawJson['disco'] != null)
+                if (discoVal != null)
                   _row(
                     'Distribution Company',
-                    transaction.metadata.rawJson['disco'].toString(),
+                    discoVal.toString(),
                   ),
-                if (transaction.metadata.rawJson['units'] != null)
+                if (unitsVal != null)
                   _row(
                     'Units',
-                    (transaction.metadata.rawJson['units'] as num)
+                    (unitsVal as num)
                         .toDouble()
                         .toStringAsFixed(2),
                   ),
-                if (transaction.metadata.rawJson['tax'] != null)
+                if (taxVal != null)
                   _row(
                     'Tax',
-                    '₦${(transaction.metadata.rawJson['tax'] as num).toDouble().toStringAsFixed(2)}',
+                    '₦${(taxVal as num).toDouble().toStringAsFixed(2)}',
                   ),
               ],
 

@@ -63,12 +63,22 @@ class ServiceState {
   final String phoneNumber;
   final ServiceNetwork? network;
   final List<Beneficiary> beneficiaries;
+  final List<UtilityBeneficiary> utilityBeneficiaries;
+  final int utilityBeneficiariesPage;
+  final bool hasReachedMaxUtilityBeneficiaries;
+  final bool isFetchingMoreUtilityBeneficiaries;
+  final List<ContactBeneficiary> contactBeneficiaries;
+  final int contactBeneficiariesPage;
+  final bool hasReachedMaxContactBeneficiaries;
+  final bool isFetchingMoreContactBeneficiaries;
   final bool isProcessing;
   final String? errorMessage;
   final ServiceTransactionModel? transaction;
   final String bundleCode;
   final String meterType;
   final String? verifiedCustomerName;
+  final int? minVendAmountKobo;
+  final String? contactName;
 
   const ServiceState({
     required this.config,
@@ -88,12 +98,22 @@ class ServiceState {
     required this.phoneNumber,
     required this.network,
     required this.beneficiaries,
+    required this.utilityBeneficiaries,
+    this.utilityBeneficiariesPage = 1,
+    this.hasReachedMaxUtilityBeneficiaries = false,
+    this.isFetchingMoreUtilityBeneficiaries = false,
+    required this.contactBeneficiaries,
+    this.contactBeneficiariesPage = 1,
+    this.hasReachedMaxContactBeneficiaries = false,
+    this.isFetchingMoreContactBeneficiaries = false,
     this.isProcessing = false,
     this.errorMessage = '',
     this.transaction,
     required this.bundleCode,
     required this.meterType,
-    this.verifiedCustomerName, // Initialize parameter
+    this.verifiedCustomerName,
+    this.minVendAmountKobo,
+    this.contactName,
   });
 
   factory ServiceState.initial(
@@ -119,11 +139,22 @@ class ServiceState {
       phoneNumber: '',
       network: null,
       beneficiaries: initialBeneficiaries,
+      utilityBeneficiaries: const [],
+      utilityBeneficiariesPage: 1,
+      hasReachedMaxUtilityBeneficiaries: false,
+      isFetchingMoreUtilityBeneficiaries: false,
+      contactBeneficiaries: const [],
+      contactBeneficiariesPage: 1,
+      hasReachedMaxContactBeneficiaries: false,
+      isFetchingMoreContactBeneficiaries: false,
       isProcessing: false,
       errorMessage: null,
       transaction: null,
       bundleCode: '',
       meterType: hasPlans ? config.plans.first.title.toLowerCase() : '',
+      verifiedCustomerName: null,
+      minVendAmountKobo: null,
+      contactName: null,
     );
   }
 
@@ -163,12 +194,23 @@ class ServiceState {
     String? phoneNumber,
     ServiceNetwork? network,
     List<Beneficiary>? beneficiaries,
+    List<UtilityBeneficiary>? utilityBeneficiaries,
+    int? utilityBeneficiariesPage,
+    bool? hasReachedMaxUtilityBeneficiaries,
+    bool? isFetchingMoreUtilityBeneficiaries,
+    List<ContactBeneficiary>? contactBeneficiaries,
+    int? contactBeneficiariesPage,
+    bool? hasReachedMaxContactBeneficiaries,
+    bool? isFetchingMoreContactBeneficiaries,
     bool? isProcessing,
     String? errorMessage,
     ServiceTransactionModel? transaction,
     String? bundleCode,
     String? meterType,
-    String? verifiedCustomerName, // Add selector to copyWith
+    String? verifiedCustomerName,
+    int? minVendAmountKobo,
+    String? contactName,
+    bool clearContactName = false,
   }) {
     return ServiceState(
       config: config ?? this.config,
@@ -189,12 +231,32 @@ class ServiceState {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       network: network ?? this.network,
       beneficiaries: beneficiaries ?? this.beneficiaries,
+      utilityBeneficiaries: utilityBeneficiaries ?? this.utilityBeneficiaries,
+      utilityBeneficiariesPage:
+          utilityBeneficiariesPage ?? this.utilityBeneficiariesPage,
+      hasReachedMaxUtilityBeneficiaries:
+          hasReachedMaxUtilityBeneficiaries ??
+              this.hasReachedMaxUtilityBeneficiaries,
+      isFetchingMoreUtilityBeneficiaries:
+          isFetchingMoreUtilityBeneficiaries ??
+              this.isFetchingMoreUtilityBeneficiaries,
+      contactBeneficiaries: contactBeneficiaries ?? this.contactBeneficiaries,
+      contactBeneficiariesPage:
+          contactBeneficiariesPage ?? this.contactBeneficiariesPage,
+      hasReachedMaxContactBeneficiaries:
+          hasReachedMaxContactBeneficiaries ??
+              this.hasReachedMaxContactBeneficiaries,
+      isFetchingMoreContactBeneficiaries:
+          isFetchingMoreContactBeneficiaries ??
+              this.isFetchingMoreContactBeneficiaries,
       isProcessing: isProcessing ?? this.isProcessing,
       errorMessage: errorMessage ?? this.errorMessage,
       transaction: transaction ?? this.transaction,
       bundleCode: bundleCode ?? this.bundleCode,
       meterType: meterType ?? this.meterType,
       verifiedCustomerName: verifiedCustomerName ?? this.verifiedCustomerName,
+      minVendAmountKobo: minVendAmountKobo ?? this.minVendAmountKobo,
+      contactName: clearContactName ? null : (contactName ?? this.contactName),
     );
   }
 

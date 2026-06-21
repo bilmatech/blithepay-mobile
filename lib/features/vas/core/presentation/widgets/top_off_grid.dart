@@ -4,19 +4,21 @@ import 'package:flutter/material.dart';
 class TopOffGrid extends StatelessWidget {
   final int selectedAmountKobo;
   final ValueChanged<int> onAmountSelected;
+  final List<int>? amounts;
 
   const TopOffGrid({
     super.key,
     required this.selectedAmountKobo,
     required this.onAmountSelected,
+    this.amounts,
   });
 
   @override
   Widget build(BuildContext context) {
-    const amounts = [5000, 10000, 20000, 50000, 100000, 200000];
+    final list = amounts ?? const [5000, 10000, 20000, 50000, 100000, 200000];
 
     return GridView.builder(
-      itemCount: amounts.length,
+      itemCount: list.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -26,7 +28,7 @@ class TopOffGrid extends StatelessWidget {
         mainAxisSpacing: 8,
       ),
       itemBuilder: (context, index) {
-        final amountKobo = amounts[index];
+        final amountKobo = list[index];
         final isSelected = amountKobo == selectedAmountKobo;
 
         return _TopOffChip(

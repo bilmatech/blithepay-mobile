@@ -15,6 +15,7 @@ import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:blithepay/shared/widgets/layouts/app_text.dart';
 import 'package:blithepay/shared/widgets/loaders/shimmer_widget.dart';
+import 'package:blithepay/features/vas/core/presentation/widgets/contact_beneficiaries_row.dart';
 import 'package:flutter/material.dart';
 
 class AirtimePurchaseView extends StatelessWidget {
@@ -146,6 +147,26 @@ class _AirtimeViewState extends State<_AirtimeView> {
                   const SizedBox(height: 24),
                   _buildProviderSection(context, state),
                   const SizedBox(height: 24),
+
+                  // ── Contact Beneficiaries Section ──
+                  if (state.contactBeneficiaries.isNotEmpty) ...[
+                    ContactBeneficiariesRow(
+                      beneficiaries: state.contactBeneficiaries,
+                      isFetchingMore: state.isFetchingMoreContactBeneficiaries,
+                      onLoadMore: () {
+                        context.read<ServiceBloc>().add(
+                              ServiceContactBeneficiariesRequested(),
+                            );
+                      },
+                      onTap: (b) {
+                        context.read<ServiceBloc>().add(
+                              ServiceContactBeneficiarySelected(b),
+                            );
+                      },
+                    ),
+                    const SizedBox(height: 28),
+                  ],
+
                   AnimatedOpacity(
                     duration: const Duration(milliseconds: 350),
                     opacity: hasSelectedProvider ? 1.0 : 0.35,
@@ -391,6 +412,10 @@ class _AirtimeViewState extends State<_AirtimeView> {
   }
 
   TextEditingController _ensurePhoneController(ServiceState state) {
+    if (_phoneController != null && _phoneController!.text != state.phoneNumber) {
+      _phoneController!.text = state.phoneNumber;
+      _phoneController!.selection = TextSelection.collapsed(offset: state.phoneNumber.length);
+    }
     return _phoneController ??= TextEditingController(text: state.phoneNumber);
   }
 

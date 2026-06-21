@@ -123,6 +123,8 @@ class SuccessPanel extends StatelessWidget {
                           ),
                         if (transaction!.token?.isNotEmpty == true)
                           _SummaryRow('Token', transaction!.token!),
+                        if (transaction!.tokenUnits?.isNotEmpty == true)
+                          _SummaryRow('Units', transaction!.tokenUnits!),
                       ],
                     ),
                   ),

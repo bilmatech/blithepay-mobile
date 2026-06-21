@@ -4,8 +4,9 @@ abstract class ServiceEvent {}
 
 class ServiceRecipientChanged extends ServiceEvent {
   final String recipient;
+  final String? contactName;
 
-  ServiceRecipientChanged(this.recipient);
+  ServiceRecipientChanged(this.recipient, {this.contactName});
 }
 
 class ServiceProviderSelected extends ServiceEvent {
@@ -116,4 +117,18 @@ class ServiceInitRequested extends ServiceEvent {
 class ServiceBalanceUpdated extends ServiceEvent {
   final int balanceKobo;
   ServiceBalanceUpdated(this.balanceKobo);
+}
+
+class ServiceUtilityBeneficiariesRequested extends ServiceEvent {}
+
+class ServiceUtilityBeneficiarySelected extends ServiceEvent {
+  final UtilityBeneficiary beneficiary;
+  ServiceUtilityBeneficiarySelected(this.beneficiary);
+}
+
+class ServiceContactBeneficiariesRequested extends ServiceEvent {}
+
+class ServiceContactBeneficiarySelected extends ServiceEvent {
+  final ContactBeneficiary beneficiary;
+  ServiceContactBeneficiarySelected(this.beneficiary);
 }

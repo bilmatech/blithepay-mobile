@@ -1,4 +1,5 @@
 import 'package:blithepay/features/vas/core/presentation/bloc/service_bloc/service_bloc.dart';
+import 'package:intl/intl.dart';
 
 class ServiceModel {
   final String id;
@@ -114,5 +115,12 @@ class ServiceProductModel {
   }
 
   // Handy getter to format pricing consistently
-  String get priceLabel => formattedAmount ?? '₦${amount.toStringAsFixed(0)}';
+  String get priceLabel {
+    final formatter = NumberFormat.currency(
+      locale: 'en_NG',
+      symbol: '₦',
+      decimalDigits: amount % 1 == 0 ? 0 : 2,
+    );
+    return formatter.format(amount);
+  }
 }

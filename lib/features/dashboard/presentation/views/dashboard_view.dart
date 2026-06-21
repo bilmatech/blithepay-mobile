@@ -25,6 +25,8 @@ import 'package:blithepay/features/transaction/presentation/bloc/transaction_blo
 import 'package:blithepay/features/dashboard/presentation/widgets/dashboard_header.dart';
 import 'package:blithepay/features/transaction/presentation/bloc/transaction_event.dart';
 import 'package:blithepay/features/dashboard/presentation/widgets/financial_summary_card.dart';
+import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
+import 'package:blithepay/features/transaction/presentation/bloc/transaction_state.dart';
 
 class DashboardView extends StatelessWidget {
   final Widget child;
@@ -64,7 +66,7 @@ class _HomeViewState extends State<HomeView> {
     context.read<WalletBloc>().add(const FetchWalletDataEvent());
 
     // Fetch transactions separately
-    //context.read<WalletTransactionBloc>().add(GetTransactionsEvent());
+    context.read<WalletTransactionBloc>().add(GetTransactionsEvent());
     context.read<DashboardBloc>().add(const FetchDashboardData());
   }
 
@@ -111,9 +113,9 @@ class _HomeViewState extends State<HomeView> {
                 const FetchDashboardData(forceRefresh: true),
               );
               context.read<WalletBloc>().add(const FetchWalletDataEvent());
-              // context.read<WalletTransactionBloc>().add(
-              //   GetTransactionsEvent(refresh: true),
-              // );
+              context.read<WalletTransactionBloc>().add(
+                GetTransactionsEvent(refresh: true),
+              );
             },
             child: CustomScrollView(
               slivers: [
@@ -214,93 +216,69 @@ class _HomeViewState extends State<HomeView> {
                     ),
                   ),
                 ),
-                // Recent Activity (static sample list - preserved UI). Tapping opens details.
+                // Recent Activity (dynamic list from API). Tapping opens details.
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 6,
                   ),
                   sliver: SliverToBoxAdapter(
-                    child: Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            final tx = TransactionModel(
-                              name: 'Airtime Recharge',
-                              transactionAt: DateTime(2024, 6, 17, 23, 15),
-                              amount: 'N3,000',
-                              netAmount: 'N3,000',
-                              reference: 'REF001',
-                              status: TransactionStatus.successful,
-                              flow: TransactionFlow.outflow,
-                              type: TransactionType.airtime,
-                              icon: '📱',
-                              fees: 0,
+                    child: BlocBuilder<WalletTransactionBloc, WalletTransactionState>(
+                      builder: (context, txState) {
+                        if (txState is WalletTransactionLoading) {
+                          return const RecentTransactionsShimmer();
+                        }
+                        if (txState is WalletTransactionError) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              child: Text(
+                                txState.message,
+                                style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
+                              ),
+                            ),
+                          );
+                        }
+                        if (txState is WalletTransactionLoaded) {
+                          final txList = txState.transactions;
+                          if (txList.isEmpty) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 32),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.account_balance_wallet_outlined,
+                                    size: 48,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No transactions yet',
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: Colors.grey.shade500,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             );
-                            context.push(
-                              AppRoutes.transactionDetail,
-                              extra: tx,
-                            );
-                          },
-                          child: const ActivityItem(
-                            title: 'Airtime Recharge',
-                            date: 'Jun 17, 2024, 11:15pm',
-                            amount: 3000.00,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        GestureDetector(
-                          onTap: () {
-                            final tx = TransactionModel(
-                              name: 'DSTV Subscription',
-                              transactionAt: DateTime(2024, 7, 19, 23, 15),
-                              amount: 'N3,000',
-                              netAmount: 'N3,000',
-                              reference: 'REF002',
-                              status: TransactionStatus.successful,
-                              flow: TransactionFlow.outflow,
-                              type: TransactionType.cable,
-                              icon: '📺',
-                              fees: 0,
-                            );
-                            context.push(
-                              AppRoutes.transactionDetail,
-                              extra: tx,
-                            );
-                          },
-                          child: const ActivityItem(
-                            title: 'DSTV Subscription',
-                            date: 'Jul 19, 2024, 11:15pm',
-                            amount: 3000.00,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        GestureDetector(
-                          onTap: () {
-                            final tx = TransactionModel(
-                              name: 'Electricity',
-                              transactionAt: DateTime(2024, 6, 17, 23, 15),
-                              amount: 'N2,000',
-                              netAmount: 'N2,000',
-                              reference: 'REF003',
-                              status: TransactionStatus.successful,
-                              flow: TransactionFlow.outflow,
-                              type: TransactionType.electricity,
-                              icon: '⚡',
-                              fees: 0,
-                            );
-                            context.push(
-                              AppRoutes.transactionDetail,
-                              extra: tx,
-                            );
-                          },
-                          child: const ActivityItem(
-                            title: 'Electricity',
-                            date: 'Jun 17, 2024, 11:15pm',
-                            amount: 2000.00,
-                          ),
-                        ),
-                      ],
+                          }
+                          // Display exactly 3 items on the home page as requested
+                          final displayList = txList.take(3).toList();
+                          return Column(
+                            children: List.generate(displayList.length, (index) {
+                              final tx = displayList[index];
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: index == displayList.length - 1 ? 0 : 12,
+                                ),
+                                child: TransactionContainer(transaction: tx),
+                              );
+                            }),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
                     ),
                   ),
                 ),

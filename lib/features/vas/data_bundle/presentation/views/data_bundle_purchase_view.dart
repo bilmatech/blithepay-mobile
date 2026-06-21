@@ -17,6 +17,8 @@ import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/layouts/app_text.dart';
 import 'package:blithepay/shared/widgets/loaders/shimmer_widget.dart';
+import 'package:blithepay/features/vas/airtime/presentation/widgets/amount_entry_card.dart' show AmountEntryCard;
+import 'package:blithepay/features/vas/core/presentation/widgets/contact_beneficiaries_row.dart';
 import 'package:flutter/material.dart';
 
 // ── Root view ─────────────────────────────────────────────────────────────────
@@ -136,6 +138,25 @@ class _DataBundleViewState extends State<_DataBundleView> {
                     _buildNetworkSection(context, state),
 
                     const SizedBox(height: 28),
+
+                    // ── Contact Beneficiaries Section ──
+                    if (state.contactBeneficiaries.isNotEmpty) ...[
+                      ContactBeneficiariesRow(
+                        beneficiaries: state.contactBeneficiaries,
+                        isFetchingMore: state.isFetchingMoreContactBeneficiaries,
+                        onLoadMore: () {
+                          context.read<ServiceBloc>().add(
+                                ServiceContactBeneficiariesRequested(),
+                              );
+                        },
+                        onTap: (b) {
+                          context.read<ServiceBloc>().add(
+                                ServiceContactBeneficiarySelected(b),
+                              );
+                        },
+                      ),
+                      const SizedBox(height: 28),
+                    ],
 
                     // ── Everything below only visible after network pick ───
                     AnimatedOpacity(
@@ -408,6 +429,10 @@ class _DataBundleViewState extends State<_DataBundleView> {
   }
 
   TextEditingController _ensurePhoneController(ServiceState state) {
+    if (_phoneController != null && _phoneController!.text != state.phoneNumber) {
+      _phoneController!.text = state.phoneNumber;
+      _phoneController!.selection = TextSelection.collapsed(offset: state.phoneNumber.length);
+    }
     return _phoneController ??=
         TextEditingController(text: state.phoneNumber);
   }
@@ -426,6 +451,28 @@ class _DataPackageSection extends StatefulWidget {
 
 class _DataPackageSectionState extends State<_DataPackageSection> {
   ServicePlanCategory? _activeCategory;
+  TextEditingController? _amountController;
+
+  @override
+  void dispose() {
+    _amountController?.dispose();
+    super.dispose();
+  }
+
+  TextEditingController _ensureAmountController(ServiceState state) {
+    final formatted = _formatAmount(state.amountKobo);
+    if (_amountController != null && _amountController!.text != formatted) {
+      _amountController!.text = formatted;
+      _amountController!.selection = TextSelection.collapsed(offset: formatted.length);
+    }
+    return _amountController ??= TextEditingController(text: formatted);
+  }
+
+  String _formatAmount(int amountKobo) {
+    final whole = amountKobo ~/ 100;
+    final decimal = amountKobo.remainder(100).toString().padLeft(2, '0');
+    return '$whole.$decimal';
+  }
 
   List<(int globalIndex, vas_models.ServiceProductModel plan)>
       get _visiblePlans {
@@ -577,6 +624,15 @@ class _DataPackageSectionState extends State<_DataPackageSection> {
           ),
         ),
 
+        if (selectedPlan != null) ...[
+          const SizedBox(height: 20),
+          AmountEntryCard(
+            controller: _ensureAmountController(state),
+            availableBalanceKobo: state.availableBalanceKobo,
+            enabled: false,
+          ),
+        ],
+
         const SizedBox(height: 20),
 
         // ── Pay button ─────────────────────────────────────────────────────
@@ -629,6 +685,7 @@ class _DataPackageSectionState extends State<_DataPackageSection> {
           bundleCode: selectedPlan.bundleCode,
           amountKobo: selectedPlan.amountKobo,
           challengeToken: token,
+          contactName: currentState.contactName,
         );
       },
       onCancel: () => bloc.add(ServiceResetRequested()),

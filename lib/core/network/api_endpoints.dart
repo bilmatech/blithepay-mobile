@@ -88,6 +88,9 @@ class ApiEndpoints {
   static const String purchaseInternet = '/vas/purchase-internet';
   static const String purchaseUtility = '/vas/purchase-utility';
   static const String subscribeCableTv = '/vas/subscribe-cabletv';
+  static const String getUtilityBeneficiaries = '/vas/utility-beneficiaries';
+  static const String getCableTvBeneficiaries = '/vas/cabletv-beneficiaries';
+  static const String getContactBeneficiaries = '/vas/contact-beneficiaries';
 }
 
 

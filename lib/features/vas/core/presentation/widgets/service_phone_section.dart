@@ -95,6 +95,33 @@ class ServicePhoneSection extends StatelessWidget {
           ),
         ],
 
+        // ── Contact name indicator ──────────────────────────────────────────
+        if (state.contactName != null && state.contactName!.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.person_rounded,
+                  size: 13,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  state.contactName!,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+
+
         // ── Recent beneficiaries ───────────────────────────────────────────
         if (state.beneficiaries.isNotEmpty) ...[
           const SizedBox(height: 20),
@@ -133,18 +160,18 @@ class ServicePhoneSection extends StatelessWidget {
 
     if (!status.isGranted || !context.mounted) return;
 
-    final selectedPhone = await showModalBottomSheet<String>(
+    final result = await showModalBottomSheet<ContactPickerResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => const ContactPickerSheet(),
     );
 
-    if (selectedPhone == null || !context.mounted) return;
+    if (result == null || !context.mounted) return;
 
-    final clean = selectedPhone.replaceAll(RegExp(r'[^\d ]'), '').trim();
+    final clean = result.phoneNumber.replaceAll(RegExp(r'[^\d ]'), '').trim();
     phoneController.text = clean;
-    bloc.add(ServiceRecipientChanged(clean));
+    bloc.add(ServiceRecipientChanged(clean, contactName: result.name));
     bloc.add(ServiceNetworkDetected(detectNigerianNetwork(clean)));
   }
 }

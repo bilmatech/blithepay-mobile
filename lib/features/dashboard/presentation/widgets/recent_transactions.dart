@@ -107,7 +107,7 @@ class TransactionContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.push(AppRoutes.wallettransactionDetail, extra: transaction);
+        context.push(AppRoutes.transactionDetail, extra: transaction);
       },
       behavior: HitTestBehavior.opaque,
       child: Container(
