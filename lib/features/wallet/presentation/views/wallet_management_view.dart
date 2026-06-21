@@ -4,7 +4,6 @@ import 'package:blithepay/features/dashboard/presentation/widgets/recent_transac
 import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
 import 'package:blithepay/features/wallet/presentation/widgets/quick_action_button.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/app_outlined_icon_button.dart';
 import 'package:blithepay/shared/widgets/loaders/shimmer_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -39,10 +38,7 @@ class _WalletManagementViewState extends State<WalletManagementView> {
             children: [
               // Balance Card
               if (_isLoading)
-                ShimmerWidget(
-                  height: 140,
-                  borderRadius: BorderRadius.circular(4),
-                )
+                ShimmerWidget(height: 140, borderRadius: BorderRadius.circular(4))
               else
                 Container(
                   decoration: BoxDecoration(
@@ -64,15 +60,11 @@ class _WalletManagementViewState extends State<WalletManagementView> {
                               const Spacer(),
                               IconButton(
                                 icon: Icon(
-                                  _balanceVisible
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
+                                  _balanceVisible ? Icons.visibility : Icons.visibility_off,
                                   color: Colors.white,
                                   size: 20,
                                 ),
-                                onPressed: () => setState(
-                                  () => _balanceVisible = !_balanceVisible,
-                                ),
+                                onPressed: () => setState(() => _balanceVisible = !_balanceVisible),
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
                               ),
@@ -102,9 +94,7 @@ class _WalletManagementViewState extends State<WalletManagementView> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                              ),
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent),
                               onPressed: () {
                                 context.push(AppRoutes.fundWallet);
                               },
@@ -135,40 +125,13 @@ class _WalletManagementViewState extends State<WalletManagementView> {
               const QuickActionButtons(),
               const SizedBox(height: 24),
 
-              // Recent Transactions
-              Row(
-                children: [
-                  Text(
-                    'Recent Transactions:',
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  const Spacer(),
-                  AppOutlinedIconButton(
-                    label: 'Filter',
-                    icon: Icons.tune,
-                    onPressed: () {},
-                  ),
-                  const SizedBox(width: 8),
-                  AppOutlinedIconButton(
-                    label: 'Sort by',
-                    icon: Icons.sort,
-                    borderRadius: 8,
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
               if (_isLoading)
                 ListView.builder(
                   itemCount: 5,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) => ShimmerWidget(
-                    height: 60,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  itemBuilder: (context, index) =>
+                      ShimmerWidget(height: 60, borderRadius: BorderRadius.circular(8)),
                 )
               else
                 ListView.separated(

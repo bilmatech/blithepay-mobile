@@ -4,6 +4,7 @@ import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/app_bar.dart';
 import 'package:blithepay/shared/widgets/layouts/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:blithepay/features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'package:blithepay/features/transaction/presentation/bloc/transaction_event.dart';
 import 'package:blithepay/features/transaction/presentation/bloc/transaction_state.dart';
@@ -53,7 +54,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   TransactionModel _mapToTransactionModel(WalletTransactionModel walletTx) {
     TransactionType type = TransactionType.other;
     String name = walletTx.name;
-    String icon = '💸';
+    String iconKey = 'withdrawal';
 
     final desc = (walletTx.description ?? '').toLowerCase();
     final typeStr = walletTx.type.toLowerCase();
@@ -61,27 +62,27 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     if (desc.contains('airtime') || typeStr.contains('airtime') || desc.contains('recharge')) {
       type = TransactionType.airtime;
       name = 'Airtime Recharge';
-      icon = '📱';
+      iconKey = 'airtime';
     } else if (desc.contains('data') || desc.contains('internet') || typeStr.contains('data') || typeStr.contains('internet')) {
       type = TransactionType.data;
       name = 'Data Bundle';
-      icon = '📶';
+      iconKey = 'data';
     } else if (desc.contains('dstv') || desc.contains('gotv') || desc.contains('startimes') || desc.contains('cable') || typeStr.contains('cable')) {
       type = TransactionType.cable;
       name = desc.contains('gotv') ? 'GOtv Subscription' : (desc.contains('dstv') ? 'DStv Subscription' : 'Cable TV Subscription');
-      icon = '📺';
+      iconKey = 'cable';
     } else if (desc.contains('electricity') || desc.contains('meter') || desc.contains('power') || typeStr.contains('electricity') || typeStr.contains('utility')) {
       type = TransactionType.electricity;
       name = 'Electricity';
-      icon = '⚡';
+      iconKey = 'electricity';
     } else if (typeStr == 'deposit' || typeStr == 'inflow') {
       type = TransactionType.other;
       name = 'Deposit';
-      icon = '💰';
+      iconKey = 'deposit';
     } else {
       type = TransactionType.other;
       name = 'Withdrawal';
-      icon = '💸';
+      iconKey = 'withdrawal';
     }
 
     TransactionStatus status = TransactionStatus.pending;
@@ -113,7 +114,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       status: status,
       flow: flow,
       type: type,
-      icon: icon,
+      icon: iconKey,
       fees: feesVal,
     );
   }
@@ -126,44 +127,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Filter and Sort Controls
-            Row(
-              children: [
-                const Spacer(),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.tune, size: 20),
-                    label: const Text('Filter'),
-                    iconAlignment: IconAlignment.end,
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.border),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.arrow_drop_down, size: 20),
-                    label: const Text('Sort by'),
-                    iconAlignment: IconAlignment.end,
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.border),
-                      iconAlignment: IconAlignment.end,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-              ],
-            ),
-            const SizedBox(height: 20),
             // Transactions List
             Expanded(
               child: BlocBuilder<WalletTransactionBloc, WalletTransactionState>(
@@ -238,6 +201,70 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
 }
 
+class _TransactionIcon extends StatelessWidget {
+  final String iconType;
+
+  const _TransactionIcon({required this.iconType});
+
+  @override
+  Widget build(BuildContext context) {
+    IconData iconData;
+    Color iconColor;
+    Color bgColor;
+
+    switch (iconType.toLowerCase()) {
+      case 'airtime':
+        iconData = Icons.phone_iphone_rounded;
+        iconColor = Colors.purple.shade700;
+        bgColor = Colors.purple.shade50;
+        break;
+      case 'data':
+        iconData = Icons.wifi_rounded;
+        iconColor = Colors.teal.shade700;
+        bgColor = Colors.teal.shade50;
+        break;
+      case 'cable':
+      case 'cabletv':
+        iconData = Icons.tv_rounded;
+        iconColor = Colors.orange.shade800;
+        bgColor = Colors.orange.shade50;
+        break;
+      case 'electricity':
+        iconData = Icons.bolt_rounded;
+        iconColor = Colors.amber.shade900;
+        bgColor = Colors.amber.shade50;
+        break;
+      case 'deposit':
+        iconData = Icons.arrow_downward_rounded;
+        iconColor = Colors.green.shade700;
+        bgColor = Colors.green.shade50;
+        break;
+      case 'withdrawal':
+      default:
+        iconData = Icons.arrow_upward_rounded;
+        iconColor = Colors.red.shade700;
+        bgColor = Colors.red.shade50;
+        break;
+    }
+
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(
+        child: Icon(
+          iconData,
+          color: iconColor,
+          size: 22,
+        ),
+      ),
+    );
+  }
+}
+
 class _TransactionCard extends StatelessWidget {
   final TransactionModel transaction;
   final WalletTransactionModel rawTransaction;
@@ -249,6 +276,9 @@ class _TransactionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final displayDate = DateFormat('dd MMM yyyy, hh:mm a')
+        .format(transaction.transactionAt.toLocal());
+
     return GestureDetector(
       onTap: () {
         context.push(AppRoutes.transactionDetail, extra: rawTransaction);
@@ -263,27 +293,16 @@ class _TransactionCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Center(
-                child: Text(
-                  transaction.icon,
-                  style: const TextStyle(fontSize: 24),
-                ),
-              ),
-            ),
+            _TransactionIcon(iconType: transaction.icon),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   BodyMd(transaction.name, color: AppColors.textPrimary),
+                  const SizedBox(height: 4),
                   CaptionMd(
-                    transaction.transactionAt.toLocal().toString(),
+                    displayDate,
                     color: AppColors.textSecondary,
                   ),
                 ],
@@ -293,6 +312,7 @@ class _TransactionCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 BodyMd(transaction.amount, color: AppColors.textPrimary),
+                const SizedBox(height: 4),
                 CaptionMd(
                   transaction.status.name,
                   color: transaction.status == TransactionStatus.successful

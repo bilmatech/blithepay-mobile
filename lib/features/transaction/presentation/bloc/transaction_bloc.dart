@@ -34,7 +34,7 @@ class WalletTransactionBloc
       oldTransactions = currentState.transactions;
 
       emit(currentState.copyWith(isFetchingMore: true));
-    } else if (event.page == 1 && !event.refresh) {
+    } else if (event.page == 1 && (!event.refresh || currentState is! WalletTransactionLoaded)) {
       emit(WalletTransactionLoading());
     }
 

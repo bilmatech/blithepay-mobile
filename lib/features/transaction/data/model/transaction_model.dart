@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 enum TransactionStatus { successful, failed, pending }
 
 enum TransactionFlow { inflow, outflow }
