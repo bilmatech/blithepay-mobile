@@ -3,18 +3,47 @@ import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:blithepay/features/vas/core/data/models/service_purchase_response.dart';
-import 'package:blithepay/features/vas/core/presentation/bloc/service_bloc/service_bloc.dart';
 import 'package:blithepay/features/vas/core/presentation/views/shared/receipt_services.dart';
 import 'package:blithepay/features/vas/core/presentation/views/shared/success_panel.dart';
 import 'package:blithepay/features/vas/core/presentation/widgets/purchase_overlay.dart';
 import 'package:blithepay/features/fees/presentation/views/widgets/pin_bottom_sheet_content.dart';
-import 'package:blithepay/features/vas/core/utils/network_detector.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:blithepay/core/navigation/app_routes.dart';
+
+// ── Service Review Args ──────────────────────────────────────────────────────
+
+class ServiceReviewDetail {
+  final String label;
+  final String value;
+  const ServiceReviewDetail({required this.label, required this.value});
+}
+
+class ServiceReviewArgs {
+  final String title;
+  final int amountKobo;
+  final String recipient;
+  final String providerName;
+  final IconData icon;
+  final List<ServiceReviewDetail> summaryDetails;
+  final Future<ServiceTransactionModel> Function(String pin) onPay;
+  final VoidCallback onCancel;
+
+  const ServiceReviewArgs({
+    required this.title,
+    required this.amountKobo,
+    required this.recipient,
+    required this.providerName,
+    required this.icon,
+    required this.summaryDetails,
+    required this.onPay,
+    required this.onCancel,
+  });
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -129,7 +158,9 @@ class PaymentMethodTile extends StatelessWidget {
 // ── Main Review View ──────────────────────────────────────────────────────────
 
 class ServiceReviewView extends StatefulWidget {
-  const ServiceReviewView({super.key});
+  final ServiceReviewArgs args;
+
+  const ServiceReviewView({super.key, required this.args});
 
   @override
   State<ServiceReviewView> createState() => _ServiceReviewViewState();
@@ -137,45 +168,35 @@ class ServiceReviewView extends StatefulWidget {
 
 class _ServiceReviewViewState extends State<ServiceReviewView> {
   PaymentMethod? _method = PaymentMethod.wallet;
+  bool _isProcessing = false;
+  String? _errorMessage;
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<ServiceBloc>().state;
     final dashboardState = context.read<DashboardBloc>().state;
-
-    int finalAmountKobo = state.amountKobo;
-    if (state.selectedPlanIndex != null &&
-        state.selectedPlanIndex! >= 0 &&
-        state.products.isNotEmpty &&
-        state.selectedPlanIndex! < state.products.length) {
-      final selectedPlan = state.products[state.selectedPlanIndex!];
-      finalAmountKobo = (selectedPlan.amount * 100).toInt();
-    }
-
-    final serviceTitle = state.config.title;
 
     return AppScaffold(
       appBar: AppBar(
         leading: BackButton(
           onPressed: () {
-            // Cancel: reset service state and go back
-            context.read<ServiceBloc>().add(ServiceResetRequested());
             context.pop();
           },
         ),
-        title: Text(
+        title: const Text(
           'Review Payment',
-          style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.w700),
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
         ),
         centerTitle: true,
         actions: [
           TextButton(
             onPressed: () {
-              // Cancel: reset service state and go back
-              context.read<ServiceBloc>().add(ServiceResetRequested());
-              context.pop();
+              widget.args.onCancel();
+              context.go(AppRoutes.home);
             },
-            child: Text(
+            child: const Text(
               'Cancel',
               style: TextStyle(
                 color: AppColors.error,
@@ -225,11 +246,11 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                           ],
                         ),
                         child: Column(
-                          children: [
-                            Text(
+                           children: [
+                            const Text(
                               'TOTAL AMOUNT',
                               style: TextStyle(
-                                color: AppColors.white.withValues(alpha: 0.75),
+                                color: AppColors.white,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 1.2,
@@ -237,7 +258,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '₦${(finalAmountKobo / 100).toStringAsFixed(2)}',
+                              '₦${(widget.args.amountKobo / 100).toStringAsFixed(2)}',
                               style: const TextStyle(
                                 color: AppColors.white,
                                 fontSize: 36,
@@ -256,9 +277,9 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                serviceTitle,
-                                style: TextStyle(
-                                  color: AppColors.white.withValues(alpha: 0.9),
+                                widget.args.title,
+                                style: const TextStyle(
+                                  color: AppColors.white,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -271,8 +292,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                       const SizedBox(height: 24),
 
                       // ── ERROR BANNER ──────────────────────────────────────
-                      if (state.errorMessage != null &&
-                          state.errorMessage!.isNotEmpty) ...[
+                      if (_errorMessage != null && _errorMessage!.isNotEmpty) ...[
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
@@ -292,7 +312,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  state.errorMessage!,
+                                  _errorMessage!,
                                   style: TextStyle(
                                     color: Colors.red.shade900,
                                     fontWeight: FontWeight.w600,
@@ -306,10 +326,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                       ],
 
                       // ── ORDER DETAILS CARD ────────────────────────────────
-                      _OrderDetailsCard(
-                        state: state,
-                        finalAmountKobo: finalAmountKobo,
-                      ),
+                      _OrderDetailsCard(args: widget.args),
 
                       const SizedBox(height: 20),
 
@@ -346,7 +363,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
 
                       PrimaryButton(
                         label:
-                            'Pay ₦${(finalAmountKobo / 100).toStringAsFixed(2)}',
+                            'Pay ₦${(widget.args.amountKobo / 100).toStringAsFixed(2)}',
                         onPressed: () {
                           if (_method == PaymentMethod.wallet) {
                             _showPin(context);
@@ -366,8 +383,6 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
   }
 
   void _showPin(BuildContext parentContext) {
-    final serviceBloc = parentContext.read<ServiceBloc>();
-
     showModalBottomSheet<void>(
       context: parentContext,
       isScrollControlled: true,
@@ -375,40 +390,42 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
       isDismissible: false,
       enableDrag: false,
       builder: (sheetContext) {
-        return BlocProvider.value(
-          value: serviceBloc,
-          child: BlocConsumer<ServiceBloc, ServiceState>(
-            listenWhen: (prev, curr) =>
-                prev.isProcessing != curr.isProcessing ||
-                prev.stage != curr.stage ||
-                prev.errorMessage != curr.errorMessage,
-            listener: (modalCtx, state) {
-              if (state.stage == ServiceStage.success &&
-                  state.transaction != null) {
-                Navigator.pop(sheetContext);
-                _showSuccess(parentContext, serviceBloc, state.transaction!);
-                return;
-              }
-              if (!state.isProcessing &&
-                  state.errorMessage != null &&
-                  state.errorMessage!.isNotEmpty) {
-                Navigator.pop(sheetContext);
-              }
-            },
-            builder: (modalCtx, state) {
-              return PurchaseProcessingOverlay(
-                visible: state.isProcessing,
-                child: PinBottomSheetContent(
-                  isLoading: state.isProcessing,
-                  errorMessage: null,
-                  onSubmit: (pin) async {
-                    modalCtx.read<ServiceBloc>().add(ServicePinSubmitted(pin));
-                  },
-                  onForgotPin: () {},
-                ),
-              );
-            },
-          ),
+        return StatefulBuilder(
+          builder: (modalCtx, setModalState) {
+            return PurchaseProcessingOverlay(
+              visible: _isProcessing,
+              child: PinBottomSheetContent(
+                isLoading: _isProcessing,
+                errorMessage: _errorMessage,
+                onSubmit: (pin) async {
+                  setModalState(() {
+                    _isProcessing = true;
+                    _errorMessage = null;
+                  });
+                  setState(() {
+                    _isProcessing = true;
+                    _errorMessage = null;
+                  });
+                  try {
+                    final transaction = await widget.args.onPay(pin);
+                    Navigator.pop(sheetContext);
+                    _showSuccess(parentContext, transaction);
+                  } catch (e) {
+                    final errStr = e.toString().replaceFirst('Exception: ', '');
+                    setModalState(() {
+                      _isProcessing = false;
+                      _errorMessage = errStr;
+                    });
+                    setState(() {
+                      _isProcessing = false;
+                      _errorMessage = errStr;
+                    });
+                  }
+                },
+                onForgotPin: () {},
+              ),
+            );
+          },
         );
       },
     );
@@ -416,7 +433,6 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
 
   void _showSuccess(
     BuildContext targetContext,
-    ServiceBloc activeBloc,
     ServiceTransactionModel transaction,
   ) {
     showModalBottomSheet(
@@ -428,21 +444,13 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
         return SuccessPanel(
           title: 'Payment Successful!',
           description:
-              'Your ${activeBloc.state.config.title} transaction was completed successfully.',
+              'Your ${widget.args.title} transaction was completed successfully.',
           transaction: transaction,
           onDownloadReceipt: () async {
             await _showReceiptPreview(successContext, transaction);
           },
           onGoHome: () {
-            activeBloc.add(ServiceResetRequested());
-
-            // re-fetch explicitly
-            if (activeBloc.currentServiceId != null) {
-              activeBloc.add(
-                ServiceProvidersRequested(activeBloc.currentServiceId!),
-              );
-            }
-
+            widget.args.onCancel();
             Navigator.pop(successContext);
             Navigator.pop(targetContext);
           },
@@ -471,15 +479,12 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
 // ── Service-specific Order Details ────────────────────────────────────────────
 
 class _OrderDetailsCard extends StatelessWidget {
-  final ServiceState state;
-  final int finalAmountKobo;
+  final ServiceReviewArgs args;
 
-  const _OrderDetailsCard({required this.state, required this.finalAmountKobo});
+  const _OrderDetailsCard({required this.args});
 
   @override
   Widget build(BuildContext context) {
-    final serviceType = state.config.title.toLowerCase().trim();
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -507,7 +512,7 @@ class _OrderDetailsCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
-                  _iconForService(serviceType),
+                  args.icon,
                   color: AppColors.primary,
                   size: 18,
                 ),
@@ -524,141 +529,17 @@ class _OrderDetailsCard extends StatelessWidget {
           const SizedBox(height: 16),
           const Divider(height: 1),
           const SizedBox(height: 12),
-          ..._buildRows(state, finalAmountKobo, serviceType),
+          ...args.summaryDetails.map((detail) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: _DetailRow(
+                  label: detail.label,
+                  value: detail.value,
+                  isHighlight: detail.label.toLowerCase().trim() == 'amount',
+                ),
+              )),
         ],
       ),
     );
-  }
-
-  List<Widget> _buildRows(
-    ServiceState state,
-    int finalAmountKobo,
-    String serviceType,
-  ) {
-    final rows = <_DetailRow>[];
-
-    // Service name always shown
-    rows.add(_DetailRow(label: 'Service', value: state.config.title));
-
-    switch (serviceType) {
-      case 'airtime':
-        if (state.recipient.isNotEmpty) {
-          rows.add(_DetailRow(label: 'Phone Number', value: state.recipient));
-        }
-        if (state.network != null) {
-          rows.add(
-            _DetailRow(
-              label: 'Network',
-              value: networkFullLabel(state.network!),
-            ),
-          );
-        } else if (state.selectedProvider.isNotEmpty) {
-          rows.add(_DetailRow(label: 'Network', value: state.selectedProvider));
-        }
-        rows.add(
-          _DetailRow(
-            label: 'Amount',
-            value: '₦${(finalAmountKobo / 100).toStringAsFixed(2)}',
-            isHighlight: true,
-          ),
-        );
-      case 'data':
-      case 'internet':
-        if (state.recipient.isNotEmpty) {
-          rows.add(_DetailRow(label: 'Phone Number', value: state.recipient));
-        }
-        if (state.selectedProvider.isNotEmpty) {
-          rows.add(_DetailRow(label: 'Network', value: state.selectedProvider));
-        }
-        if (state.selectedPlanIndex != null &&
-            state.products.isNotEmpty &&
-            state.selectedPlanIndex! < state.products.length) {
-          final plan = state.products[state.selectedPlanIndex!];
-          rows.add(_DetailRow(label: 'Bundle', value: plan.name));
-          rows.add(_DetailRow(label: 'Validity', value: plan.name));
-        }
-        rows.add(
-          _DetailRow(
-            label: 'Amount',
-            value: '₦${(finalAmountKobo / 100).toStringAsFixed(2)}',
-            isHighlight: true,
-          ),
-        );
-      case 'electricity':
-      case 'utility':
-        if (state.recipient.isNotEmpty) {
-          rows.add(_DetailRow(label: 'Meter Number', value: state.recipient));
-        }
-        if (state.verifiedCustomerName != null &&
-            state.verifiedCustomerName!.isNotEmpty) {
-          rows.add(
-            _DetailRow(
-              label: 'Account Name',
-              value: state.verifiedCustomerName!,
-            ),
-          );
-        }
-        if (state.selectedProvider.isNotEmpty) {
-          rows.add(
-            _DetailRow(label: 'Distributor', value: state.selectedProvider),
-          );
-        }
-        if (state.meterType.isNotEmpty) {
-          rows.add(
-            _DetailRow(
-              label: 'Meter Type',
-              value:
-                  state.meterType[0].toUpperCase() +
-                  state.meterType.substring(1),
-            ),
-          );
-        }
-        rows.add(
-          _DetailRow(
-            label: 'Amount',
-            value: '₦${(finalAmountKobo / 100).toStringAsFixed(2)}',
-            isHighlight: true,
-          ),
-        );
-      default:
-        if (state.recipient.isNotEmpty) {
-          rows.add(
-            _DetailRow(
-              label: state.config.recipientLabel,
-              value: state.recipient,
-            ),
-          );
-        }
-        if (state.selectedProvider.isNotEmpty) {
-          rows.add(
-            _DetailRow(label: 'Provider', value: state.selectedProvider),
-          );
-        }
-        rows.add(
-          _DetailRow(
-            label: 'Amount',
-            value: '₦${(finalAmountKobo / 100).toStringAsFixed(2)}',
-            isHighlight: true,
-          ),
-        );
-    }
-
-    return rows
-        .map(
-          (r) => Padding(padding: const EdgeInsets.only(bottom: 4), child: r),
-        )
-        .toList();
-  }
-
-  IconData _iconForService(String serviceType) {
-    return switch (serviceType) {
-      'airtime' => Icons.phone_android_rounded,
-      'data' || 'internet' => Icons.wifi_rounded,
-      'electricity' || 'utility' => Icons.flash_on_rounded,
-      'cable tv' || 'cable' => Icons.tv_rounded,
-      'bettings' || 'betting' => Icons.sports_soccer_rounded,
-      _ => Icons.receipt_long_rounded,
-    };
   }
 }
 
@@ -733,9 +614,9 @@ class _ReceiptPreviewDialog extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.primary,
-                borderRadius: const BorderRadius.vertical(
+                borderRadius: BorderRadius.vertical(
                   top: Radius.circular(24),
                 ),
               ),
@@ -803,9 +684,7 @@ class _ReceiptPreviewDialog extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Amount
+                  const SizedBox(height: 16),
                   Text(
                     '₦${transaction.amount}',
                     style: const TextStyle(

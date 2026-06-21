@@ -369,12 +369,8 @@ class AppRouterConfig {
         GoRoute(
           path: '/service/review',
           builder: (context, state) {
-            final bloc = state.extra as ServiceBloc;
-
-            return BlocProvider.value(
-              value: bloc,
-              child: const ServiceReviewView(),
-            );
+            final args = state.extra as ServiceReviewArgs;
+            return ServiceReviewView(args: args);
           },
         ),
         GoRoute(

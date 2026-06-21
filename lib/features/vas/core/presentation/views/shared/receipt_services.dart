@@ -131,20 +131,26 @@ class ReceiptService {
                   _row('Units', transaction.tokenUnits!),
               ],
 
-              if (transaction.metadata.discoDetails != null) ...[
+              if (transaction.metadata.rawJson['disco'] != null ||
+                  transaction.metadata.rawJson['units'] != null) ...[
                 pw.SizedBox(height: 12),
-                _row(
-                  'Distribution Company',
-                  transaction.metadata.discoDetails!.disco,
-                ),
-                _row(
-                  'Units',
-                  transaction.metadata.discoDetails!.units.toStringAsFixed(2),
-                ),
-                _row(
-                  'Tax',
-                  '\u20a6${transaction.metadata.discoDetails!.tax.toStringAsFixed(2)}',
-                ),
+                if (transaction.metadata.rawJson['disco'] != null)
+                  _row(
+                    'Distribution Company',
+                    transaction.metadata.rawJson['disco'].toString(),
+                  ),
+                if (transaction.metadata.rawJson['units'] != null)
+                  _row(
+                    'Units',
+                    (transaction.metadata.rawJson['units'] as num)
+                        .toDouble()
+                        .toStringAsFixed(2),
+                  ),
+                if (transaction.metadata.rawJson['tax'] != null)
+                  _row(
+                    'Tax',
+                    '₦${(transaction.metadata.rawJson['tax'] as num).toDouble().toStringAsFixed(2)}',
+                  ),
               ],
 
               pw.SizedBox(height: 24),

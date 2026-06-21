@@ -14,6 +14,9 @@ import 'package:blithepay/features/vas/core/presentation/widgets/purchase_overla
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
+import 'package:blithepay/features/vas/core/utils/balance_helper.dart';
+import 'package:blithepay/features/wallet/presentation/bloc/wallet_bloc.dart';
+import 'package:blithepay/features/wallet/presentation/bloc/wallet_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,7 +30,7 @@ class CableTvPurchaseView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Grab dynamic wallet balance from active Dashboard state provider scope
+    final initialBalance = getWalletBalanceKobo(context);
 
     return BlocProvider(
       create: (context) =>
@@ -35,7 +38,7 @@ class CableTvPurchaseView extends StatelessWidget {
             serviceRepository: context.read<ServiceRepository>(),
             serviceId: service
                 ?.id, // Pass service ID to trigger network providers endpoint
-            availableBalanceKobo: 9455272,
+            availableBalanceKobo: initialBalance,
             recentSmartcards: const [
               CableTvSmartcard(
                 id: '1',
@@ -80,59 +83,84 @@ class _CableTvScreenState extends State<_CableTvScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CableTvBloc, CableTvState>(
-      listenWhen: (previous, current) =>
-          previous.isSuccess != current.isSuccess ||
-          previous.smartcardNumber != current.smartcardNumber,
-      listener: (context, state) {
-        if (_smartcardCtrl.text != state.smartcardNumber) {
-          _smartcardCtrl.text = state.smartcardNumber;
-        }
-        if (state.isSuccess) {
-          _showSuccessPanel(context, state.transaction);
-        }
-      },
-      child: BlocBuilder<CableTvBloc, CableTvState>(
-        builder: (context, state) {
-          return AppScaffold(
-            title: 'Cable TV',
-            onBackPressed: () {
-              if (state.step == CableTvStep.smartcard) {
-                Navigator.of(context).pop();
-              } else {
-                context.read<CableTvBloc>().add(CableTvBack());
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<WalletBloc, WalletState>(
+          listener: (context, walletState) {
+            if (walletState is WalletLoaded) {
+              final balanceKobo = (walletState.wallet.balance * 100).round();
+              context.read<CableTvBloc>().add(CableTvBalanceUpdated(balanceKobo));
+            }
+          },
+        ),
+        BlocListener<DashboardBloc, DashboardState>(
+          listener: (context, dashboardState) {
+            if (dashboardState is DashboardLoaded) {
+              final rawBalance = dashboardState.dashboard.walletBalance;
+              final cleanString = rawBalance.replaceAll(RegExp(r'[^\d.]'), '');
+              final doubleValue = double.tryParse(cleanString);
+              if (doubleValue != null) {
+                final balanceKobo = (doubleValue * 100).round();
+                context.read<CableTvBloc>().add(CableTvBalanceUpdated(balanceKobo));
               }
-            },
-            body: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Cable TV',
-                      style: AppTextStyles.h4.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
+            }
+          },
+        ),
+      ],
+      child: BlocListener<CableTvBloc, CableTvState>(
+        listenWhen: (previous, current) =>
+            previous.isSuccess != current.isSuccess ||
+            previous.smartcardNumber != current.smartcardNumber,
+        listener: (context, state) {
+          if (_smartcardCtrl.text != state.smartcardNumber) {
+            _smartcardCtrl.text = state.smartcardNumber;
+          }
+          if (state.isSuccess) {
+            _showSuccessPanel(context, state.transaction);
+          }
+        },
+        child: BlocBuilder<CableTvBloc, CableTvState>(
+          builder: (context, state) {
+            return AppScaffold(
+              title: 'Cable TV',
+              onBackPressed: () {
+                if (state.step == CableTvStep.smartcard) {
+                  Navigator.of(context).pop();
+                } else {
+                  context.read<CableTvBloc>().add(CableTvBack());
+                }
+              },
+              body: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Cable TV',
+                        style: AppTextStyles.h4.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    _StepIndicator(currentStep: state.step),
-                    const SizedBox(height: 28),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 220),
-                      switchInCurve: Curves.easeOut,
-                      switchOutCurve: Curves.easeIn,
-                      transitionBuilder: (child, animation) =>
-                          FadeTransition(opacity: animation, child: child),
-                      child: _buildStep(context, state),
-                    ),
-                  ],
+                      const SizedBox(height: 20),
+                      _StepIndicator(currentStep: state.step),
+                      const SizedBox(height: 28),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 220),
+                        switchInCurve: Curves.easeOut,
+                        switchOutCurve: Curves.easeIn,
+                        transitionBuilder: (child, animation) =>
+                            FadeTransition(opacity: animation, child: child),
+                        child: _buildStep(context, state),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -555,15 +583,20 @@ class _SmartcardStep extends StatelessWidget {
 
               const SizedBox(height: 32),
 
-              PrimaryButton(
-                label: 'Verify Smartcard',
-                isLoading: state.isVerifying,
-                onPressed: !state.isVerifying
-                    ? () => context.read<CableTvBloc>().add(
+              Builder(builder: (context) {
+                final bool isSmartcardValid = state.smartcardNumber.replaceAll(RegExp(r'[^\d]'), '').length >= 6;
+                final bool isProviderValid = state.selectedProvider.isNotEmpty;
+                final bool isVerifyEnabled = isSmartcardValid && isProviderValid;
+
+                return PrimaryButton(
+                  label: 'Verify Smartcard',
+                  isLoading: state.isVerifying,
+                  isEnabled: isVerifyEnabled,
+                  onPressed: () => context.read<CableTvBloc>().add(
                         CableTvVerifyRequested(),
-                      )
-                    : () {},
-              ),
+                      ),
+                );
+              }),
             ],
           ),
         ),
@@ -934,6 +967,7 @@ class _PackageStep extends StatelessWidget {
 
         PrimaryButton(
           label: 'Continue',
+          isEnabled: state.selectedPackage != null,
           onPressed: () =>
               context.read<CableTvBloc>().add(CableTvContinueToConfirmation()),
         ),

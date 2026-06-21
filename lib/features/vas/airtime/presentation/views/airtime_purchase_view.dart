@@ -6,6 +6,11 @@ import 'package:blithepay/features/vas/core/data/repositories/service_repository
 import 'package:blithepay/features/vas/core/data/models/service_model.dart' as vas_models;
 import 'package:blithepay/features/vas/airtime/presentation/widgets/phone_number_container.dart';
 import 'package:blithepay/features/vas/core/presentation/bloc/services_cubit/services_cubit.dart';
+import 'package:blithepay/features/vas/core/utils/balance_helper.dart';
+import 'package:blithepay/features/wallet/presentation/bloc/wallet_bloc.dart';
+import 'package:blithepay/features/wallet/presentation/bloc/wallet_state.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:blithepay/shared/widgets/layouts/app_text.dart';
@@ -38,19 +43,21 @@ class AirtimePurchaseView extends StatelessWidget {
       );
     }
 
+    final initialBalance = getWalletBalanceKobo(context);
+
     return BlocProvider(
       create: (context) => ServiceBloc(
         serviceRepository: context.read<ServiceRepository>(),
         serviceId: activeService.id,
-        config: const ServiceConfig(
+        config: ServiceConfig(
           title: 'Airtime',
           recipientLabel: 'Phone Number',
           recipientHint: 'Enter phone number',
           providerLabel: 'Select Network',
-          providerOptions: ['MTN', 'GLO', 'Airtel', '9mobile'],
-          plans: [],
-          presetAmounts: [300000, 500000, 850000, 1000000, 1500000, 2000000],
-          availableBalanceKobo: 9455272,
+          providerOptions: const ['MTN', 'GLO', 'Airtel', '9mobile'],
+          plans: const [],
+          presetAmounts: const [300000, 500000, 850000, 1000000, 1500000, 2000000],
+          availableBalanceKobo: initialBalance,
         ),
       ),
       child: const _AirtimeView(),
@@ -96,22 +103,46 @@ class _AirtimeViewState extends State<_AirtimeView> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: BlocBuilder<ServiceBloc, ServiceState>(
-          builder: (context, state) {
-            final hasSelectedProvider = state.selectedProvider.isNotEmpty;
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<WalletBloc, WalletState>(
+              listener: (context, walletState) {
+                if (walletState is WalletLoaded) {
+                  final balanceKobo = (walletState.wallet.balance * 100).round();
+                  context.read<ServiceBloc>().add(ServiceBalanceUpdated(balanceKobo));
+                }
+              },
+            ),
+            BlocListener<DashboardBloc, DashboardState>(
+              listener: (context, dashboardState) {
+                if (dashboardState is DashboardLoaded) {
+                  final rawBalance = dashboardState.dashboard.walletBalance;
+                  final cleanString = rawBalance.replaceAll(RegExp(r'[^\d.]'), '');
+                  final doubleValue = double.tryParse(cleanString);
+                  if (doubleValue != null) {
+                    final balanceKobo = (doubleValue * 100).round();
+                    context.read<ServiceBloc>().add(ServiceBalanceUpdated(balanceKobo));
+                  }
+                }
+              },
+            ),
+          ],
+          child: BlocBuilder<ServiceBloc, ServiceState>(
+            builder: (context, state) {
+              final hasSelectedProvider = state.selectedProvider.isNotEmpty;
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 22, 24, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Airtime',
-                    style: AppTextStyles.h4.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
+              return SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 22, 24, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Airtime',
+                      style: AppTextStyles.h4.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 24),
                   _buildProviderSection(context, state),
                   const SizedBox(height: 24),
@@ -136,6 +167,7 @@ class _AirtimeViewState extends State<_AirtimeView> {
               ),
             );
           },
+        ),
         ),
       ),
     );

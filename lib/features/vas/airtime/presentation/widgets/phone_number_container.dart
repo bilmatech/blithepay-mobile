@@ -1,6 +1,8 @@
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/vas/airtime/presentation/widgets/amount_entry_card.dart';
+import 'package:blithepay/features/vas/core/data/repositories/service_repository.dart';
+import 'package:blithepay/features/vas/core/presentation/views/service_review_view.dart';
 import 'package:blithepay/features/vas/core/presentation/widgets/service_phone_section.dart';
 import 'package:blithepay/features/vas/core/presentation/widgets/top_off_grid.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
@@ -20,6 +22,11 @@ class PhoneNumberContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isPhoneValid = state.phoneNumber.trim().length >= 10;
+    final bool isAmountValid = state.amountKobo > 0;
+    final bool isProviderValid = state.selectedProvider.isNotEmpty;
+    final bool isFormValid = isPhoneValid && isAmountValid && isProviderValid;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -61,12 +68,52 @@ class PhoneNumberContainer extends StatelessWidget {
           label: state.amountKobo > 0
               ? 'Pay ${state.formattedAmount}'
               : 'Pay',
-          onPressed: () {
-            context.push('/service/review', extra: context.read<ServiceBloc>());
-          },
+          isEnabled: isFormValid,
+          onPressed: () => _navigateToReview(context),
         ),
       ],
     );
+  }
+
+  void _navigateToReview(BuildContext context) {
+    final bloc = context.read<ServiceBloc>();
+    final currentState = bloc.state;
+    final repo = context.read<ServiceRepository>();
+
+    final formattedAmount =
+        '₦${(currentState.amountKobo / 100).toStringAsFixed(2)}';
+
+    final args = ServiceReviewArgs(
+      title: 'Airtime',
+      amountKobo: currentState.amountKobo,
+      recipient: currentState.phoneNumber.trim(),
+      providerName: currentState.selectedProvider,
+      icon: Icons.phone_android_rounded,
+      summaryDetails: [
+        ServiceReviewDetail(
+          label: 'Network',
+          value: currentState.selectedProvider,
+        ),
+        ServiceReviewDetail(
+          label: 'Phone Number',
+          value: currentState.phoneNumber.trim(),
+        ),
+        ServiceReviewDetail(label: 'Amount', value: formattedAmount),
+      ],
+      onPay: (pin) async {
+        final token = await repo.verifyPin(pin);
+        return repo.purchaseAirtime(
+          serviceId: bloc.currentServiceId ?? '',
+          recipient: currentState.phoneNumber.replaceAll(RegExp(r'\s+'), ''),
+          providerId: currentState.selectedProviderId ?? currentState.selectedProvider,
+          amountKobo: currentState.amountKobo,
+          challengeToken: token,
+        );
+      },
+      onCancel: () => bloc.add(ServiceResetRequested()),
+    );
+
+    context.push('/service/review', extra: args);
   }
 
   String _formatAmount(int amountKobo) {

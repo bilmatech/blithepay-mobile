@@ -8,10 +8,17 @@ import 'package:blithepay/features/vas/core/data/models/service_model.dart'
 import 'package:blithepay/features/vas/core/data/repositories/service_repository.dart';
 import 'package:blithepay/features/vas/airtime/presentation/widgets/amount_entry_card.dart';
 import 'package:blithepay/features/vas/core/presentation/widgets/top_off_grid.dart';
+import 'package:blithepay/features/vas/core/presentation/views/service_review_view.dart';
 import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
 import 'package:flutter/material.dart';
 
 import 'package:blithepay/features/vas/core/presentation/views/shared/reusable_service_view.dart';
+import 'package:blithepay/features/vas/core/utils/balance_helper.dart';
+import 'package:blithepay/features/wallet/presentation/bloc/wallet_bloc.dart';
+import 'package:blithepay/features/wallet/presentation/bloc/wallet_state.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ElectricityPurchaseView extends StatelessWidget {
   final ServiceEntity? service;
@@ -20,17 +27,19 @@ class ElectricityPurchaseView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final initialBalance = getWalletBalanceKobo(context);
+
     return BlocProvider(
       create: (context) => ServiceBloc(
         serviceRepository: context.read<ServiceRepository>(),
         serviceId: service?.id,
-        config: const ServiceConfig(
+        config: ServiceConfig(
           title: 'Electricity',
           recipientLabel: 'Meter Number',
           recipientHint: 'Enter meter number',
           providerLabel: 'Select distributor',
-          providerOptions: ['PHCN', 'EKEDC', 'AEDC', 'IKEDC'],
-          plans: [
+          providerOptions: const ['PHCN', 'EKEDC', 'AEDC', 'IKEDC'],
+          plans: const [
             ServicePlan(
               title: 'Prepaid',
               bundleCode: '',
@@ -46,8 +55,8 @@ class ElectricityPurchaseView extends StatelessWidget {
               priceLabel: '₦8,500',
             ),
           ],
-          presetAmounts: [300000, 500000, 850000, 1000000, 1500000, 2000000],
-          availableBalanceKobo: 9455272,
+          presetAmounts: const [300000, 500000, 850000, 1000000, 1500000, 2000000],
+          availableBalanceKobo: initialBalance,
         ),
       ),
       child: const _ElectricityServiceScreen(),
@@ -76,12 +85,73 @@ class _ElectricityServiceScreenState extends State<_ElectricityServiceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ServiceView<ServiceBloc, ServiceState>(
-      title: 'Electricity',
-      formBuilder: (context, state) => ElectricityServiceForm(
-        state: state,
-        meterController: _ensureMeterController(state),
-        amountController: _ensureAmountController(state),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<WalletBloc, WalletState>(
+          listener: (context, walletState) {
+            if (walletState is WalletLoaded) {
+              final balanceKobo = (walletState.wallet.balance * 100).round();
+              context.read<ServiceBloc>().add(ServiceBalanceUpdated(balanceKobo));
+            }
+          },
+        ),
+        BlocListener<DashboardBloc, DashboardState>(
+          listener: (context, dashboardState) {
+            if (dashboardState is DashboardLoaded) {
+              final rawBalance = dashboardState.dashboard.walletBalance;
+              final cleanString = rawBalance.replaceAll(RegExp(r'[^\d.]'), '');
+              final doubleValue = double.tryParse(cleanString);
+              if (doubleValue != null) {
+                final balanceKobo = (doubleValue * 100).round();
+                context.read<ServiceBloc>().add(ServiceBalanceUpdated(balanceKobo));
+              }
+            }
+          },
+        ),
+      ],
+      child: BlocBuilder<ServiceBloc, ServiceState>(
+        builder: (context, state) {
+          final providers = state.providers.isNotEmpty
+              ? state.providers
+              : state.config.providerOptions
+                  .map((name) => ServiceProviderModel(id: name, name: name))
+                  .toList();
+
+          return ServiceView(
+            title: 'Electricity',
+            providerConfig: ProviderSelectionConfig(
+              label: state.config.providerLabel,
+              selectedProvider: state.selectedProvider.isNotEmpty
+                  ? state.selectedProvider
+                  : null,
+              isLoading: state.isProvidersLoading,
+              errorMessage: state.errorMessage,
+              providers: providers,
+              onSelected: (provider) {
+                context.read<ServiceBloc>().add(
+                  ServiceProviderSelected(
+                    provider.name,
+                    providerId:
+                        state.providers.isNotEmpty ? provider.id : null,
+                  ),
+                );
+              },
+              onRetry: () {
+                final sid = state.selectedProviderId;
+                if (sid != null && sid.isNotEmpty) {
+                  context.read<ServiceBloc>().add(
+                    ServiceProvidersRequested(sid),
+                  );
+                }
+              },
+            ),
+            child: ElectricityServiceForm(
+              state: state,
+              meterController: _ensureMeterController(state),
+              amountController: _ensureAmountController(state),
+            ),
+          );
+        },
       ),
     );
   }
@@ -133,8 +203,9 @@ class _ElectricityServiceFormState extends State<ElectricityServiceForm> {
       );
     }
 
-    final newAmountText = _formatAmount(widget.state.amountKobo);
-    if (widget.amountController.text != newAmountText) {
+    final parsedCurrent = _parseAmountKobo(widget.amountController.text) ?? 0;
+    if (parsedCurrent != widget.state.amountKobo) {
+      final newAmountText = _formatAmount(widget.state.amountKobo);
       widget.amountController.text = newAmountText;
       widget.amountController.selection = TextSelection.collapsed(
         offset: newAmountText.length,
@@ -163,10 +234,8 @@ class _ElectricityServiceFormState extends State<ElectricityServiceForm> {
 
     // Button is only clickable if verification passes and it isn't currently loading
     final VoidCallback? onPayPressed = (isVerified && !isLoadingVerification)
-        ? () {
-            context.push('/service/review', extra: context.read<ServiceBloc>());
-          }
-        : null; // Setting to null natively disables the button in Flutter
+        ? () => _navigateToReview(context)
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -453,7 +522,7 @@ class _ElectricityServiceFormState extends State<ElectricityServiceForm> {
   int? _parseAmountKobo(String value) {
     final normalized = value.trim();
     if (normalized.isEmpty || normalized == '.') {
-      return null;
+      return 0;
     }
 
     final parsed = double.tryParse(normalized);
@@ -468,6 +537,60 @@ class _ElectricityServiceFormState extends State<ElectricityServiceForm> {
     final whole = amountKobo ~/ 100;
     final decimal = amountKobo.remainder(100).toString().padLeft(2, '0');
     return '$whole.$decimal';
+  }
+
+  void _navigateToReview(BuildContext context) {
+    final bloc = context.read<ServiceBloc>();
+    final currentState = bloc.state;
+    final repo = context.read<ServiceRepository>();
+
+    final meterType = currentState.config.plans.isNotEmpty &&
+            (currentState.selectedPlanIndex ?? 0) <
+                currentState.config.plans.length
+        ? currentState.config.plans[currentState.selectedPlanIndex ?? 0].title
+        : 'Prepaid';
+
+    final formattedAmount =
+        '₦${(currentState.amountKobo / 100).toStringAsFixed(2)}';
+
+    final args = ServiceReviewArgs(
+      title: 'Electricity',
+      amountKobo: currentState.amountKobo,
+      recipient: currentState.recipient.trim(),
+      providerName: currentState.selectedProvider,
+      icon: Icons.bolt_rounded,
+      summaryDetails: [
+        ServiceReviewDetail(
+          label: 'Distributor',
+          value: currentState.selectedProvider,
+        ),
+        ServiceReviewDetail(
+          label: 'Meter Number',
+          value: currentState.recipient.trim(),
+        ),
+        if (currentState.verifiedCustomerName != null)
+          ServiceReviewDetail(
+            label: 'Customer',
+            value: currentState.verifiedCustomerName!,
+          ),
+        ServiceReviewDetail(label: 'Meter Type', value: meterType),
+        ServiceReviewDetail(label: 'Amount', value: formattedAmount),
+      ],
+      onPay: (pin) async {
+        final token = await repo.verifyPin(pin);
+        return repo.purchaseUtility(
+          serviceId: bloc.currentServiceId ?? '',
+          meterNumber:
+              currentState.recipient.replaceAll(RegExp(r'\s+'), ''),
+          meterType: currentState.meterType,
+          amountKobo: currentState.amountKobo,
+          challengeToken: token,
+        );
+      },
+      onCancel: () => bloc.add(ServiceResetRequested()),
+    );
+
+    context.push('/service/review', extra: args);
   }
 }
 

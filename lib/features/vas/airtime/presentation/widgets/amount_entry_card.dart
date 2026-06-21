@@ -89,14 +89,13 @@ class AmountEntryCard extends StatelessWidget {
                 child: TextField(
                   controller: controller,
                   onChanged: (value) {
-                    final amount = _parseAmountKobo(value);
-                    if (amount != null) onAmountChanged?.call(amount);
+                    final amount = _parseAmountKobo(value) ?? 0;
+                    onAmountChanged?.call(amount);
                   },
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
+                  keyboardType: TextInputType.number,
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                    FilteringTextInputFormatter.digitsOnly,
+                    CurrencyInputFormatter(),
                   ],
                   style: const TextStyle(
                     color: AppColors.textPrimary,
@@ -128,7 +127,9 @@ class AmountEntryCard extends StatelessWidget {
   }
 
   int? _parseAmountKobo(String value) {
-    final parsed = double.tryParse(value.trim());
+    final clean = value.trim();
+    if (clean.isEmpty) return 0;
+    final parsed = double.tryParse(clean);
     if (parsed == null || parsed < 0) return null;
     return (parsed * 100).round();
   }
@@ -148,5 +149,36 @@ class AmountEntryCard extends StatelessWidget {
       buf.write(digits[i]);
     }
     return buf.toString();
+  }
+}
+
+class CurrencyInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return const TextEditingValue(
+        text: '0.00',
+        selection: TextSelection.collapsed(offset: 4),
+      );
+    }
+
+    final String cleanText = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+    if (cleanText.isEmpty) {
+      return const TextEditingValue(
+        text: '0.00',
+        selection: TextSelection.collapsed(offset: 4),
+      );
+    }
+
+    final double value = double.parse(cleanText);
+    final String newText = (value / 100).toStringAsFixed(2);
+
+    return TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
+    );
   }
 }

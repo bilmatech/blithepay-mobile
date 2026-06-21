@@ -112,3 +112,8 @@ class ServiceInitRequested extends ServiceEvent {
   final String serviceId;
   ServiceInitRequested(this.serviceId);
 }
+
+class ServiceBalanceUpdated extends ServiceEvent {
+  final int balanceKobo;
+  ServiceBalanceUpdated(this.balanceKobo);
+}

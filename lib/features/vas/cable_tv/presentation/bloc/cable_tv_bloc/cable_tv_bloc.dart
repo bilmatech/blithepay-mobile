@@ -46,6 +46,7 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
     // Payment Process Actions
     on<CableTvPayRequested>(_onPayRequested);
     on<CableTvSuccessDismissed>(_onSuccessDismissed);
+    on<CableTvBalanceUpdated>(_onBalanceUpdated);
   }
 
   // ── Initial Setup Action: Fetch available providers instantly ─────────
@@ -172,7 +173,7 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
     try {
       final Map<String, dynamic> responseData = await _serviceRepository
           .verifySmartCard(
-            smartcardNumber: state.smartcardNumber,
+            smartcardNumber: state.smartcardNumber.replaceAll(RegExp(r'\s+'), ''),
             provider:
                 providerId, // Securely hands over the correct API parameter
           );
@@ -311,7 +312,7 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
       final token = await _serviceRepository.verifyPin(event.pin);
       final transaction = await _serviceRepository.subscribeCableTv(
         provider: state.selectedProvider,
-        smartcardNumber: state.smartcardNumber,
+        smartcardNumber: state.smartcardNumber.replaceAll(RegExp(r'\s+'), ''),
         amountKobo: package.amountKobo.toInt(),
         pin: event.pin,
         bundleCode: package.bundleCode,
@@ -342,6 +343,13 @@ class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {
         availableBalanceKobo: state.availableBalanceKobo,
       ),
     );
+  }
+
+  void _onBalanceUpdated(
+    CableTvBalanceUpdated event,
+    Emitter<CableTvState> emit,
+  ) {
+    emit(state.copyWith(availableBalanceKobo: event.balanceKobo));
   }
 }
 // class CableTvBloc extends Bloc<CableTvEvent, CableTvState> {

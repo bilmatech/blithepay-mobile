@@ -82,11 +82,7 @@ class PurchaseMetadataModel {
   final String reference;
   final String serviceCategoryId;
   final ReceiverModel receiver;
-  
-  // Specific Utility/Electricity Fallbacks
-  final String? tokenValue;
-  final String? utilityToken;
-  final DiscoDetailsModel? discoDetails;
+  final Map<String, dynamic> rawJson;
 
   const PurchaseMetadataModel({
     required this.id,
@@ -96,9 +92,7 @@ class PurchaseMetadataModel {
     required this.reference,
     required this.serviceCategoryId,
     required this.receiver,
-    this.tokenValue,
-    this.utilityToken,
-    this.discoDetails,
+    required this.rawJson,
   });
 
   factory PurchaseMetadataModel.fromJson(Map<String, dynamic> json) {
@@ -110,14 +104,11 @@ class PurchaseMetadataModel {
       reference: json['reference'] as String,
       serviceCategoryId: json['serviceCategoryId'] as String,
       receiver: ReceiverModel.fromJson(json['receiver'] as Map<String, dynamic>),
-      tokenValue: json['tokenValue'] as String?,
-      utilityToken: json['utilityToken'] as String?,
-      discoDetails: json['metaData'] != null 
-          ? DiscoDetailsModel.fromJson(json['metaData'] as Map<String, dynamic>)
-          : null,
+      rawJson: json,
     );
   }
 }
+
 class ReceiverModel {
   final String? name;
   final String number;
@@ -140,41 +131,6 @@ class ReceiverModel {
       address: json['address'] as String?,
       vendType: json['vendType'] as String?,
       distribution: json['distribution'] as String?,
-    );
-  }
-}
-
-class DiscoDetailsModel {
-  final int id;
-  final double tax;
-  final String name;
-  final String disco;
-  final String address;
-  final double units;
-  final String receiptNo;
-  final double amountGenerated;
-
-  const DiscoDetailsModel({
-    required this.id,
-    required this.tax,
-    required this.name,
-    required this.disco,
-    required this.address,
-    required this.units,
-    required this.receiptNo,
-    required this.amountGenerated,
-  });
-
-  factory DiscoDetailsModel.fromJson(Map<String, dynamic> json) {
-    return DiscoDetailsModel(
-      id: json['id'] as int,
-      tax: (json['tax'] as num? ?? 0).toDouble(),
-      name: json['name'] as String? ?? '',
-      disco: json['disco'] as String? ?? '',
-      address: json['address'] as String? ?? '',
-      units: (json['units'] as num? ?? 0).toDouble(),
-      receiptNo: json['receiptNo'] as String? ?? '',
-      amountGenerated: (json['amountGenerated'] as num? ?? 0).toDouble(),
     );
   }
 }

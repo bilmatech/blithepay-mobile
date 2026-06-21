@@ -51,6 +51,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
 
     on<ServiceVerifyMeterRequested>(_onVerifyMeterRequested);
     on<ServiceInitRequested>(_onInitRequested);
+    on<ServiceBalanceUpdated>(_onBalanceUpdated);
     if (serviceId != null && serviceId!.isNotEmpty) {
       add(ServiceProvidersRequested(serviceId!));
     }
@@ -206,7 +207,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
   //   emit(state.copyWith(stage: ServiceStage.review));
   // }
   void _onReviewClosed(ServiceReviewClosed event, Emitter<ServiceState> emit) {
-    emit(state.copyWith(stage: ServiceStage.entry, pin: ''));
+    emit(state.copyWith(stage: ServiceStage.entry, pin: '', errorMessage: ''));
   }
 
   void _onPinRequested(ServicePinRequested event, Emitter<ServiceState> emit) {
@@ -362,12 +363,14 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
       final token = await _serviceRepository.verifyPin(pin);
       ServiceTransactionModel? transactionResult;
 
+      final cleanRecipient = state.recipient.replaceAll(RegExp(r'\s+'), '');
+
       final title = state.config.title.toLowerCase().trim();
       switch (title) {
         case 'airtime':
           transactionResult = await _serviceRepository.purchaseAirtime(
             serviceId: serviceId,
-            recipient: state.recipient,
+            recipient: cleanRecipient,
             providerId: providerId,
             amountKobo: state.amountKobo,
             challengeToken: token,
@@ -387,7 +390,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
           transactionResult = await _serviceRepository.purchaseInternet(
             serviceId: serviceId,
             providerId: providerId,
-            recipient: state.recipient,
+            recipient: cleanRecipient,
 
             // use source of truth
             bundleCode: selectedProduct.bundleCode,
@@ -401,7 +404,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
         case 'utility':
           transactionResult = await _serviceRepository.purchaseUtility(
             serviceId: serviceId,
-            meterNumber: state.recipient,
+            meterNumber: cleanRecipient,
             meterType: state.meterType,
             amountKobo: state.amountKobo,
             challengeToken: token,
@@ -436,18 +439,12 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     Emitter<ServiceState> emit,
   ) {
     emit(
-      state.copyWith(
-        recipient: '',
-        selectedProvider: null,
-        selectedProviderId: null,
-        products: [],
-        selectedPlanIndex: null,
-        amountKobo: 0,
-        pin: '',
-        stage: ServiceStage.entry,
-        errorMessage: null,
-        transaction: null,
-        verifiedCustomerName: null,
+      ServiceState.initial(
+        state.config,
+        initialBeneficiaries: state.beneficiaries,
+      ).copyWith(
+        availableBalanceKobo: state.availableBalanceKobo,
+        providers: state.providers,
       ),
     );
   }
@@ -483,7 +480,7 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
       final Map<String, dynamic> responseData = await _serviceRepository
           .verifyMeter(
             serviceId: currentServiceId,
-            meterNumber: event.meterNumber,
+            meterNumber: event.meterNumber.replaceAll(RegExp(r'\s+'), ''),
             providerId: providerId,
           );
 
@@ -536,5 +533,12 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     );
 
     emit(state.copyWith(isProvidersLoading: false, providers: providers));
+  }
+
+  void _onBalanceUpdated(
+    ServiceBalanceUpdated event,
+    Emitter<ServiceState> emit,
+  ) {
+    emit(state.copyWith(availableBalanceKobo: event.balanceKobo));
   }
 }

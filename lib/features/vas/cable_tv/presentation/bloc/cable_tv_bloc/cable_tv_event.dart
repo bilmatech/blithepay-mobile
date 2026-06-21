@@ -47,3 +47,8 @@ class CableTvProductsRequested extends CableTvEvent {
 }
 
 class CableTvInitRequested extends CableTvEvent {}
+
+class CableTvBalanceUpdated extends CableTvEvent {
+  final int balanceKobo;
+  CableTvBalanceUpdated(this.balanceKobo);
+}
