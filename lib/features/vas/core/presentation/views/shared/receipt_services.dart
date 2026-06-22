@@ -1,14 +1,14 @@
 import 'dart:typed_data';
-import 'package:flutter/widgets.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:blithepay/core/storage/auth_local_storage.dart';
-import 'package:blithepay/core/utils/helpers.dart';
-import 'package:blithepay/features/vas/core/data/models/service_purchase_response.dart';
 import 'package:pdf/pdf.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter/widgets.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:blithepay/core/utils/helpers.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:blithepay/core/storage/auth_local_storage.dart';
+import 'package:blithepay/features/vas/core/data/models/service_purchase_response.dart';
 
 class ReceiptService {
   static Future<void> download({
@@ -33,17 +33,21 @@ class ReceiptService {
 
           final discoVal = rawMeta['disco'] ?? nestedMeta?['disco'];
           final unitsVal = rawMeta['units'] ?? nestedMeta?['units'];
-          final addressVal = transaction.metadata.receiver.address ??
+          final addressVal =
+              transaction.metadata.receiver.address ??
               rawMeta['address'] ??
               nestedMeta?['address'] ??
               (rawMeta['receiver'] is Map ? rawMeta['receiver']['address'] : null);
 
           final parsedDate = transaction.createdAt.toLocal();
           final dateStr = DateFormat('MMM d, yyyy HH:mm:ss').format(parsedDate);
-          final isSuccess = transaction.status.toLowerCase() == 'success' ||
+          final isSuccess =
+              transaction.status.toLowerCase() == 'success' ||
               transaction.status.toLowerCase() == 'successful';
 
-          final displayAmount = Helpers.formattedAmount(transaction.amount.toString()).replaceAll('₦', 'N');
+          final displayAmount = Helpers.formattedAmount(
+            transaction.amount.toString(),
+          ).replaceAll('₦', 'N');
 
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -101,10 +105,7 @@ class ReceiptService {
                     pw.SizedBox(height: 6),
                     pw.Text(
                       dateStr,
-                      style: const pw.TextStyle(
-                        fontSize: 9,
-                        color: PdfColors.grey600,
-                      ),
+                      style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
                     ),
                   ],
                 ),
@@ -117,21 +118,24 @@ class ReceiptService {
               // Details
               if (discoVal != null || transaction.metadata.receiver.vendType != null) ...[
                 // Electricity details
-                _row('Provider', discoVal?.toString() ?? transaction.metadata.receiver.distribution ?? 'Utility Payment'),
+                _row(
+                  'Provider',
+                  discoVal?.toString() ??
+                      transaction.metadata.receiver.distribution ??
+                      'Utility Payment',
+                ),
                 if (transaction.metadata.receiver.name?.isNotEmpty == true)
                   _row('Customer Name', transaction.metadata.receiver.name!),
                 if (addressVal != null && addressVal.toString().isNotEmpty)
                   _row('Service Address', addressVal.toString()),
-                if (userName.isNotEmpty)
-                  _row('Till To', userName),
+                if (userName.isNotEmpty) _row('Bill To', userName),
                 _row('Purchase Type', transaction.metadata.receiver.vendType ?? 'Prepaid'),
                 _row('Meter Number', transaction.metadata.receiver.number),
                 if (unitsVal != null)
                   _row('Units Purchased', '${(unitsVal as num).toDouble().toStringAsFixed(1)} kWh')
                 else if (transaction.tokenUnits?.isNotEmpty == true)
                   _row('Units Purchased', '${transaction.tokenUnits} kWh'),
-                if (transaction.token?.isNotEmpty == true)
-                  _row('Token', transaction.token!),
+                if (transaction.token?.isNotEmpty == true) _row('Token', transaction.token!),
               ] else if (transaction.metadata.receiver.distribution?.isNotEmpty == true) ...[
                 // Cable TV / Others
                 _row('Provider', transaction.metadata.receiver.distribution!),
@@ -154,12 +158,9 @@ class ReceiptService {
 
               pw.Center(
                 child: pw.Text(
-                  'Enjoy a better life with BlithePay. Get free transfers, withdrawals, bill payments, instant loans, and good annual interest on your savings. BlithePay is licensed by the Central Bank of Nigeria and insured by the NDIC.',
+                  'Copyright © ${DateTime.now().year} BlithePay. All rights reserved.',
                   textAlign: pw.TextAlign.center,
-                  style: const pw.TextStyle(
-                    fontSize: 8,
-                    color: PdfColors.grey500,
-                  ),
+                  style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
                 ),
               ),
 
@@ -184,11 +185,7 @@ class ReceiptService {
       alignment: pw.Alignment.center,
       child: pw.Text(
         '•  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •',
-        style: pw.TextStyle(
-          color: PdfColors.grey300,
-          fontSize: 10,
-          letterSpacing: 2,
-        ),
+        style: pw.TextStyle(color: PdfColors.grey300, fontSize: 10, letterSpacing: 2),
       ),
     );
   }
@@ -200,10 +197,7 @@ class ReceiptService {
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text(
-            title,
-            style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 11),
-          ),
+          pw.Text(title, style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 11)),
           pw.SizedBox(width: 24),
           pw.Expanded(
             child: pw.Text(

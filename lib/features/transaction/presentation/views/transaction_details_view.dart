@@ -11,11 +11,11 @@ import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/shared/widgets/layouts/spacing.dart';
 import 'package:blithepay/shared/widgets/layouts/app_text.dart';
+import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:blithepay/features/wallet/data/repositories/wallet_repository.dart';
 import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
-import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/shared/widgets/loaders/shimmer_transaction_details_loader.dart';
 import 'package:blithepay/features/wallet/data/models/transaction_detail_response_model.dart';
 
@@ -423,7 +423,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
           details.add({'label': 'Service Address', 'value': vas.utility!.customerAddress!});
         }
         if (_loggedInUserName.isNotEmpty) {
-          details.add({'label': 'Till To', 'value': _loggedInUserName});
+          details.add({'label': 'Bill To', 'value': _loggedInUserName});
         }
         details.add({'label': 'Meter Number', 'value': vas.utility!.meterNumber});
         details.add({'label': 'Distributor', 'value': vas.utility!.providerName});
@@ -532,7 +532,8 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
       final ByteData iconBytes = await rootBundle.load('assets/images/app_icon.png');
       final pw.MemoryImage appIcon = pw.MemoryImage(iconBytes.buffer.asUint8List());
 
-      final isSuccess = tx.status.toLowerCase() == 'success' || tx.status.toLowerCase() == 'successful';
+      final isSuccess =
+          tx.status.toLowerCase() == 'success' || tx.status.toLowerCase() == 'successful';
       final parsedDate = DateTime.tryParse(tx.createdAt)?.toLocal() ?? DateTime.now();
       final dateStr = DateFormat('MMM d, yyyy HH:mm:ss').format(parsedDate);
       final displayAmount = Helpers.formattedAmount(tx.amount.toString()).replaceAll('₦', 'N');
@@ -541,12 +542,21 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
       final Map<String, dynamic> rawMeta = vas?.metadata ?? {};
       final nestedMeta = rawMeta['metaData'] is Map ? rawMeta['metaData'] as Map : null;
 
-      final unitsVal = rawMeta['units'] ?? nestedMeta?['units'] ?? rawMeta['tokenUnits'] ?? nestedMeta?['tokenUnits'];
-      final debtVal = rawMeta['debt'] ?? nestedMeta?['debt'] ?? rawMeta['debtAmount'] ?? nestedMeta?['debtAmount'];
+      final unitsVal =
+          rawMeta['units'] ??
+          nestedMeta?['units'] ??
+          rawMeta['tokenUnits'] ??
+          nestedMeta?['tokenUnits'];
+      final debtVal =
+          rawMeta['debt'] ??
+          nestedMeta?['debt'] ??
+          rawMeta['debtAmount'] ??
+          nestedMeta?['debtAmount'];
       final tokenVal = vas?.token ?? rawMeta['token'] ?? nestedMeta?['token'];
       final unitsAmountVal = rawMeta['unitsAmount'] ?? nestedMeta?['unitsAmount'];
-      
-      final addressVal = vas?.utility?.customerAddress ??
+
+      final addressVal =
+          vas?.utility?.customerAddress ??
           rawMeta['address'] ??
           nestedMeta?['address'] ??
           (rawMeta['receiver'] is Map ? rawMeta['receiver']['address'] : null);
@@ -612,10 +622,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                       pw.SizedBox(height: 6),
                       pw.Text(
                         dateStr,
-                        style: const pw.TextStyle(
-                          fontSize: 9,
-                          color: PdfColors.grey600,
-                        ),
+                        style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
                       ),
                     ],
                   ),
@@ -637,8 +644,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                     _pdfRow('Customer Name', vas.utility!.customerName),
                     if (addressVal != null && addressVal.toString().isNotEmpty)
                       _pdfRow('Service Address', addressVal.toString()),
-                    if (userName.isNotEmpty)
-                      _pdfRow('Till To', userName),
+                    if (userName.isNotEmpty) _pdfRow('Bill To', userName),
                     _pdfRow('Purchase Type', vas.utility!.meterType),
                     _pdfRow('Meter Number', vas.utility!.meterNumber),
                     if (unitsVal != null)
@@ -648,13 +654,27 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                     if (tokenVal != null && tokenVal.toString().isNotEmpty)
                       _pdfRow('Token', tokenVal.toString()),
                     if (unitsAmountVal != null)
-                      _pdfRow('Units Amount', Helpers.formattedAmount(unitsAmountVal.toString()).replaceAll('₦', 'N'))
+                      _pdfRow(
+                        'Units Amount',
+                        Helpers.formattedAmount(unitsAmountVal.toString()).replaceAll('₦', 'N'),
+                      )
                     else
-                      _pdfRow('Units Amount', Helpers.formattedAmount((tx.amount).toString()).replaceAll('₦', 'N')),
-                    if (debtVal != null && double.tryParse(debtVal.toString()) != null && double.parse(debtVal.toString()) > 0)
-                      _pdfRow('Debt Amount', Helpers.formattedAmount(debtVal.toString()).replaceAll('₦', 'N')),
+                      _pdfRow(
+                        'Units Amount',
+                        Helpers.formattedAmount((tx.amount).toString()).replaceAll('₦', 'N'),
+                      ),
+                    if (debtVal != null &&
+                        double.tryParse(debtVal.toString()) != null &&
+                        double.parse(debtVal.toString()) > 0)
+                      _pdfRow(
+                        'Debt Amount',
+                        Helpers.formattedAmount(debtVal.toString()).replaceAll('₦', 'N'),
+                      ),
                   ] else if (vas.cabletv != null) ...[
-                    _pdfRow('Provider', rawMeta['receiver']?['distribution']?.toString() ?? 'Cable TV'),
+                    _pdfRow(
+                      'Provider',
+                      rawMeta['receiver']?['distribution']?.toString() ?? 'Cable TV',
+                    ),
                     _pdfRow('Customer Name', vas.cabletv!.customerName),
                     _pdfRow('Smartcard/Account Number', vas.cabletv!.smartcardNumber),
                     if (vas.cabletv!.bundleCode != null)
@@ -664,12 +684,14 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                     if (rawMeta['receiver'] != null) ...[
                       if (rawMeta['receiver']['distribution'] != null)
                         _pdfRow('Provider', rawMeta['receiver']['distribution'].toString()),
-                      if (rawMeta['receiver']['name'] != null && rawMeta['receiver']['name'].toString().isNotEmpty)
+                      if (rawMeta['receiver']['name'] != null &&
+                          rawMeta['receiver']['name'].toString().isNotEmpty)
                         _pdfRow('Customer Name', rawMeta['receiver']['name'].toString()),
                       if (addressVal != null && addressVal.toString().isNotEmpty)
                         _pdfRow('Service Address', addressVal.toString()),
-                      if (userName.isNotEmpty && (rawMeta['disco'] != null || rawMeta['receiver']['vendType'] != null))
-                        _pdfRow('Till To', userName),
+                      if (userName.isNotEmpty &&
+                          (rawMeta['disco'] != null || rawMeta['receiver']['vendType'] != null))
+                        _pdfRow('Bill To', userName),
                       if (rawMeta['receiver']['number'] != null)
                         _pdfRow('Recipient Number', rawMeta['receiver']['number'].toString()),
                       if (tokenVal != null && tokenVal.toString().isNotEmpty)
@@ -679,8 +701,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                 ] else ...[
                   // Normal wallet transfer
                   _pdfRow('Transaction Type', tx.type),
-                  if (tx.description.isNotEmpty)
-                    _pdfRow('Description', tx.description),
+                  if (tx.description.isNotEmpty) _pdfRow('Description', tx.description),
                 ],
 
                 _pdfRow('Hotline Number', '+234 901 740 2116'),
@@ -694,10 +715,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                   child: pw.Text(
                     'Enjoy a better life with BlithePay. Get free transfers, withdrawals, bill payments, instant loans, and good annual interest on your savings. BlithePay is licensed by the Central Bank of Nigeria and insured by the NDIC.',
                     textAlign: pw.TextAlign.center,
-                    style: const pw.TextStyle(
-                      fontSize: 8,
-                      color: PdfColors.grey500,
-                    ),
+                    style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
                   ),
                 ),
 
@@ -722,11 +740,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
       alignment: pw.Alignment.center,
       child: pw.Text(
         '•  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •',
-        style: pw.TextStyle(
-          color: PdfColors.grey300,
-          fontSize: 10,
-          letterSpacing: 2,
-        ),
+        style: pw.TextStyle(color: PdfColors.grey300, fontSize: 10, letterSpacing: 2),
       ),
     );
   }
@@ -738,10 +752,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text(
-            label,
-            style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 11),
-          ),
+          pw.Text(label, style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 11)),
           pw.SizedBox(width: 24),
           pw.Expanded(
             child: pw.Text(
