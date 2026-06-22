@@ -566,20 +566,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Row(
-                      children: [
-                        pw.Image(appIcon, width: 24, height: 24),
-                        pw.SizedBox(width: 8),
-                        pw.Text(
-                          'BlithePay',
-                          style: pw.TextStyle(
-                            fontSize: 18,
-                            fontWeight: pw.FontWeight.bold,
-                            color: PdfColor.fromHex('#1E3A8A'),
-                          ),
-                        ),
-                      ],
-                    ),
+                    pw.Image(appIcon, width: 100),
                     pw.Text(
                       'Transaction Receipt',
                       style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey600),

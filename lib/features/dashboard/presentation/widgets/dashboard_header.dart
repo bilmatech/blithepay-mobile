@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 
@@ -38,21 +37,6 @@ class DashboardHeader extends StatelessWidget {
         const SizedBox(width: 12),
         Text('Hi, $userName', style: AppTextStyles.headingSmall),
         const Spacer(),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: IconButton(
-            icon: const Icon(
-              Icons.notifications_none,
-              color: AppColors.primary,
-            ),
-            onPressed: () {
-              context.push('/notifications');
-            },
-          ),
-        ),
       ],
     );
   }
