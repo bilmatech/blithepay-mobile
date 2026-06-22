@@ -13,6 +13,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<GetProfileEvent>(_onGetProfile);
     on<UpdateProfileEvent>(_onUpdateProfile);
     on<ChangePasswordRequested>(_onChangePasswordRequested);
+    on<ChangePinRequested>(_onChangePinRequested);
     on<DeleteAccount>(_onDeleteAccount);
   }
 
@@ -98,6 +99,19 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       emit(const ProfileDeleted());
     } catch (e) {
       emit(ProfileError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onChangePinRequested(
+    ChangePinRequested event,
+    Emitter<ProfileState> emit,
+  ) async {
+    emit(const ProfileLoading());
+    try {
+      await authRepository.changeAppPin(event.oldPin, event.newPin, event.password);
+      emit(const ProfilePinChanged(message: 'App PIN changed successfully.'));
+    } catch (e) {
+      emit(ProfileError(message: e.toString().replaceAll('Exception: ', '')));
     }
   }
 }

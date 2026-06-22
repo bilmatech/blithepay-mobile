@@ -10,6 +10,7 @@ export 'package:blithepay/features/fees/presentation/bloc/fees_event.dart';
 export 'package:blithepay/features/fees/presentation/views/payment_confirmation_view.dart';
 export 'package:blithepay/features/fees/presentation/views/payment_success_view.dart';
 export 'package:blithepay/features/profile/presentation/views/change_password_view.dart';
+export 'package:blithepay/features/profile/presentation/views/change_pin_view.dart';
 export 'package:blithepay/features/profile/presentation/views/profile_view.dart';
 export 'package:blithepay/features/fees/presentation/views/fees_breakdown_view.dart';
 export 'package:blithepay/features/schools/data/models/linked_student_model.dart';

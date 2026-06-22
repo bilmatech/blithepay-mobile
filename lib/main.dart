@@ -17,7 +17,9 @@ void main() async {
   final notificationService = NotificationService();
   await notificationService.init();
 
-  await GoogleSignIn.instance.initialize();
+  await GoogleSignIn.instance.initialize(
+    serverClientId: '313986921733-tk50b3nbm29hgo2oraptfvkjske5pm7o.apps.googleusercontent.com',
+  );
 
   runApp(
     MultiRepositoryProvider(

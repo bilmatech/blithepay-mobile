@@ -469,7 +469,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
         transaction: transaction,
         onDownload: () async {
           Navigator.pop(dialogCtx);
-          await ReceiptService.download(transaction: transaction);
+          await ReceiptService.download(context: context, transaction: transaction);
         },
       ),
     );

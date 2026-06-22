@@ -36,6 +36,8 @@ abstract class AuthRepositoryInterface {
     required String fullName,
     required String phoneNumber,
   });
+  Future<AuthResponseModel> authenticateSso(String firebaseIdToken);
+  Future<void> changeAppPin(String oldPin, String newPin, String password);
 }
 
 class AuthRepository implements AuthRepositoryInterface {
@@ -198,6 +200,31 @@ class AuthRepository implements AuthRepositoryInterface {
   @override
   Future<void> deleteAccount() async {
     await _dioClient.delete(ApiEndpoints.accountupdate);
+  }
+
+  @override
+  Future<AuthResponseModel> authenticateSso(String firebaseIdToken) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.authenticateSso,
+      data: {"firebaseIdToken": firebaseIdToken},
+    );
+    return AuthResponseModel.fromJson(response.data['data']);
+  }
+
+  @override
+  Future<void> changeAppPin(String oldPin, String newPin, String password) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.changeAppPin,
+      data: {
+        "oldPin": oldPin,
+        "newPin": int.tryParse(newPin) ?? 0,
+        "password": password,
+      },
+    );
+    if (response.data == null || response.data['status'] != true) {
+      final message = response.data?['message'] ?? 'Failed to change PIN';
+      throw Exception(message);
+    }
   }
 }
 

@@ -15,6 +15,8 @@ class ApiEndpoints {
 
   static const String resetPassword = '$_baseAuth/reset_password';
   static const String verifyPin = '$_baseAuth/verify_app_pin';
+  static const String changeAppPin = '$_baseAuth/change_app_pin';
+  static const String authenticateSso = '$_baseAuth/authenticate_sso';
 
   static const String refreshToken = '$_baseAuth/refresh';
   static const String logout = '$_baseAuth/logout';

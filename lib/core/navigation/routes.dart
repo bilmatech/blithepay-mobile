@@ -84,6 +84,10 @@ class AppRouterConfig {
           path: AppRoutes.changePassword,
           builder: (_, __) => const ChangePasswordView(),
         ),
+        GoRoute(
+          path: AppRoutes.changePin,
+          builder: (_, __) => const ChangePinView(),
+        ),
         ShellRoute(
           builder: (context, state, child) {
             return DashboardView(child: child);
