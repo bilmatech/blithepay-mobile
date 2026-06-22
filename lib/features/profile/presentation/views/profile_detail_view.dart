@@ -9,6 +9,7 @@ import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../bloc/profile_bloc.dart';
 import '../bloc/profile_event.dart';
 import '../bloc/profile_state.dart';
@@ -25,6 +26,8 @@ class ProfileDetailView extends StatefulWidget {
 class _ProfileDetailViewState extends State<ProfileDetailView> {
   bool isEditing = false;
   File? _selectedImageFile;
+
+  Map<String, dynamic>? _cachedProfile;
 
   late final TextEditingController nameController;
   late final TextEditingController phoneController;
@@ -99,8 +102,6 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
             setState(() {
               isEditing = false;
             });
-
-            // Show success dialog
             _showSuccessDialog(context);
           }
 
@@ -111,17 +112,26 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
           }
         },
         builder: (context, state) {
-          if (state is ProfileLoading) {
+          if (state is ProfileLoaded) {
+            _cachedProfile = state.profile;
+          }
+
+          final isSubmitting = state is ProfileLoading && isEditing;
+          final isInitialLoad =
+              state is ProfileLoading && _cachedProfile == null;
+
+          if (isInitialLoad) {
             return const ShimmerProfileLoader();
           }
 
-          if (state is ProfileLoaded) {
-            final profile = state.profile;
-
+          if (_cachedProfile != null) {
             if (!_controllersInitialized) {
-              nameController.text = profile['name'] ?? nameController.text;
-              phoneController.text = profile['phone'] ?? phoneController.text;
-              emailController.text = profile['email'] ?? emailController.text;
+              nameController.text =
+                  _cachedProfile!['name'] ?? nameController.text;
+              phoneController.text =
+                  _cachedProfile!['phone'] ?? phoneController.text;
+              emailController.text =
+                  _cachedProfile!['email'] ?? emailController.text;
               _controllersInitialized = true;
             }
 
@@ -131,10 +141,12 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const BodySm('My Details'),
-                  // Profile Image
+
                   Center(
                     child: GestureDetector(
-                      onTap: isEditing ? _pickProfileImage : null,
+                      onTap: (isEditing && !isSubmitting)
+                          ? _pickProfileImage
+                          : null,
                       child: Stack(
                         alignment: Alignment.bottomRight,
                         children: [
@@ -156,13 +168,27 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                                       fit: BoxFit.cover,
                                     ),
                                   )
+                                : (_cachedProfile!['picture'] != null &&
+                                      _cachedProfile!['picture']!.isNotEmpty)
+                                ? ClipOval(
+                                    child: Image.network(
+                                      _cachedProfile!['picture']!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              const Icon(
+                                                Icons.person,
+                                                size: 40,
+                                              ),
+                                    ),
+                                  )
                                 : const Icon(
                                     Icons.person,
                                     size: 40,
                                     color: AppColors.textTertiary,
                                   ),
                           ),
-                          if (isEditing)
+                          if (isEditing && !isSubmitting)
                             Container(
                               width: 36,
                               height: 36,
@@ -185,17 +211,17 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                   AppTextField(
                     label: 'Full Name',
                     controller: nameController,
-                    enabled: isEditing,
+                    enabled: isEditing && !isSubmitting,
                     focusNode: nameFocusNode,
                   ),
                   const SizedBox(height: 16),
                   AppTextField(
                     label: 'Phone Number',
                     controller: phoneController,
-                    enabled: isEditing,
+                    enabled: isEditing && !isSubmitting,
                     keyboardType: TextInputType.phone,
                     prefix: GestureDetector(
-                      onTap: isEditing
+                      onTap: (isEditing && !isSubmitting)
                           ? () {
                               showCountryPicker(
                                 context: context,
@@ -235,27 +261,32 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                     label: 'Email',
                     controller: emailController,
                     enabled: false,
-                    
                   ),
-
                   const SizedBox(height: 32),
+
                   // Update Profile Button
                   PrimaryButton(
+                    isLoading:
+                        isSubmitting, // 4. Only the button gets the loading state feedback!
                     label: isEditing ? 'Update Profile' : 'Edit Profile',
-                    onPressed: () {
-                      if (isEditing) {
-                        context.read<ProfileBloc>().add(
-                          UpdateProfileEvent(
-                            name: nameController.text.trim(),
-                            phone: phoneController.text.trim(),
-                            profileImagePath: _selectedImageFile?.path,
-                          ),
-                        );
-                      } else {
-                        setState(() => isEditing = true);
-                        Future.microtask(() => nameFocusNode.requestFocus());
-                      }
-                    },
+                    onPressed: isSubmitting
+                        ? () {}
+                        : () {
+                            if (isEditing) {
+                              context.read<ProfileBloc>().add(
+                                UpdateProfileEvent(
+                                  name: nameController.text.trim(),
+                                  phone: phoneController.text.trim(),
+                                  profileImagePath: _selectedImageFile?.path,
+                                ),
+                              );
+                            } else {
+                              setState(() => isEditing = true);
+                              Future.microtask(
+                                () => nameFocusNode.requestFocus(),
+                              );
+                            }
+                          },
                   ),
                 ],
               ),
@@ -269,11 +300,12 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
   }
 
   void _pickProfileImage() async {
-    // For now, using a simple approach to show image selection
-    // In a real app, you'd use image_picker package
+    final ImagePicker picker = ImagePicker();
+
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
+        color: AppColors.white,
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -281,17 +313,29 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
             ListTile(
               leading: const Icon(Icons.photo_library),
               title: const Text('Choose from gallery'),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
-                // TODO: Implement gallery picker
+                final XFile? image = await picker.pickImage(
+                  source: ImageSource.gallery,
+                  imageQuality: 80,
+                );
+                if (image != null) {
+                  setState(() => _selectedImageFile = File(image.path));
+                }
               },
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt),
               title: const Text('Take a photo'),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
-                // TODO: Implement camera picker
+                final XFile? image = await picker.pickImage(
+                  source: ImageSource.camera,
+                  imageQuality: 80,
+                );
+                if (image != null) {
+                  setState(() => _selectedImageFile = File(image.path));
+                }
               },
             ),
           ],

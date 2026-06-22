@@ -1,3 +1,5 @@
+import 'dart:io';
+
 abstract class ProfileEvent {
   const ProfileEvent();
 }
@@ -39,4 +41,12 @@ class UpdateProfileEvent extends ProfileEvent {
     required this.phone,
     this.profileImagePath,
   });
+}
+
+
+class UploadImage extends ProfileEvent {
+  final File? picture;
+
+  UploadImage({required this.picture});
+  List<Object?> get props => [picture];
 }
