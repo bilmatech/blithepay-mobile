@@ -1,3 +1,5 @@
+import 'package:blithepay/features/vas/core/presentation/bloc/services_cubit/services_cubit.dart';
+import 'package:blithepay/features/vas/core/presentation/bloc/services_cubit/services_state.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -12,17 +14,16 @@ import 'package:blithepay/features/auth/data/models/auth_response_model.dart';
 import 'package:blithepay/features/wallet/presentation/bloc/wallet_bloc.dart';
 import 'package:blithepay/features/wallet/presentation/bloc/wallet_event.dart';
 import 'package:blithepay/shared/widgets/loaders/shimmer_dashboard_loader.dart';
-import 'package:blithepay/features/transaction/data/model/transaction_model.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
-import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
 import 'package:blithepay/features/dashboard/presentation/widgets/service_card.dart';
-import 'package:blithepay/features/dashboard/presentation/widgets/activity_item.dart';
 import 'package:blithepay/features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/widgets/dashboard_header.dart';
 import 'package:blithepay/features/transaction/presentation/bloc/transaction_event.dart';
 import 'package:blithepay/features/dashboard/presentation/widgets/financial_summary_card.dart';
+import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
+import 'package:blithepay/features/transaction/presentation/bloc/transaction_state.dart';
 
 class DashboardView extends StatelessWidget {
   final Widget child;
@@ -70,7 +71,37 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
-        if (state is DashboardLoading) return const ShimmerDashboardLoader();
+        if (state is DashboardLoading || state is DashboardInitial) {
+          return const ShimmerDashboardLoader();
+        }
+
+        if (state is DashboardError) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Unable to load dashboard',
+                    style: AppTextStyles.bodyLarge,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(state.message, textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<DashboardBloc>().add(
+                        const FetchDashboardData(forceRefresh: true),
+                      );
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
         if (state is DashboardLoaded) {
           return RefreshIndicator(
@@ -135,26 +166,33 @@ class _HomeViewState extends State<HomeView> {
                 // Services Grid
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 6,
-                          childAspectRatio: 0.8,
-                        ),
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final service = services[index];
-                      return ServiceCard(
-                        service: service,
-                        onTap: () {
-                          context.push(service.route);
-                        },
+                  sliver: BlocBuilder<ServicesCubit, ServicesState>(
+                    builder: (context, state) {
+                      final filteredServices = state.toDisplayList(
+                        includeMore: true,
                       );
-                    }, childCount: services.length),
+
+                      return SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 4,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 6,
+                              childAspectRatio: 0.8,
+                            ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final service = filteredServices[index];
+                          return ServiceCard(
+                            service: service,
+                            onTap: () {
+                              context.push(service.route, extra: service);
+                            },
+                          );
+                        }, childCount: filteredServices.length),
+                      );
+                    },
                   ),
-                ),
-                // Activity Title
+                ), // Activity Title
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                   sliver: SliverToBoxAdapter(
@@ -175,93 +213,69 @@ class _HomeViewState extends State<HomeView> {
                     ),
                   ),
                 ),
-                // Recent Activity (static sample list - preserved UI). Tapping opens details.
+                // Recent Activity (dynamic list from API). Tapping opens details.
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 6,
                   ),
                   sliver: SliverToBoxAdapter(
-                    child: Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            final tx = TransactionModel(
-                              name: 'Airtime Recharge',
-                              transactionAt: DateTime(2024, 6, 17, 23, 15),
-                              amount: 'N3,000',
-                              netAmount: 'N3,000',
-                              reference: 'REF001',
-                              status: TransactionStatus.successful,
-                              flow: TransactionFlow.outflow,
-                              type: TransactionType.airtime,
-                              icon: '📱',
-                              fees: 0,
+                    child: BlocBuilder<WalletTransactionBloc, WalletTransactionState>(
+                      builder: (context, txState) {
+                        if (txState is WalletTransactionLoading) {
+                          return const RecentTransactionsShimmer();
+                        }
+                        if (txState is WalletTransactionError) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              child: Text(
+                                txState.message,
+                                style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
+                              ),
+                            ),
+                          );
+                        }
+                        if (txState is WalletTransactionLoaded) {
+                          final txList = txState.transactions;
+                          if (txList.isEmpty) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 32),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.account_balance_wallet_outlined,
+                                    size: 48,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No transactions yet',
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: Colors.grey.shade500,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             );
-                            context.push(
-                              AppRoutes.transactionDetail,
-                              extra: tx,
-                            );
-                          },
-                          child: const ActivityItem(
-                            title: 'Airtime Recharge',
-                            date: 'Jun 17, 2024, 11:15pm',
-                            amount: 3000.00,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        GestureDetector(
-                          onTap: () {
-                            final tx = TransactionModel(
-                              name: 'DSTV Subscription',
-                              transactionAt: DateTime(2024, 7, 19, 23, 15),
-                              amount: 'N3,000',
-                              netAmount: 'N3,000',
-                              reference: 'REF002',
-                              status: TransactionStatus.successful,
-                              flow: TransactionFlow.outflow,
-                              type: TransactionType.cable,
-                              icon: '📺',
-                              fees: 0,
-                            );
-                            context.push(
-                              AppRoutes.transactionDetail,
-                              extra: tx,
-                            );
-                          },
-                          child: const ActivityItem(
-                            title: 'DSTV Subscription',
-                            date: 'Jul 19, 2024, 11:15pm',
-                            amount: 3000.00,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        GestureDetector(
-                          onTap: () {
-                            final tx = TransactionModel(
-                              name: 'Electricity',
-                              transactionAt: DateTime(2024, 6, 17, 23, 15),
-                              amount: 'N2,000',
-                              netAmount: 'N2,000',
-                              reference: 'REF003',
-                              status: TransactionStatus.successful,
-                              flow: TransactionFlow.outflow,
-                              type: TransactionType.electricity,
-                              icon: '⚡',
-                              fees: 0,
-                            );
-                            context.push(
-                              AppRoutes.transactionDetail,
-                              extra: tx,
-                            );
-                          },
-                          child: const ActivityItem(
-                            title: 'Electricity',
-                            date: 'Jun 17, 2024, 11:15pm',
-                            amount: 2000.00,
-                          ),
-                        ),
-                      ],
+                          }
+                          // Display exactly 3 items on the home page as requested
+                          final displayList = txList.take(3).toList();
+                          return Column(
+                            children: List.generate(displayList.length, (index) {
+                              final tx = displayList[index];
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: index == displayList.length - 1 ? 0 : 12,
+                                ),
+                                child: TransactionContainer(transaction: tx),
+                              );
+                            }),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
                     ),
                   ),
                 ),
@@ -275,7 +289,7 @@ class _HomeViewState extends State<HomeView> {
           );
         }
 
-        return const SizedBox();
+        return const ShimmerDashboardLoader();
       },
     );
   }

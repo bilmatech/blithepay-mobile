@@ -1,5 +1,5 @@
 class WalletModel {
-  final String balance;
+  final num balance;
   final String address;
   final String name;
   final String tag;
@@ -27,7 +27,7 @@ class WalletModel {
       // transactions: (json['transactions'] as List)
       //     .map((e) => TransactionModel.fromJson(e))
       //     .toList(),
-      ngnBalance: json['ngnBalance'],
+      ngnBalance: json['formattedBalance'],
     );
   }
 }

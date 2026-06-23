@@ -10,8 +10,10 @@ import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_b
 import 'package:blithepay/features/notifications/data/repositories/notifications_repository.dart';
 import 'package:blithepay/features/notifications/presentation/bloc/notifications_bloc.dart';
 import 'package:blithepay/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:blithepay/features/vas/core/data/repositories/service_repository.dart';
 import 'package:blithepay/features/schools/data/repositories/schools_repository.dart';
 import 'package:blithepay/features/schools/presentation/bloc/schools_bloc.dart';
+import 'package:blithepay/features/vas/core/presentation/bloc/services_cubit/services_cubit.dart';
 import 'package:blithepay/features/splash/presentation/bloc/splash_bloc.dart';
 import 'package:blithepay/features/students/data/repositories/students_repository.dart';
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_bloc.dart';
@@ -74,6 +76,10 @@ class AppProviders {
         create: (context) =>
             FeesRepositoryImpl(dioClient: context.read<DioClient>()),
       ),
+      RepositoryProvider<ServiceRepository>(
+        create: (context) =>
+            ServiceRepositoryImpl(dioClient: context.read<DioClient>()),
+      ),
     ];
   }
 
@@ -115,6 +121,10 @@ class AppProviders {
       BlocProvider<InvoiceBloc>(
         create: (context) =>
             InvoiceBloc(repository: context.read<StudentsRepository>()),
+      ),
+      BlocProvider<ServicesCubit>(
+        create: (context) =>
+            ServicesCubit(serviceRepository: context.read<ServiceRepository>()),
       ),
 
       BlocProvider<SchoolsBloc>(

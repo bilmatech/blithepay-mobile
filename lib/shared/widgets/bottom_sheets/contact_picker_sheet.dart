@@ -3,8 +3,8 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/shared/widgets/inputs/phone_number_field.dart';
-import 'package:blithepay/features/services/utils/network_detector.dart';
-import 'package:blithepay/features/services/data/models/beneficiary_model.dart';
+import 'package:blithepay/features/vas/core/utils/network_detector.dart';
+import 'package:blithepay/features/vas/core/data/models/beneficiary_model.dart';
 
 /// Bottom sheet that lists the device's phone contacts and lets the user pick
 /// one.  Returns the raw phone number string via [Navigator.pop].
@@ -22,6 +22,12 @@ import 'package:blithepay/features/services/data/models/beneficiary_model.dart';
 ///   builder: (_) => const ContactPickerSheet(),
 /// );
 /// ```
+class ContactPickerResult {
+  final String name;
+  final String phoneNumber;
+  const ContactPickerResult({required this.name, required this.phoneNumber});
+}
+
 class ContactPickerSheet extends StatefulWidget {
   const ContactPickerSheet({super.key});
 
@@ -217,7 +223,13 @@ class _ContactPickerSheetState extends State<ContactPickerSheet> {
           const Divider(height: 1, indent: 72, endIndent: 16, color: AppColors.border),
       itemBuilder: (_, i) => _ContactTile(
         item: _filtered[i],
-        onTap: () => Navigator.pop(context, _filtered[i].rawNumber),
+        onTap: () => Navigator.pop(
+          context,
+          ContactPickerResult(
+            name: _filtered[i].name,
+            phoneNumber: _filtered[i].rawNumber,
+          ),
+        ),
       ),
     );
   }

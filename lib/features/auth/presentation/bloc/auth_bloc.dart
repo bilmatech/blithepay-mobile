@@ -1,7 +1,6 @@
 import 'auth_event.dart';
 import 'auth_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/models/auth_response_model.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'package:blithepay/core/network/dio_error_mapper.dart';
 import 'package:blithepay/core/services/firebase_notifications.dart';
@@ -208,20 +207,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
 
-      emit(
-        AuthState.authenticated(
-          AuthResponseModel(
-            user: UserModel(
-              id: userCredential?.user?.uid,
-              email: userCredential?.user?.email,
-              firstName: userCredential?.user?.displayName?.split(' ').first,
-              lastName: userCredential?.user?.displayName?.split(' ').last,
-              profileImage: userCredential?.user?.photoURL,
-            ),
-            message: 'Logged in with Google',
-          ),
-        ),
-      );
+      final idToken = await userCredential!.user!.getIdToken();
+      if (idToken == null) {
+        emit(const AuthState.error('Failed to retrieve Firebase ID Token.'));
+        return;
+      }
+
+      final result = await _authRepository.authenticateSso(idToken);
+
+      // Persist session
+      await _authRepository.persistSession(result);
+
+      // Sync FCM token
+      final fcmToken = await getFcmToken();
+      if (fcmToken.isNotEmpty) {
+        await _authRepository.syncFcmToken(fcmToken);
+      }
+
+      emit(AuthState.authenticated(result));
     } catch (e) {
       emit(AuthState.error(extractError(e)));
     }
@@ -245,20 +248,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
 
-      emit(
-        AuthState.authenticated(
-          AuthResponseModel(
-            user: UserModel(
-              id: userCredential.user?.uid,
-              email: userCredential.user?.email,
-              firstName: userCredential.user?.displayName?.split(' ').first,
-              lastName: userCredential.user?.displayName?.split(' ').last,
-              profileImage: userCredential.user?.photoURL,
-            ),
-            message: 'Logged in with Apple',
-          ),
-        ),
-      );
+      final idToken = await userCredential.user!.getIdToken();
+      if (idToken == null) {
+        emit(const AuthState.error('Failed to retrieve Firebase ID Token.'));
+        return;
+      }
+
+      final result = await _authRepository.authenticateSso(idToken);
+
+      // Persist session
+      await _authRepository.persistSession(result);
+
+      // Sync FCM token
+      final fcmToken = await getFcmToken();
+      if (fcmToken.isNotEmpty) {
+        await _authRepository.syncFcmToken(fcmToken);
+      }
+
+      emit(AuthState.authenticated(result));
     } catch (e) {
       emit(AuthState.error(extractError(e)));
     }

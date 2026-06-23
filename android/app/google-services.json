@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "313986921733-7bvefbk4feclrcbsnpfhnupnv08ruqq3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bilmatech.blithepayapp",
+            "certificate_hash": "9fcc0a6b27e996e62d33366214f3ea2909c37496"
+          }
+        },
+        {
+          "client_id": "313986921733-bl15lplka06koab177q806prd0v9p0pk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bilmatech.blithepayapp",
+            "certificate_hash": "bfbc44760c37481b0d4d3a4b489b799cd148e719"
+          }
+        },
+        {
           "client_id": "313986921733-tk50b3nbm29hgo2oraptfvkjske5pm7o.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -29,6 +29,20 @@ class DeleteAccount extends ProfileEvent {
   const DeleteAccount();
 }
 
+class ChangePinRequested extends ProfileEvent {
+  final String oldPin;
+  final String newPin;
+  final String password;
+
+  const ChangePinRequested({
+    required this.oldPin,
+    required this.newPin,
+    required this.password,
+  });
+
+  List<Object?> get props => [oldPin, newPin, password];
+}
+
 class UpdateProfileEvent extends ProfileEvent {
   final String name;
   final String phone;

@@ -1,4 +1,6 @@
 import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
+import 'package:blithepay/features/vas/core/presentation/views/service_review_view.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 
 class AppRouterConfig {
@@ -82,6 +84,10 @@ class AppRouterConfig {
           path: AppRoutes.changePassword,
           builder: (_, __) => const ChangePasswordView(),
         ),
+        GoRoute(
+          path: AppRoutes.changePin,
+          builder: (_, __) => const ChangePinView(),
+        ),
         ShellRoute(
           builder: (context, state, child) {
             return DashboardView(child: child);
@@ -97,23 +103,35 @@ class AppRouterConfig {
             // ),
             GoRoute(
               path: AppRoutes.service,
-              builder: (context, state) => const ServicesScreen(),
+              builder: (context, state) => const ServicesCatalogScreen(),
             ),
             GoRoute(
               path: AppRoutes.airtimeService,
-              builder: (context, state) => const AirtimeServiceView(),
+              builder: (context, state) {
+                final service = state.extra as ServiceEntity?;
+                return AirtimePurchaseView(service: service);
+              },
             ),
             GoRoute(
               path: AppRoutes.dataService,
-              builder: (context, state) => const DataServiceView(),
+              builder: (context, state) {
+                final service = state.extra as ServiceEntity?;
+                return DataBundlePurchaseView(service: service);
+              },
             ),
             GoRoute(
               path: AppRoutes.cableTvService,
-              builder: (context, state) => const CableTvServiceView(),
+              builder: (context, state) {
+                final service = state.extra as ServiceEntity?;
+                return CableTvPurchaseView(service: service);
+              },
             ),
             GoRoute(
               path: AppRoutes.electricityService,
-              builder: (context, state) => const ElectricityServiceView(),
+              builder: (context, state) {
+                final service = state.extra as ServiceEntity?;
+                return ElectricityPurchaseView(service: service);
+              },
             ),
             GoRoute(
               path: AppRoutes.transactions,
@@ -245,10 +263,6 @@ class AppRouterConfig {
           builder: (_, __) => const FundWalletView(),
         ),
         GoRoute(
-          path: AppRoutes.transactions,
-          builder: (_, __) => const WalletTransactionsView(),
-        ),
-        GoRoute(
           path: AppRoutes.transactionReceiptView,
           builder: (context, state) {
             final transaction = state.extra as WalletTransactionModel;
@@ -276,14 +290,14 @@ class AppRouterConfig {
           path: AppRoutes.wallettransactionDetail,
           builder: (context, state) {
             final transaction = state.extra as WalletTransactionModel;
-            return WalletTransactionDetailView(transaction: transaction);
+            return TransactionDetailView(transaction: transaction);
           },
         ),
 
         GoRoute(
           path: AppRoutes.transactionDetail,
           builder: (context, state) {
-            final transaction = state.extra as TransactionModel;
+            final transaction = state.extra as WalletTransactionModel;
             return TransactionDetailView(transaction: transaction);
           },
         ),
@@ -327,7 +341,7 @@ class AppRouterConfig {
         GoRoute(
           path: AppRoutes.service,
           builder: (context, state) {
-            return const ServicesScreen();
+            return const ServicesCatalogScreen();
           },
         ),
 
@@ -355,17 +369,13 @@ class AppRouterConfig {
         GoRoute(
           path: '/service/review',
           builder: (context, state) {
-            final bloc = state.extra as ServiceBloc;
-
-            return BlocProvider.value(
-              value: bloc,
-              child: const ServiceReviewView(),
-            );
+            final args = state.extra as ServiceReviewArgs;
+            return ServiceReviewView(args: args);
           },
         ),
         GoRoute(
           path: AppRoutes.betting,
-          builder: (_, __) => const BettingServiceView(),
+          builder: (_, __) => const BettingsPurchaseView(),
         ),
 
         GoRoute(

@@ -69,6 +69,7 @@ class _PaymentHistoryDetailViewState extends State<PaymentHistoryDetailView> {
                 ),
               ],
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),

@@ -1,10 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
-import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
-import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
 import 'package:blithepay/shared/widgets/layouts/app_text.dart';
-import 'package:flutter/material.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 
 class HelpSupportView extends StatefulWidget {
   const HelpSupportView({super.key});
@@ -14,47 +14,40 @@ class HelpSupportView extends StatefulWidget {
 }
 
 class _HelpSupportViewState extends State<HelpSupportView> {
-  final List<Map<String, String>> faqs = [
-    {
-      'question': 'How Do Parents Link Their Children On The App?',
-      'answer':
-          'A parent searches using the admission number, enters a verifying code, and confirms phone number matching. Unauthorized access is blocked automatically.',
-    },
-    {
-      'question': 'Can Schools Accept Offline Payments Too?',
-      'answer':
-          'Yes, schools can configure offline payment options in their dashboard.',
-    },
-    {
-      'question': 'How Does Blithes Ensure Data Security?',
-      'answer':
-          'We use industry-standard encryption and regular security audits.',
-    },
-    {
-      'question': 'Does The System Support Multiple Payment Methods?',
-      'answer': 'Yes, including card, bank transfer, and wallet balance.',
-    },
-    {
-      'question': 'What If A Parent Enters Incorrect Details?',
-      'answer': 'The system will show an error message and allow retry.',
-    },
-    {
-      'question': 'How Much Does Blithes Cost?',
-      'answer':
-          'Pricing varies based on school size and features. Contact sales for details.',
-    },
-  ];
+  Future<void> _launchUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        _copyFallback(urlString);
+      }
+    } catch (e) {
+      _copyFallback(urlString);
+    }
+  }
 
-  List<bool> _expandedFaqs = [];
+  void _copyFallback(String urlString) {
+    String textToCopy = urlString.split(':').last;
+    if (textToCopy.contains('wa.me')) {
+      textToCopy = '+2349017402116';
+    }
+    _copyToClipboard(textToCopy, 'Copied: $textToCopy');
+  }
 
-  @override
-  void initState() {
-    super.initState();
-    _expandedFaqs = List.generate(faqs.length, (_) => false);
+  void _copyToClipboard(String text, String message) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.success,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final lightBlueBg = AppColors.lightBack.withValues(alpha: 0.05);
+
     return AppScaffold(
       appBar: AppBar(
         leading: const BackArrowButtonIcon(),
@@ -63,121 +56,42 @@ class _HelpSupportViewState extends State<HelpSupportView> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Contact Support Form
-              Text(
-                'Contact Support:',
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-              //  const SizedBox(height: 12),
-              // const AppTextField(label: 'Your Name', hint: 'Type here'),
-              // const SizedBox(height: 12),
-              // const AppTextField(label: 'Email', hint: '@gmail.com'),
-              const SizedBox(height: 12),
-
-              const AppTextField(
-                label: 'Your Message',
-                hint: 'Type here',
-                maxLines: 4,
-                minLines: 4,
+              _buildContactCard(
+                icon: Icons.phone_rounded,
+                title: 'Call Support',
+                subtitle: '+234 901 740 2116',
+                color: AppColors.primary,
+                bgColor: lightBlueBg,
+                onTap: () => _launchUrl('tel:+2349017402116'),
+                onLongPress: () =>
+                    _copyToClipboard('+2349017402116', 'Phone number copied to clipboard!'),
               ),
               const SizedBox(height: 16),
-              PrimaryButton(label: 'Send Message', onPressed: () {}),
-              const SizedBox(height: 24),
-
-              // Contact Information
-              Text(
-                'Contact Information:',
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-              // const SizedBox(height: 12),
-              // _buildContactCard(
-              //   icon: Icons.headset_mic,
-              //   title: 'Contact Live Support',
-              //   subtitle: 'Available 24/7',
-              // ),
-              const SizedBox(height: 12),
               _buildContactCard(
-                icon: Icons.phone,
-                title: 'Call Us',
-                subtitle: '+2347098784567',
+                icon: Icons.chat_bubble_outline_rounded,
+                title: 'Chat on WhatsApp',
+                subtitle: '+234 901 740 2116',
+                color: const Color(0xFF25D366),
+                bgColor: lightBlueBg,
+                onTap: () => _launchUrl('https://wa.me/2349017402116'),
+                onLongPress: () =>
+                    _copyToClipboard('+2349017402116', 'WhatsApp number copied to clipboard!'),
               ),
-              // const SizedBox(height: 12),
-              // _buildContactCard(
-              //   icon: Icons.event,
-              //   title: 'Book A Demo',
-              //   subtitle: '1 on 1 call with a member of our team',
-              // ),
-              const SizedBox(height: 24),
-
-              // FAQs
-              Text(
-                'Frequently Asked Questions:',
-                style: Theme.of(context).textTheme.labelLarge,
+              const SizedBox(height: 16),
+              _buildContactCard(
+                icon: Icons.email_outlined,
+                title: 'Email Support',
+                subtitle: 'support@blithepay.com',
+                color: Colors.purple.shade700,
+                bgColor: lightBlueBg,
+                onTap: () => _launchUrl('mailto:support@blithepay.com'),
+                onLongPress: () =>
+                    _copyToClipboard('support@blithepay.com', 'Email address copied to clipboard!'),
               ),
-              const SizedBox(height: 12),
-              ...List.generate(faqs.length, (index) {
-                return GestureDetector(
-                  onTap: () => setState(
-                    () => _expandedFaqs[index] = !_expandedFaqs[index],
-                  ),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.borderColor),
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.white,
-                    ),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  faqs[index]['question']!,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                              Icon(
-                                _expandedFaqs[index]
-                                    ? Icons.expand_less
-                                    : Icons.expand_more,
-                                color: AppColors.primary,
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (_expandedFaqs[index])
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                top: BorderSide(color: AppColors.borderColor),
-                              ),
-                            ),
-                            child: Text(
-                              faqs[index]['answer']!,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                                height: 1.5,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
             ],
           ),
         ),
@@ -189,32 +103,55 @@ class _HelpSupportViewState extends State<HelpSupportView> {
     required IconData icon,
     required String title,
     required String subtitle,
+    required Color color,
+    required Color bgColor,
+    required VoidCallback onTap,
+    required VoidCallback onLongPress,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderColor),
-        borderRadius: BorderRadius.circular(8),
-        color: AppColors.lightBackground,
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.primary, size: 28),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.borderColor),
+          borderRadius: BorderRadius.circular(12),
+          color: bgColor,
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
               ),
-            ],
-          ),
-        ],
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textTertiary, size: 14),
+          ],
+        ),
       ),
     );
   }

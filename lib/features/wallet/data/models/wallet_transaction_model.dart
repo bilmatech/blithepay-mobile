@@ -67,23 +67,68 @@ class WalletTransactionModel {
   });
 
   factory WalletTransactionModel.fromJson(Map<String, dynamic> json) {
+    final details = json['details'] as Map<String, dynamic>?;
+    if (details != null) {
+      final amountNum = details['amount'] ?? 0;
+      final typeStr = details['type'] as String? ?? '';
+      final statusStr = details['status'] as String? ?? '';
+      final descStr = details['description'] as String? ?? '';
+      final refStr = details['reference'] as String? ?? '';
+      final createdStr = details['createdAt'] as String? ?? json['createdAt'] as String? ?? '';
+
+      // Infer flow: DEPOSIT / INFLOW/ etc.
+      final flowStr = (typeStr.toUpperCase() == 'DEPOSIT' || typeStr.toUpperCase() == 'INFLOW') 
+          ? 'inflow' 
+          : 'outflow';
+
+      // Infer display name from type
+      String displayStr = '';
+      if (typeStr.isNotEmpty) {
+        displayStr = typeStr.split('_').map((w) {
+          if (w.isEmpty) return '';
+          return w[0].toUpperCase() + w.substring(1).toLowerCase();
+        }).join(' ');
+      } else {
+        displayStr = 'Transaction';
+      }
+
+      return WalletTransactionModel(
+        id: json['id'] as String? ?? details['id'] as String? ?? '',
+        name: displayStr,
+        walletId: json['walletId'] as String? ?? json['userId'] as String? ?? '',
+        amount: amountNum.toString(),
+        fees: (details['fees'] ?? 0).toString(),
+        netAmount: (details['netAmount'] ?? amountNum).toString(),
+        reference: refStr,
+        type: typeStr,
+        flow: flowStr,
+        transactionAt: createdStr,
+        processedAt: details['updatedAt'] as String? ?? json['updatedAt'] as String? ?? '',
+        description: descStr,
+        status: statusStr,
+        isDeleted: json['isDeleted'] as bool? ?? false,
+        createdAt: json['createdAt'] as String? ?? '',
+        updatedAt: json['updatedAt'] as String? ?? '',
+      );
+    }
+
     return WalletTransactionModel(
-      id: json['id'],
-      name: json['name'],
-      walletId: json['walletId'],
-      amount: json['amount'],
-      fees: json['fees'],
-      netAmount: json['netAmount'],
-      reference: json['reference'],
-      type: json['type'],
-      flow: json['flow'],
-      transactionAt: json['transactionAt'],
-      processedAt: json['processedAt'],
-      description: json['desc'],
-      status: json['status'],
-      isDeleted: json['isDeleted'],
-      createdAt: json['createdAt'],
-      updatedAt: json['updatedAt'],
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      walletId: json['walletId'] as String? ?? '',
+      amount: json['amount']?.toString() ?? '',
+      fees: json['fees']?.toString() ?? '',
+      netAmount: json['netAmount']?.toString() ?? '',
+      reference: json['reference'] as String? ?? '',
+      type: json['type'] as String? ?? '',
+      flow: json['flow'] as String? ?? '',
+      transactionAt: json['transactionAt'] as String? ?? '',
+      processedAt: json['processedAt'] as String? ?? '',
+      description: json['desc'] as String?,
+      status: json['status'] as String? ?? '',
+      isDeleted: json['isDeleted'] as bool? ?? false,
+      createdAt: json['createdAt'] as String? ?? '',
+      updatedAt: json['updatedAt'] as String? ?? '',
     );
   }
 

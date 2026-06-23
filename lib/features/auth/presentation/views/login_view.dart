@@ -16,7 +16,6 @@ import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/buttons/secondary_button.dart';
 import 'package:blithepay/shared/widgets/buttons/social_auth_button.dart';
 import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
-import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 
@@ -172,26 +171,7 @@ class _LoginViewState extends State<LoginView> {
                               state.loadingType == LoadingType.email,
                           isEnabled: state.status != AuthStatus.loading,
                         ),
-                        const SizedBox(height: 28),
-                        SizedBox(
-                          width: double.infinity,
-                          child: SecondaryOutlinedButton(
-                            label: AppStrings.biometricSignIn,
-                            height: 48,
-                            textStyle: AppTextStyles.bodySmall.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              color: AppColors.borderDark,
-                            ),
-                            onPressed: () => context.push(AppRoutes.biometric),
-                            // borderColor: AppColors.primary,
-                            leading: const Icon(
-                              Icons.fingerprint,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 32),
 
                         Center(
                           child: GestureDetector(

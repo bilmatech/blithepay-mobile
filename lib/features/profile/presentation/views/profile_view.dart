@@ -1,19 +1,19 @@
-import 'package:blithepay/core/constants/app_colors.dart';
-import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:flutter/material.dart';
 import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/shared/widgets/app_bar.dart';
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/shared/widgets/layouts/spacing.dart';
 import 'package:blithepay/core/storage/auth_local_storage.dart';
+import 'package:blithepay/shared/widgets/layouts/app_text.dart';
+import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/features/auth/data/models/auth_response_model.dart';
 import 'package:blithepay/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:blithepay/features/profile/presentation/bloc/profile_event.dart';
 import 'package:blithepay/features/profile/presentation/bloc/profile_state.dart';
-import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/app_bar.dart';
-import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:blithepay/shared/widgets/dialogs/confirmation_bottom_sheet.dart';
-import 'package:blithepay/shared/widgets/layouts/app_text.dart';
-import 'package:blithepay/shared/widgets/layouts/spacing.dart';
-import 'package:flutter/material.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -44,11 +44,7 @@ class ProfileView extends StatelessWidget {
                       color: AppColors.surface,
                       border: Border.all(color: AppColors.border, width: 2),
                     ),
-                    child: const Icon(
-                      Icons.person,
-                      size: 40,
-                      color: AppColors.textTertiary,
-                    ),
+                    child: const Icon(Icons.person, size: 40, color: AppColors.textTertiary),
                   ),
                   const VSpaceBase(),
                   HeadingXl('$firstName $lastName'),
@@ -80,8 +76,8 @@ class ProfileView extends StatelessWidget {
                         // ),
                         _ProfileItem(
                           icon: Icons.lock_outline,
-                          label: 'Change payment pin',
-                          onTap: () => context.push('/linked-students'),
+                          label: 'Change Transaction PIN',
+                          onTap: () => context.push(AppRoutes.changePin),
                         ),
                         // _ProfileItem(
                         //   icon: Icons.school_outlined,
@@ -151,11 +147,7 @@ class ProfileView extends StatelessWidget {
                                 child: const Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(
-                                      Icons.logout_outlined,
-                                      color: Colors.white,
-                                      size: 18,
-                                    ),
+                                    Icon(Icons.logout_outlined, color: Colors.white, size: 18),
                                     HSpaceSm(),
                                     BodySm('Sign out', color: Colors.white),
                                   ],
@@ -212,17 +204,11 @@ class ProfileView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Delete account',
-              style: AppTextStyles.h3,
-              textAlign: TextAlign.center,
-            ),
+            const Text('Delete account', style: AppTextStyles.h3, textAlign: TextAlign.center),
             const SizedBox(height: 16),
             Text(
               'Are you sure want to delete account?',
-              style: AppTextStyles.bodyRegular.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.bodyRegular.copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -231,11 +217,9 @@ class ProfileView extends StatelessWidget {
                 if (state is ProfileDeleted) {
                   Navigator.of(context).pop();
                   context.go('/login');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Account deleted successfully'),
-                    ),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Account deleted successfully')));
                 }
 
                 if (state is ProfileError) {
@@ -261,9 +245,7 @@ class ProfileView extends StatelessWidget {
                         label: 'Yes, Delete',
                         isLoading: state is ProfileLoading,
                         onPressed: () {
-                          context.read<ProfileBloc>().add(
-                            const DeleteAccount(),
-                          );
+                          context.read<ProfileBloc>().add(const DeleteAccount());
                         },
                       ),
                     ),
@@ -296,10 +278,7 @@ class _ProfileItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(
-        icon,
-        color: isLogout ? AppColors.error : AppColors.textHint,
-      ),
+      leading: Icon(icon, color: isLogout ? AppColors.error : AppColors.textHint),
       title: Text(
         label,
         style: AppTextStyles.bodyMedium.copyWith(

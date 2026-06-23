@@ -27,3 +27,8 @@ class ProfileUpdated extends ProfileState {
 class ProfileDeleted extends ProfileState {
   const ProfileDeleted();
 }
+
+class ProfilePinChanged extends ProfileState {
+  final String message;
+  const ProfilePinChanged({required this.message});
+}

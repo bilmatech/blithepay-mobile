@@ -12,6 +12,7 @@ abstract class AppRoutes {
   static const String passwordChanged = '/password-changed';
   static const String biometric = '/biometric';
   static const String changePassword = '/change-password';
+  static const String changePin = '/change-pin';
   static const String confirmSchool = '/confirm-school';
   static const String dashboard = '/dashboard';
   static const String linkStudents = '/link-students';

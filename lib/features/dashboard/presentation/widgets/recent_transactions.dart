@@ -3,6 +3,7 @@ import 'package:blithepay/core/utils/helpers.dart';
 import 'package:blithepay/features/wallet/data/models/wallet_transaction_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 
@@ -105,49 +106,68 @@ class TransactionContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String iconKey = 'withdrawal';
+    String name = transaction.name;
+    final desc = (transaction.description ?? '').toLowerCase();
+    final typeStr = transaction.type.toLowerCase();
+
+    if (desc.contains('airtime') || typeStr.contains('airtime') || desc.contains('recharge')) {
+      name = 'Airtime Recharge';
+      iconKey = 'airtime';
+    } else if (desc.contains('data') || desc.contains('internet') || typeStr.contains('data') || typeStr.contains('internet')) {
+      name = 'Data Bundle';
+      iconKey = 'data';
+    } else if (desc.contains('dstv') || desc.contains('gotv') || desc.contains('startimes') || desc.contains('cable') || typeStr.contains('cable')) {
+      name = desc.contains('gotv') ? 'GOtv Subscription' : (desc.contains('dstv') ? 'DStv Subscription' : 'Cable TV Subscription');
+      iconKey = 'cable';
+    } else if (desc.contains('electricity') || desc.contains('meter') || desc.contains('power') || typeStr.contains('electricity') || typeStr.contains('utility')) {
+      name = 'Electricity';
+      iconKey = 'electricity';
+    } else if (typeStr == 'deposit' || typeStr == 'inflow') {
+      name = 'Deposit';
+      iconKey = 'deposit';
+    } else {
+      name = 'Withdrawal';
+      iconKey = 'withdrawal';
+    }
+
+    final parsedDate = DateTime.tryParse(transaction.transactionAt) ?? DateTime.now();
+    final displayDate = DateFormat('dd MMM yyyy, hh:mm a').format(parsedDate.toLocal());
+    final isSuccess = transaction.status.toLowerCase() == 'success' || transaction.status.toLowerCase() == 'successful';
+
     return GestureDetector(
       onTap: () {
-        context.push(AppRoutes.wallettransactionDetail, extra: transaction);
+        context.push(AppRoutes.transactionDetail, extra: transaction);
       },
       behavior: HitTestBehavior.opaque,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.lightBack.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.borderColor),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.border,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.account_balance_wallet,
-                    size: 20,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
+                _TransactionIcon(iconType: iconKey),
                 const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      transaction.name,
+                      name,
                       style: AppTextStyles.headingSmall.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      Helpers.formattedDateTime(transaction.transactionAt),
-                      style: AppTextStyles.bodySmall,
+                      displayDate,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -160,21 +180,85 @@ class TransactionContainer extends StatelessWidget {
                   Helpers.formattedAmount(
                     transaction.amount,
                     flow: transaction.flow,
-                  ),
+                  ).replaceAll('₦', 'N'),
                   style: AppTextStyles.headingSmall.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  transaction.status,
+                  transaction.status.toUpperCase(),
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.success,
+                    color: isSuccess ? AppColors.success : AppColors.error,
                   ),
                 ),
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TransactionIcon extends StatelessWidget {
+  final String iconType;
+
+  const _TransactionIcon({required this.iconType});
+
+  @override
+  Widget build(BuildContext context) {
+    IconData iconData;
+    Color iconColor;
+    Color bgColor;
+
+    switch (iconType.toLowerCase()) {
+      case 'airtime':
+        iconData = Icons.phone_iphone_rounded;
+        iconColor = Colors.purple.shade700;
+        bgColor = Colors.purple.shade50;
+        break;
+      case 'data':
+        iconData = Icons.wifi_rounded;
+        iconColor = Colors.teal.shade700;
+        bgColor = Colors.teal.shade50;
+        break;
+      case 'cable':
+      case 'cabletv':
+        iconData = Icons.tv_rounded;
+        iconColor = Colors.orange.shade800;
+        bgColor = Colors.orange.shade50;
+        break;
+      case 'electricity':
+        iconData = Icons.bolt_rounded;
+        iconColor = Colors.amber.shade900;
+        bgColor = Colors.amber.shade50;
+        break;
+      case 'deposit':
+        iconData = Icons.arrow_downward_rounded;
+        iconColor = Colors.green.shade700;
+        bgColor = Colors.green.shade50;
+        break;
+      case 'withdrawal':
+      default:
+        iconData = Icons.arrow_upward_rounded;
+        iconColor = Colors.red.shade700;
+        bgColor = Colors.red.shade50;
+        break;
+    }
+
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(
+        child: Icon(
+          iconData,
+          color: iconColor,
+          size: 22,
         ),
       ),
     );

@@ -1,7 +1,7 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/features/services/data/models/beneficiary_model.dart';
-import 'package:blithepay/features/services/utils/network_detector.dart';
+import 'package:blithepay/features/vas/core/data/models/beneficiary_model.dart';
+import 'package:blithepay/features/vas/core/utils/network_detector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -18,6 +18,7 @@ class PhoneNumberField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final VoidCallback? onContactPickerTap;
   final String hintText;
+  final Widget? prefixIcon;
 
   const PhoneNumberField({
     super.key,
@@ -26,6 +27,7 @@ class PhoneNumberField extends StatelessWidget {
     this.onChanged,
     this.onContactPickerTap,
     this.hintText = '080 0000 0000',
+    this.prefixIcon,
   });
 
   @override
@@ -53,7 +55,7 @@ class PhoneNumberField extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
         children: [
-          _NetworkBadge(network: detectedNetwork),
+          prefixIcon ?? _NetworkBadge(network: detectedNetwork),
 
           const SizedBox(width: 10),
           AnimatedContainer(
@@ -119,9 +121,7 @@ class _NetworkBadge extends StatelessWidget {
         scale: animation,
         child: FadeTransition(opacity: animation, child: child),
       ),
-      child: network == null
-          ? _buildEmpty()
-          : _buildNetwork(network!),
+      child: network == null ? _buildEmpty() : _buildNetwork(network!),
     );
   }
 
@@ -195,8 +195,8 @@ class _ContactPickerButton extends StatelessWidget {
 
 /// Network brand colour used across the phone field and contact picker.
 Color networkColor(ServiceNetwork network) => switch (network) {
-      ServiceNetwork.mtn => const Color(0xFFFFC300),
-      ServiceNetwork.glo => const Color(0xFF009A44),
-      ServiceNetwork.airtel => const Color(0xFFED1C24),
-      ServiceNetwork.nineMobile => const Color(0xFF006633),
-    };
+  ServiceNetwork.mtn => const Color(0xFFFFC300),
+  ServiceNetwork.glo => const Color(0xFF009A44),
+  ServiceNetwork.airtel => const Color(0xFFED1C24),
+  ServiceNetwork.nineMobile => const Color(0xFF006633),
+};

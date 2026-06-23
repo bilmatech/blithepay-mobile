@@ -11,6 +11,7 @@ export 'loaders/shimmer_list_loader.dart';
 export 'loaders/shimmer_table_loader.dart';
 export 'loaders/shimmer_profile_loader.dart';
 export 'loaders/shimmer_notification_loader.dart';
+export 'loaders/shimmer_transaction_details_loader.dart';
 export 'dialogs/confirmation_dialog.dart';
 export 'dialogs/error_dialog.dart';
 export 'dialogs/search_modal.dart';
