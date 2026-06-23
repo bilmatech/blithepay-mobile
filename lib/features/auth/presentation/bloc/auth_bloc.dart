@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'auth_event.dart';
 import 'auth_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -241,7 +243,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ),
     );
     try {
-      final userCredential = await _firebaseAuthService.signInWithApple();
+      final appleProvider = AppleAuthProvider()
+        ..addScope('email')
+        ..addScope('name');
+
+      final userCredential = await FirebaseAuth.instance.signInWithProvider(
+        appleProvider,
+      );
 
       if (userCredential.user == null) {
         emit(const AuthState.error('Apple sign-in failed.'));
@@ -255,19 +263,55 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       final result = await _authRepository.authenticateSso(idToken);
-
-      // Persist session
       await _authRepository.persistSession(result);
 
-      // Sync FCM token
       final fcmToken = await getFcmToken();
       if (fcmToken.isNotEmpty) {
         await _authRepository.syncFcmToken(fcmToken);
       }
-
       emit(AuthState.authenticated(result));
     } catch (e) {
       emit(AuthState.error(extractError(e)));
     }
   }
+  // Future<void> _onAppleSignInRequested(
+  //   AppleSignInRequested event,
+  //   Emitter<AuthState> emit,
+  // ) async {
+  //   emit(
+  //     state.copyWith(
+  //       status: AuthStatus.loading,
+  //       loadingType: LoadingType.apple,
+  //     ),
+  //   );
+  //   try {
+  //     final userCredential = await _firebaseAuthService.signInWithApple();
+
+  //     if (userCredential.user == null) {
+  //       emit(const AuthState.error('Apple sign-in failed.'));
+  //       return;
+  //     }
+
+  //     final idToken = await userCredential.user!.getIdToken();
+  //     if (idToken == null) {
+  //       emit(const AuthState.error('Failed to retrieve Firebase ID Token.'));
+  //       return;
+  //     }
+
+  //     final result = await _authRepository.authenticateSso(idToken);
+
+  //     // Persist session
+  //     await _authRepository.persistSession(result);
+
+  //     // Sync FCM token
+  //     final fcmToken = await getFcmToken();
+  //     if (fcmToken.isNotEmpty) {
+  //       await _authRepository.syncFcmToken(fcmToken);
+  //     }
+
+  //     emit(AuthState.authenticated(result));
+  //   } catch (e) {
+  //     emit(AuthState.error(extractError(e)));
+  //   }
+  // }
 }
