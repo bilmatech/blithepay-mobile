@@ -536,7 +536,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
           tx.status.toLowerCase() == 'success' || tx.status.toLowerCase() == 'successful';
       final parsedDate = DateTime.tryParse(tx.createdAt)?.toLocal() ?? DateTime.now();
       final dateStr = DateFormat('MMM d, yyyy HH:mm:ss').format(parsedDate);
-      final displayAmount = Helpers.formattedAmount(tx.amount.toString()).replaceAll('₦', 'N');
+      final cleanAmount = Helpers.formattedAmount(tx.amount.toString()).replaceAll('₦', '').trim();
 
       // Extract metadata values
       final Map<String, dynamic> rawMeta = vas?.metadata ?? {};
@@ -547,13 +547,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
           nestedMeta?['units'] ??
           rawMeta['tokenUnits'] ??
           nestedMeta?['tokenUnits'];
-      final debtVal =
-          rawMeta['debt'] ??
-          nestedMeta?['debt'] ??
-          rawMeta['debtAmount'] ??
-          nestedMeta?['debtAmount'];
       final tokenVal = vas?.token ?? rawMeta['token'] ?? nestedMeta?['token'];
-      final unitsAmountVal = rawMeta['unitsAmount'] ?? nestedMeta?['unitsAmount'];
 
       final addressVal =
           vas?.utility?.customerAddress ??
@@ -566,161 +560,212 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(32),
           build: (pw.Context context) {
-            return pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
+            return pw.Stack(
               children: [
-                _pdfTicketPerforation(),
-                pw.SizedBox(height: 12),
-
-                // Header Row
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                // Watermark
+                pw.Opacity(
+                  opacity: 0.02,
+                  child: pw.Center(
+                    child: pw.Image(appIcon, width: 350),
+                  ),
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Image(appIcon, width: 100),
-                    pw.Text(
-                      'Transaction Receipt',
-                      style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey600),
-                    ),
-                  ],
-                ),
-
-                pw.SizedBox(height: 24),
-
-                // Centered Amount & Status
-                pw.Center(
-                  child: pw.Column(
-                    children: [
-                      pw.Text(
-                        displayAmount,
-                        style: pw.TextStyle(
-                          color: isSuccess ? PdfColor.fromHex('#10B981') : PdfColors.red700,
-                          fontSize: 32,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                      pw.SizedBox(height: 6),
-                      pw.Container(
-                        padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        decoration: pw.BoxDecoration(
-                          color: isSuccess ? PdfColor.fromHex('#EAF2FF') : PdfColors.red50,
-                          borderRadius: const pw.BorderRadius.all(pw.Radius.circular(12)),
-                          border: pw.Border.all(
-                            color: isSuccess ? PdfColor.fromHex('#1E3A8A') : PdfColors.red200,
-                            width: 0.5,
-                          ),
-                        ),
-                        child: pw.Text(
-                          isSuccess ? 'SUCCESSFUL' : 'FAILED',
+                    // Header Row
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text(
+                          'Transaction Receipt',
                           style: pw.TextStyle(
-                            color: isSuccess ? PdfColor.fromHex('#1E3A8A') : PdfColors.red700,
-                            fontSize: 10,
+                            fontSize: 22,
                             fontWeight: pw.FontWeight.bold,
-                            letterSpacing: 0.5,
+                            color: PdfColors.black,
                           ),
                         ),
-                      ),
-                      pw.SizedBox(height: 6),
-                      pw.Text(
-                        dateStr,
-                        style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
-                      ),
-                    ],
-                  ),
-                ),
-
-                pw.SizedBox(height: 24),
-                pw.Divider(color: PdfColors.grey300, thickness: 0.5),
-                pw.SizedBox(height: 12),
-
-                // Dynamic Rows
-                if (vas != null) ...[
-                  if (vas.phone != null) ...[
-                    _pdfRow('Provider', vas.phone!.provider),
-                    if (vas.phone!.contactName != null && vas.phone!.contactName!.isNotEmpty)
-                      _pdfRow('Customer Name', vas.phone!.contactName!),
-                    _pdfRow('Recipient Number', vas.phone!.phone),
-                  ] else if (vas.utility != null) ...[
-                    _pdfRow('Provider', vas.utility!.providerName),
-                    _pdfRow('Customer Name', vas.utility!.customerName),
-                    if (addressVal != null && addressVal.toString().isNotEmpty)
-                      _pdfRow('Service Address', addressVal.toString()),
-                    if (userName.isNotEmpty) _pdfRow('Bill To', userName),
-                    _pdfRow('Purchase Type', vas.utility!.meterType),
-                    _pdfRow('Meter Number', vas.utility!.meterNumber),
-                    if (unitsVal != null)
-                      _pdfRow('Units Purchased', '${unitsVal.toString()} kWh')
-                    else if (vas.tokenUnits != null && vas.tokenUnits!.isNotEmpty)
-                      _pdfRow('Units Purchased', '${vas.tokenUnits} kWh'),
-                    if (tokenVal != null && tokenVal.toString().isNotEmpty)
-                      _pdfRow('Token', tokenVal.toString()),
-                    if (unitsAmountVal != null)
-                      _pdfRow(
-                        'Units Amount',
-                        Helpers.formattedAmount(unitsAmountVal.toString()).replaceAll('₦', 'N'),
-                      )
-                    else
-                      _pdfRow(
-                        'Units Amount',
-                        Helpers.formattedAmount((tx.amount).toString()).replaceAll('₦', 'N'),
-                      ),
-                    if (debtVal != null &&
-                        double.tryParse(debtVal.toString()) != null &&
-                        double.parse(debtVal.toString()) > 0)
-                      _pdfRow(
-                        'Debt Amount',
-                        Helpers.formattedAmount(debtVal.toString()).replaceAll('₦', 'N'),
-                      ),
-                  ] else if (vas.cabletv != null) ...[
-                    _pdfRow(
-                      'Provider',
-                      rawMeta['receiver']?['distribution']?.toString() ?? 'Cable TV',
+                        pw.Image(appIcon, width: 100),
+                      ],
                     ),
-                    _pdfRow('Customer Name', vas.cabletv!.customerName),
-                    _pdfRow('Smartcard/Account Number', vas.cabletv!.smartcardNumber),
-                    if (vas.cabletv!.bundleCode != null)
-                      _pdfRow('Bundle Package', vas.cabletv!.bundleCode!),
-                  ] else ...[
-                    // Fallback generic metadata if vas has receiver info but none of the models matched
-                    if (rawMeta['receiver'] != null) ...[
-                      if (rawMeta['receiver']['distribution'] != null)
-                        _pdfRow('Provider', rawMeta['receiver']['distribution'].toString()),
-                      if (rawMeta['receiver']['name'] != null &&
-                          rawMeta['receiver']['name'].toString().isNotEmpty)
-                        _pdfRow('Customer Name', rawMeta['receiver']['name'].toString()),
-                      if (addressVal != null && addressVal.toString().isNotEmpty)
-                        _pdfRow('Service Address', addressVal.toString()),
-                      if (userName.isNotEmpty &&
-                          (rawMeta['disco'] != null || rawMeta['receiver']['vendType'] != null))
-                        _pdfRow('Bill To', userName),
-                      if (rawMeta['receiver']['number'] != null)
-                        _pdfRow('Recipient Number', rawMeta['receiver']['number'].toString()),
-                      if (tokenVal != null && tokenVal.toString().isNotEmpty)
-                        _pdfRow('Token', tokenVal.toString()),
+                    pw.SizedBox(height: 12),
+                    pw.Divider(color: PdfColors.grey400, thickness: 1),
+                    pw.SizedBox(height: 20),
+
+                    // Transaction Status & Amount Box
+                    pw.Container(
+                      padding: const pw.EdgeInsets.all(16),
+                      decoration: const pw.BoxDecoration(
+                        color: PdfColors.grey100,
+                        borderRadius: pw.BorderRadius.all(pw.Radius.circular(8)),
+                      ),
+                      child: pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
+                                'Status',
+                                style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 10),
+                              ),
+                              pw.SizedBox(height: 4),
+                              pw.Text(
+                                isSuccess ? 'SUCCESS' : 'FAILED',
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                  color: isSuccess ? PdfColors.green700 : PdfColors.red700,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                          pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.end,
+                            children: [
+                              pw.Text(
+                                'Amount',
+                                style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 10),
+                              ),
+                              pw.SizedBox(height: 4),
+                              pw.Text(
+                                'NGN $cleanAmount',
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                  fontSize: 16,
+                                  color: PdfColors.black,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    pw.SizedBox(height: 24),
+
+                    // Section: Transaction Details
+                    pw.Text(
+                      'Transaction Details',
+                      style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+                    ),
+                    pw.SizedBox(height: 8),
+
+                    _pdfRow('Transaction Type', tx.type),
+                    _pdfRow('Reference', tx.reference),
+                    _pdfRow('Date & Time', dateStr),
+
+                    // Section: Service Details
+                    if (vas != null) ...[
+                      pw.SizedBox(height: 16),
+                      pw.Text(
+                        'Service Details',
+                        style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+                      ),
+                      pw.SizedBox(height: 8),
+
+                      if (vas.phone != null) ...[
+                        _pdfRow('Provider', vas.phone!.provider),
+                        if (vas.phone!.contactName != null && vas.phone!.contactName!.isNotEmpty)
+                          _pdfRow('Customer Name', vas.phone!.contactName!),
+                        _pdfRow('Phone Number', vas.phone!.phone),
+                      ] else if (vas.utility != null) ...[
+                        _pdfRow('Customer Name', vas.utility!.customerName),
+                        _pdfRow('Meter Number', vas.utility!.meterNumber),
+                        _pdfRow('Distributor', vas.utility!.providerName),
+                        _pdfRow('Meter Type', vas.utility!.meterType),
+                        if (addressVal != null && addressVal.toString().isNotEmpty)
+                          _pdfRow('Service Address', addressVal.toString()),
+                        if (userName.isNotEmpty) _pdfRow('Bill To', userName),
+                      ] else if (vas.cabletv != null) ...[
+                        _pdfRow(
+                          'Provider',
+                          rawMeta['receiver']?['distribution']?.toString() ?? 'Cable TV',
+                        ),
+                        _pdfRow('Customer Name', vas.cabletv!.customerName),
+                        _pdfRow('Smartcard/Account Number', vas.cabletv!.smartcardNumber),
+                        if (vas.cabletv!.bundleCode != null)
+                          _pdfRow('Bundle Package', vas.cabletv!.bundleCode!),
+                      ] else ...[
+                        if (rawMeta['receiver'] != null) ...[
+                          if (rawMeta['receiver']['distribution'] != null)
+                            _pdfRow('Provider', rawMeta['receiver']['distribution'].toString()),
+                          if (rawMeta['receiver']['name'] != null &&
+                              rawMeta['receiver']['name'].toString().isNotEmpty)
+                            _pdfRow('Customer Name', rawMeta['receiver']['name'].toString()),
+                          if (addressVal != null && addressVal.toString().isNotEmpty)
+                            _pdfRow('Service Address', addressVal.toString()),
+                          if (userName.isNotEmpty &&
+                              (rawMeta['disco'] != null || rawMeta['receiver']['vendType'] != null))
+                            _pdfRow('Bill To', userName),
+                          if (rawMeta['receiver']['number'] != null)
+                            _pdfRow('Recipient Number', rawMeta['receiver']['number'].toString()),
+                        ],
+                      ],
                     ],
+
+                    // Token Pin Box (If available)
+                    if (tokenVal != null && tokenVal.toString().isNotEmpty) ...[
+                      pw.SizedBox(height: 20),
+                      pw.Container(
+                        width: double.infinity,
+                        padding: const pw.EdgeInsets.all(12),
+                        decoration: pw.BoxDecoration(
+                          border: pw.Border.all(color: PdfColors.grey300),
+                          borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                        ),
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.center,
+                          children: [
+                            pw.Text(
+                              'PREPAID ELECTRICITY TOKEN PIN',
+                              style: pw.TextStyle(
+                                fontSize: 10,
+                                fontWeight: pw.FontWeight.bold,
+                                color: PdfColor.fromHex('#1E3A8A'),
+                              ),
+                            ),
+                            pw.SizedBox(height: 8),
+                            pw.Text(
+                              tokenVal.toString(),
+                              style: pw.TextStyle(
+                                fontSize: 22,
+                                fontWeight: pw.FontWeight.bold,
+                                color: PdfColors.black,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            if (unitsVal != null) ...[
+                              pw.SizedBox(height: 6),
+                              pw.Text(
+                                'Units: ${unitsVal.toString()}',
+                                style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
+                              ),
+                            ] else if (vas?.tokenUnits != null && vas!.tokenUnits!.isNotEmpty) ...[
+                              pw.SizedBox(height: 6),
+                              pw.Text(
+                                'Units: ${vas.tokenUnits}',
+                                style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+
+                    pw.Spacer(),
+                    pw.Divider(color: PdfColors.grey300, thickness: 0.5),
+                    pw.SizedBox(height: 10),
+                    pw.Center(
+                      child: pw.Text(
+                        'Thank you for choosing BlithePay | © ${DateTime.now().year} BlithePay. All rights reserved.',
+                        style: pw.TextStyle(
+                          fontSize: 8,
+                          color: PdfColors.grey600,
+                          fontStyle: pw.FontStyle.italic,
+                        ),
+                      ),
+                    ),
                   ],
-                ] else ...[
-                  // Normal wallet transfer
-                  _pdfRow('Transaction Type', tx.type),
-                  if (tx.description.isNotEmpty) _pdfRow('Description', tx.description),
-                ],
-
-                _pdfRow('Hotline Number', '+234 901 740 2116'),
-                _pdfRow('Transaction No.', tx.reference),
-
-                pw.SizedBox(height: 24),
-                pw.Divider(color: PdfColors.grey300, thickness: 0.5),
-                pw.SizedBox(height: 12),
-
-                pw.Center(
-                  child: pw.Text(
-                    'Enjoy a better life with BlithePay. Get free transfers, withdrawals, bill payments, instant loans, and good annual interest on your savings. BlithePay is licensed by the Central Bank of Nigeria and insured by the NDIC.',
-                    textAlign: pw.TextAlign.center,
-                    style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
-                  ),
                 ),
-
-                pw.SizedBox(height: 20),
-                _pdfTicketPerforation(),
               ],
             );
           },
@@ -735,24 +780,14 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
     }
   }
 
-  pw.Widget _pdfTicketPerforation() {
-    return pw.Container(
-      alignment: pw.Alignment.center,
-      child: pw.Text(
-        '•  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •',
-        style: pw.TextStyle(color: PdfColors.grey300, fontSize: 10, letterSpacing: 2),
-      ),
-    );
-  }
-
   pw.Widget _pdfRow(String label, String value) {
     return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(vertical: 8),
+      padding: const pw.EdgeInsets.only(bottom: 6),
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text(label, style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 11)),
+          pw.Text(label, style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 10)),
           pw.SizedBox(width: 24),
           pw.Expanded(
             child: pw.Text(
@@ -760,7 +795,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
               textAlign: pw.TextAlign.right,
               style: pw.TextStyle(
                 color: PdfColors.black,
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: pw.FontWeight.bold,
               ),
             ),

@@ -45,127 +45,207 @@ class ReceiptService {
               transaction.status.toLowerCase() == 'success' ||
               transaction.status.toLowerCase() == 'successful';
 
-          final displayAmount = Helpers.formattedAmount(
+          final cleanAmount = Helpers.formattedAmount(
             transaction.amount.toString(),
-          ).replaceAll('₦', 'N');
+          ).replaceAll('₦', '').trim();
 
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
+          final tokenVal = transaction.token ?? rawMeta['token'] ?? nestedMeta?['token'];
+
+          return pw.Stack(
             children: [
-              _ticketPerforation(),
-              pw.SizedBox(height: 12),
-
-              // Header Row
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              // Watermark
+              pw.Opacity(
+                opacity: 0.02,
+                child: pw.Center(
+                  child: pw.Image(appIcon, width: 350),
+                ),
+              ),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Image(appIcon, width: 100),
+                  // Header Row
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text(
+                        'Transaction Receipt',
+                        style: pw.TextStyle(
+                          fontSize: 22,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.black,
+                        ),
+                      ),
+                      pw.Image(appIcon, width: 100),
+                    ],
+                  ),
+                  pw.SizedBox(height: 12),
+                  pw.Divider(color: PdfColors.grey400, thickness: 1),
+                  pw.SizedBox(height: 20),
+
+                  // Transaction Status & Amount Box
+                  pw.Container(
+                    padding: const pw.EdgeInsets.all(16),
+                    decoration: const pw.BoxDecoration(
+                      color: PdfColors.grey100,
+                      borderRadius: pw.BorderRadius.all(pw.Radius.circular(8)),
+                    ),
+                    child: pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text(
+                              'Status',
+                              style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 10),
+                            ),
+                            pw.SizedBox(height: 4),
+                            pw.Text(
+                              isSuccess ? 'SUCCESS' : 'FAILED',
+                              style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold,
+                                color: isSuccess ? PdfColors.green700 : PdfColors.red700,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                        pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.end,
+                          children: [
+                            pw.Text(
+                              'Amount',
+                              style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 10),
+                            ),
+                            pw.SizedBox(height: 4),
+                            pw.Text(
+                              'NGN $cleanAmount',
+                              style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold,
+                                fontSize: 16,
+                                color: PdfColors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  pw.SizedBox(height: 24),
+
+                  // Section: Transaction Details
                   pw.Text(
-                    'Transaction Receipt',
-                    style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey600),
+                    'Transaction Details',
+                    style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+                  ),
+                  pw.SizedBox(height: 8),
+
+                  _row('Transaction Type', transaction.metadata.receiver.vendType != null ? 'Utility Payment' : (transaction.metadata.receiver.distribution != null ? 'Cable TV' : 'Transfer/Generic')),
+                  _row('Reference', transaction.reference),
+                  _row('Date & Time', dateStr),
+
+                  // Section: Service Details
+                  if (discoVal != null || transaction.metadata.receiver.vendType != null || transaction.metadata.receiver.distribution?.isNotEmpty == true || transaction.metadata.receiver.name?.isNotEmpty == true) ...[
+                    pw.SizedBox(height: 16),
+                    pw.Text(
+                      'Service Details',
+                      style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+                    ),
+                    pw.SizedBox(height: 8),
+
+                    if (discoVal != null || transaction.metadata.receiver.vendType != null) ...[
+                      // Electricity Details
+                      _row(
+                        'Provider',
+                        discoVal?.toString() ??
+                            transaction.metadata.receiver.distribution ??
+                            'Utility Payment',
+                      ),
+                      if (transaction.metadata.receiver.name?.isNotEmpty == true)
+                        _row('Customer Name', transaction.metadata.receiver.name!),
+                      if (addressVal != null && addressVal.toString().isNotEmpty)
+                        _row('Service Address', addressVal.toString()),
+                      if (userName.isNotEmpty) _row('Bill To', userName),
+                      _row('Meter Number', transaction.metadata.receiver.number),
+                      _row('Meter Type', transaction.metadata.receiver.vendType ?? 'Prepaid'),
+                    ] else if (transaction.metadata.receiver.distribution?.isNotEmpty == true) ...[
+                      // Cable TV / Others
+                      _row('Provider', transaction.metadata.receiver.distribution!),
+                      if (transaction.metadata.receiver.name?.isNotEmpty == true)
+                        _row('Customer Name', transaction.metadata.receiver.name!),
+                      _row('Smartcard/Account Number', transaction.metadata.receiver.number),
+                    ] else ...[
+                      // Fallback
+                      _row('Recipient Number', transaction.metadata.receiver.number),
+                      if (transaction.metadata.receiver.name?.isNotEmpty == true)
+                        _row('Recipient Name', transaction.metadata.receiver.name!),
+                    ],
+                  ],
+
+                  // Token Pin Box (If available)
+                  if (tokenVal != null && tokenVal.toString().isNotEmpty) ...[
+                    pw.SizedBox(height: 20),
+                    pw.Container(
+                      width: double.infinity,
+                      padding: const pw.EdgeInsets.all(12),
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border.all(color: PdfColors.grey300),
+                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                      ),
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.center,
+                        children: [
+                          pw.Text(
+                            'PREPAID ELECTRICITY TOKEN PIN',
+                            style: pw.TextStyle(
+                              fontSize: 10,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColor.fromHex('#1E3A8A'),
+                            ),
+                          ),
+                          pw.SizedBox(height: 8),
+                          pw.Text(
+                            tokenVal.toString(),
+                            style: pw.TextStyle(
+                              fontSize: 22,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.black,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          if (unitsVal != null) ...[
+                            pw.SizedBox(height: 6),
+                            pw.Text(
+                              'Units: ${(unitsVal as num).toDouble().toStringAsFixed(1)}',
+                              style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
+                            ),
+                          ] else if (transaction.tokenUnits?.isNotEmpty == true) ...[
+                            pw.SizedBox(height: 6),
+                            pw.Text(
+                              'Units: ${transaction.tokenUnits}',
+                              style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  pw.Spacer(),
+                  pw.Divider(color: PdfColors.grey300, thickness: 0.5),
+                  pw.SizedBox(height: 10),
+                  pw.Center(
+                    child: pw.Text(
+                      'Thank you for choosing BlithePay | © ${DateTime.now().year} BlithePay. All rights reserved.',
+                      style: pw.TextStyle(
+                        fontSize: 8,
+                        color: PdfColors.grey600,
+                        fontStyle: pw.FontStyle.italic,
+                      ),
+                    ),
                   ),
                 ],
               ),
-
-              pw.SizedBox(height: 24),
-
-              // Centered Amount & Status
-              pw.Center(
-                child: pw.Column(
-                  children: [
-                    pw.Text(
-                      displayAmount,
-                      style: pw.TextStyle(
-                        color: isSuccess ? PdfColor.fromHex('#10B981') : PdfColors.red700,
-                        fontSize: 32,
-                        fontWeight: pw.FontWeight.bold,
-                      ),
-                    ),
-                    pw.SizedBox(height: 6),
-                    pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: pw.BoxDecoration(
-                        color: isSuccess ? PdfColor.fromHex('#EAF2FF') : PdfColors.red50,
-                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(12)),
-                        border: pw.Border.all(
-                          color: isSuccess ? PdfColor.fromHex('#1E3A8A') : PdfColors.red200,
-                          width: 0.5,
-                        ),
-                      ),
-                      child: pw.Text(
-                        isSuccess ? 'SUCCESSFUL' : 'FAILED',
-                        style: pw.TextStyle(
-                          color: isSuccess ? PdfColor.fromHex('#1E3A8A') : PdfColors.red700,
-                          fontSize: 10,
-                          fontWeight: pw.FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    pw.SizedBox(height: 6),
-                    pw.Text(
-                      dateStr,
-                      style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
-                    ),
-                  ],
-                ),
-              ),
-
-              pw.SizedBox(height: 24),
-              pw.Divider(color: PdfColors.grey300, thickness: 0.5),
-              pw.SizedBox(height: 12),
-
-              // Details
-              if (discoVal != null || transaction.metadata.receiver.vendType != null) ...[
-                // Electricity details
-                _row(
-                  'Provider',
-                  discoVal?.toString() ??
-                      transaction.metadata.receiver.distribution ??
-                      'Utility Payment',
-                ),
-                if (transaction.metadata.receiver.name?.isNotEmpty == true)
-                  _row('Customer Name', transaction.metadata.receiver.name!),
-                if (addressVal != null && addressVal.toString().isNotEmpty)
-                  _row('Service Address', addressVal.toString()),
-                if (userName.isNotEmpty) _row('Bill To', userName),
-                _row('Purchase Type', transaction.metadata.receiver.vendType ?? 'Prepaid'),
-                _row('Meter Number', transaction.metadata.receiver.number),
-                if (unitsVal != null)
-                  _row('Units Purchased', '${(unitsVal as num).toDouble().toStringAsFixed(1)} kWh')
-                else if (transaction.tokenUnits?.isNotEmpty == true)
-                  _row('Units Purchased', '${transaction.tokenUnits} kWh'),
-                if (transaction.token?.isNotEmpty == true) _row('Token', transaction.token!),
-              ] else if (transaction.metadata.receiver.distribution?.isNotEmpty == true) ...[
-                // Cable TV / Others
-                _row('Provider', transaction.metadata.receiver.distribution!),
-                if (transaction.metadata.receiver.name?.isNotEmpty == true)
-                  _row('Customer Name', transaction.metadata.receiver.name!),
-                _row('Smartcard/Account Number', transaction.metadata.receiver.number),
-              ] else ...[
-                // Fallback airtime/generic
-                _row('Recipient Number', transaction.metadata.receiver.number),
-                if (transaction.metadata.receiver.name?.isNotEmpty == true)
-                  _row('Recipient Name', transaction.metadata.receiver.name!),
-              ],
-
-              _row('Hotline Number', '+234 901 740 2116'),
-              _row('Transaction No.', transaction.reference),
-
-              pw.SizedBox(height: 24),
-              pw.Divider(color: PdfColors.grey300, thickness: 0.5),
-              pw.SizedBox(height: 12),
-
-              pw.Center(
-                child: pw.Text(
-                  'Copyright © ${DateTime.now().year} BlithePay. All rights reserved.',
-                  textAlign: pw.TextAlign.center,
-                  style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
-                ),
-              ),
-
-              pw.SizedBox(height: 20),
-              _ticketPerforation(),
             ],
           );
         },
@@ -180,24 +260,14 @@ class ReceiptService {
     );
   }
 
-  static pw.Widget _ticketPerforation() {
-    return pw.Container(
-      alignment: pw.Alignment.center,
-      child: pw.Text(
-        '•  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •  •',
-        style: pw.TextStyle(color: PdfColors.grey300, fontSize: 10, letterSpacing: 2),
-      ),
-    );
-  }
-
   static pw.Widget _row(String title, String value) {
     return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(vertical: 8),
+      padding: const pw.EdgeInsets.only(bottom: 6),
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text(title, style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 11)),
+          pw.Text(title, style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 10)),
           pw.SizedBox(width: 24),
           pw.Expanded(
             child: pw.Text(
@@ -205,7 +275,7 @@ class ReceiptService {
               textAlign: pw.TextAlign.right,
               style: pw.TextStyle(
                 color: PdfColors.black,
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: pw.FontWeight.bold,
               ),
             ),
