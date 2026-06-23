@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBrQ29dYllBl_Wzk3QzlhNcH3i2E_SGYw0',
-    appId: '1:313986921733:android:14bbc1a46ffc09f627336c',
+    appId: '1:313986921733:android:bf1fe9156db1f4e727336c',
     messagingSenderId: '313986921733',
     projectId: 'blithepay',
     storageBucket: 'blithepay.firebasestorage.app',
