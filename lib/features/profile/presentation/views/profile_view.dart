@@ -22,7 +22,6 @@ class ProfileView extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: const AppAppBar(title: 'Account', showBackButton: false),
-      //appBar: AppBar(title: const HeadingLg('Profile'), centerTitle: true),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -32,6 +31,8 @@ class ProfileView extends StatelessWidget {
               final user = snapshot.data;
               final firstName = user?.firstName ?? '';
               final lastName = user?.lastName ?? '';
+
+              final profilePicture = user?.profileImage ?? '';
 
               return Column(
                 children: [
@@ -44,17 +45,30 @@ class ProfileView extends StatelessWidget {
                       color: AppColors.surface,
                       border: Border.all(color: AppColors.border, width: 2),
                     ),
-                    child: const Icon(Icons.person, size: 40, color: AppColors.textTertiary),
+                    child: profilePicture.isNotEmpty
+                        ? ClipOval(
+                            child: Image.network(
+                              profilePicture,
+                              fit: BoxFit.cover,
+                              key: ValueKey(
+                                profilePicture,
+                              ), // Recalculates immediately on emission change
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.person,
+                                    size: 40,
+                                    color: AppColors.textTertiary,
+                                  ),
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person,
+                            size: 40,
+                            color: AppColors.textTertiary,
+                          ),
                   ),
                   const VSpaceBase(),
                   HeadingXl('$firstName $lastName'),
-                  // const SizedBox(height: 4),
-                  // GestureDetector(
-                  //   onTap: () {
-                  //     context.push(AppRoutes.profileDetail);
-                  //   },
-                  //   child: BodySm('${user?.email}'),
-                  // ),
                   const SizedBox(height: 16),
                   const Divider(height: 0.8, thickness: 0.1),
                   const SizedBox(height: 16),
@@ -64,42 +78,24 @@ class ProfileView extends StatelessWidget {
                         _ProfileItem(
                           icon: Icons.person_outline,
                           label: 'Profile',
-                          onTap: () => context.push(AppRoutes.profileDetail),
-                        ),
-                        // _ProfileItem(
-                        //   icon: Icons.lock_outline,
-                        //   label: 'Recurring payments',
-                        //   onTap: () =>
-                        //       context.push(AppRoutes.reocurringPayment),
+                          onTap: () {
+                            // Navigates to detail screen
+                            context.push(AppRoutes.profileDetail).then((_) {
+                              if (context.mounted) {
+                                context.read<ProfileBloc>().add(
+                                  const GetProfileEvent(),
+                                );
 
-                        //   //  onTap: () => context.push('/linked-students'),
-                        // ),
+                                context.read<AppLocalDataSource>().getSession();
+                              }
+                            });
+                          },
+                        ),
                         _ProfileItem(
                           icon: Icons.lock_outline,
                           label: 'Change Transaction PIN',
                           onTap: () => context.push(AppRoutes.changePin),
                         ),
-                        // _ProfileItem(
-                        //   icon: Icons.school_outlined,
-                        //   label: 'Children',
-                        //   onTap: () => context.push('/linked-students'),
-                        // ),
-                        // _ProfileItem(
-                        //   icon: Icons.payment_outlined,
-                        //   label: 'Pay Fees',
-                        //   onTap: () => context.push('/pay-fees'),
-                        // ),
-                        // _ProfileItem(
-                        //   icon: Icons.account_balance_wallet_outlined,
-                        //   label: 'Wallet',
-                        //   onTap: () => context.push(AppRoutes.fundWallet),
-                        // ),
-
-                        // _ProfileItem(
-                        //   icon: Icons.person,
-                        //   label: 'Account',
-                        //   onTap: () => context.push(AppRoutes.profileDetail),
-                        // ),
                         _ProfileItem(
                           icon: Icons.lock,
                           label: 'Change password',
@@ -108,29 +104,18 @@ class ProfileView extends StatelessWidget {
                             extra: {'email': user?.email, 'fromProfile': true},
                           ),
                         ),
-                        // _ProfileItem(
-                        //   icon: Icons.notifications_none_outlined,
-                        //   label: 'Notifications',
-                        //   onTap: () => context.push('/notifications'),
-                        // ),
                         _ProfileItem(
                           icon: Icons.help_outline,
                           label: 'Help & Support',
                           onTap: () => context.push('/help-support'),
                         ),
-                        // _ProfileItem(
-                        //   icon: Icons.logout_outlined,
-                        //   label: 'Log Out',
-                        //   isLogout: true,
-                        //   onTap: () => _showLogoutDialog(context),
-                        // ),
                         _ProfileItem(
                           icon: Icons.delete_outline,
                           label: 'Delete Account',
                           isLogout: true,
                           onTap: () => _showDeleteDialog(context),
                         ),
-                        VSpaceBase(),
+                        const VSpaceBase(),
                         Align(
                           alignment: Alignment.centerLeft,
                           child: SizedBox(
@@ -147,7 +132,11 @@ class ProfileView extends StatelessWidget {
                                 child: const Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.logout_outlined, color: Colors.white, size: 18),
+                                    Icon(
+                                      Icons.logout_outlined,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
                                     HSpaceSm(),
                                     BodySm('Sign out', color: Colors.white),
                                   ],
@@ -204,11 +193,17 @@ class ProfileView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Delete account', style: AppTextStyles.h3, textAlign: TextAlign.center),
+            const Text(
+              'Delete account',
+              style: AppTextStyles.h3,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 16),
             Text(
               'Are you sure want to delete account?',
-              style: AppTextStyles.bodyRegular.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyRegular.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -217,9 +212,11 @@ class ProfileView extends StatelessWidget {
                 if (state is ProfileDeleted) {
                   Navigator.of(context).pop();
                   context.go('/login');
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('Account deleted successfully')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Account deleted successfully'),
+                    ),
+                  );
                 }
 
                 if (state is ProfileError) {
@@ -245,7 +242,9 @@ class ProfileView extends StatelessWidget {
                         label: 'Yes, Delete',
                         isLoading: state is ProfileLoading,
                         onPressed: () {
-                          context.read<ProfileBloc>().add(const DeleteAccount());
+                          context.read<ProfileBloc>().add(
+                            const DeleteAccount(),
+                          );
                         },
                       ),
                     ),
@@ -278,7 +277,10 @@ class _ProfileItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: isLogout ? AppColors.error : AppColors.textHint),
+      leading: Icon(
+        icon,
+        color: isLogout ? AppColors.error : AppColors.textHint,
+      ),
       title: Text(
         label,
         style: AppTextStyles.bodyMedium.copyWith(

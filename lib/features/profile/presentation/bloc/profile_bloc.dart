@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -54,15 +56,28 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     emit(const ProfileLoading());
 
     try {
+      String? s3ImageUrl;
+
+      // 1. If a local image path exists, upload it to S3 first
+      if (event.profileImagePath != null &&
+          event.profileImagePath!.isNotEmpty) {
+        s3ImageUrl = await authRepository.uploadImage(
+          File(event.profileImagePath!),
+          'profile',
+        );
+      }
+
       final updatedUser = await authRepository.updateAccount(
         fullName: event.name,
-        phoneNumber: event.phone,
+        phone: event.phone,
+        picture: s3ImageUrl,
       );
+
       await localDataSource.updateSessionUser(updatedUser);
 
       emit(const ProfileUpdated());
 
-      // Optional: reload fresh profile
+      // Reload fresh profile data
       add(const GetProfileEvent());
     } catch (e) {
       emit(ProfileError(message: e.toString()));

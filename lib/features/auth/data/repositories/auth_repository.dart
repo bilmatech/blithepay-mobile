@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/core/storage/hive_service.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:mime/mime.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/dio_client.dart';
 import '../models/auth_response_model.dart';
@@ -33,8 +37,9 @@ abstract class AuthRepositoryInterface {
 
   Future<void> deleteAccount();
   Future<UserModel> updateAccount({
-    required String fullName,
-    required String phoneNumber,
+    String? fullName,
+    String? phone,
+    String? picture,
   });
   Future<AuthResponseModel> authenticateSso(String firebaseIdToken);
   Future<void> changeAppPin(String oldPin, String newPin, String password);
@@ -182,19 +187,67 @@ class AuthRepository implements AuthRepositoryInterface {
     await _dioClient.post(ApiEndpoints.synToken, data: {'token': token});
   }
 
+  Future<String> uploadImage(File picture, String folder) async {
+    try {
+      final fileName = picture.path.split('/').last;
+      final mimeType = lookupMimeType(picture.path) ?? 'image/png';
+
+      // Step 1: Get presigned URL from your server using your configured _dioClient
+      final response = await _dioClient.post(
+        ApiEndpoints.uploadimage,
+        data: {"fileName": fileName, "mimeType": mimeType, "folder": folder},
+      );
+
+      // Accessing data through dio's Response object layout (.data)
+      final responseData = response.data['data'];
+      final signedUrl = responseData['endpoint']; // Presigned S3 PUT URL
+      final fileUrl = responseData['file']; // Public S3 file URL
+
+      // Step 2: Upload file binary directly to AWS S3
+      // NOTE: We use a clean, fresh Dio instance here because sending your backend's
+      // interceptors or auth headers to Amazon S3 will cause a 403 Access Denied error.
+      final uploadRes = await Dio().put(
+        signedUrl,
+        data: picture
+            .openRead(), // Using a stream instead of readAsBytes is better for device memory
+        options: Options(
+          headers: {
+            'Content-Type': mimeType,
+            'Content-Length': await picture.length(),
+          },
+        ),
+      );
+
+      if (uploadRes.statusCode == 200) {
+        print('Upload successful. File available at: $fileUrl');
+        return fileUrl;
+      } else {
+        throw Exception('S3 upload failed');
+      }
+    } catch (e) {
+      print('Upload error: $e');
+      rethrow;
+    }
+  }
+
   @override
   Future<UserModel> updateAccount({
-    required String fullName,
-    required String phoneNumber,
+    String? fullName,
+    String? phone,
+    String? picture,
   }) async {
+    Map<String, dynamic> data = {};
+    if (fullName != null) data['fullName'] = fullName;
+    if (phone != null) data['phone'] = phone;
+    if (picture != null) data['profileImage'] = picture;
     final response = await _dioClient.patch(
       ApiEndpoints.accountupdate,
-      data: {"fullName": fullName, "phone": phoneNumber},
+      data: {"fullName": fullName, "phone": phone, "profileImage": picture},
     );
 
-    final data = response.data['data'];
+    final res = response.data['data'];
 
-    return UserModel.fromJson(data);
+    return UserModel.fromJson(res);
   }
 
   @override
