@@ -12,12 +12,12 @@ Widget buildEmptyState(BuildContext context) {
           const Icon(Icons.school_outlined, size: 80, color: Colors.grey),
           const SizedBox(height: 24),
           const Text(
-            'No Linked Students',
+            'No Linked Childrens',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           const Text(
-            'You have not linked any students yet.\nAdd a child to get started.',
+            'You have not linked any children yet.\nAdd a child to get started.',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey, fontSize: 14),
           ),

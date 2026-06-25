@@ -100,17 +100,18 @@ class TransactionItem extends StatelessWidget {
   }
 
   String _getStatusLabel() {
-    return transaction.status.toString().split('.').last[0].toUpperCase() +
-        transaction.status.toString().split('.').last.substring(1);
+    final statusStr = transaction.status.name.toLowerCase();
+    return statusStr[0].toUpperCase() + statusStr.substring(1);
   }
 
   Color _getStatusColor() {
     switch (transaction.status) {
-      case TransactionStatus.successful:
+      case TransactionStatus.SUCCESS:
         return AppColors.success;
-      case TransactionStatus.failed:
+      case TransactionStatus.FAILED:
         return AppColors.error;
-      case TransactionStatus.pending:
+      case TransactionStatus.PENDING:
+      case TransactionStatus.REVERSED:
         return AppColors.warning;
     }
   }

@@ -1,36 +1,24 @@
-import 'package:blithepay/core/network/api_endpoints.dart';
+import 'package:dio/dio.dart';
 import 'package:blithepay/core/network/dio_client.dart';
+import 'package:blithepay/core/network/api_endpoints.dart';
+import 'package:blithepay/core/network/idempotency_key_factory.dart';
 import 'package:blithepay/features/fees/data/models/fee_model.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:blithepay/features/fees/data/models/payment_data.dart';
+import 'package:blithepay/features/students/data/models/invoice_model.dart';
 import 'package:blithepay/features/schools/data/models/linked_student_model.dart';
 import 'package:blithepay/features/students/data/models/fee_transaction_model.dart';
-import 'package:blithepay/features/students/data/models/invoice_model.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 abstract class FeesRepository {
   Future<Fee> getFeesById(String feeId, String studentCode);
   Future<bool> verifyPin(String pin);
-  Future<WalletPaymentData> payWithWallet(
-    String invoiceId,
-    List<String> feeItemIds,
-  );
-  Future<PaymentLink> initializeInvoicePayment(
-    String invoiceId,
-    List<String> feeItemIds,
-  );
+  Future<WalletPaymentData> payWithWallet(String invoiceId, List<String> feeItemIds);
+  Future<PaymentLink> initializeInvoicePayment(String invoiceId, List<String> feeItemIds);
   Future<LinkedStudentModel> linkStudent(String studentId, String studentCode);
   Future<void> unlinkStudent(String studentId, String studentCode);
   Future<void> verifyGuardian(String phoneNumber, String otp);
-  Future<PaginatedFeeTransactionModel> getWalletTransaction({
-    int page = 1,
-    int limit = 20,
-  });
-  Future<PaginatedInvoiceModel> getInvoices(
-    String studentId, {
-    int page = 1,
-    int limit = 20,
-  });
+  Future<PaginatedFeeTransactionModel> getWalletTransaction({int page = 1, int limit = 20});
+  Future<PaginatedInvoiceModel> getInvoices(String studentId, {int page = 1, int limit = 20});
 }
 
 class FeesRepositoryImpl implements FeesRepository {
@@ -52,10 +40,7 @@ class FeesRepositoryImpl implements FeesRepository {
 
   @override
   Future<bool> verifyPin(String pin) async {
-    final response = await _dioClient.post(
-      ApiEndpoints.verifyPin,
-      data: {"pin": pin},
-    );
+    final response = await _dioClient.post(ApiEndpoints.verifyPin, data: {"pin": pin});
 
     if (response.data != null && response.data['status'] == true) {
       final token = response.data['data']?['XPinChallengeToken']?['token'];
@@ -71,26 +56,30 @@ class FeesRepositoryImpl implements FeesRepository {
   }
 
   @override
-  Future<WalletPaymentData> payWithWallet(
-    String invoiceId,
-    List<String> feeItemIds,
-  ) async {
+  Future<WalletPaymentData> payWithWallet(String invoiceId, List<String> feeItemIds) async {
     final token = await secureStorage.read(key: 'xPinChallengeToken');
+    final idempotencyKey = IdempotencyKeyFactory.getOrCreateKey(invoiceId, feeItemIds);
 
-    final response = await _dioClient.post(
-      ApiEndpoints.paywithWallet,
-      data: {"invoiceId": invoiceId, "feeItemIds": feeItemIds},
-      options: Options(headers: {'X-PIN-CHALLENGE-TOKEN': token ?? ''}),
-    );
-    // Ensure we return the response data as a Map
-    return WalletPaymentData.fromJson(response.data['data']);
+    try {
+      final response = await _dioClient.post(
+        ApiEndpoints.paywithWallet,
+        data: {
+          "invoiceId": invoiceId,
+          "feeItemIds": feeItemIds,
+          "idempotencyKey": idempotencyKey,
+        },
+        options: Options(headers: {'X-PIN-CHALLENGE': token ?? ''}),
+      );
+      // Clear key upon successful completion
+      IdempotencyKeyFactory.clearKey(invoiceId, feeItemIds);
+      return WalletPaymentData.fromJson(response.data['data']);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
-  Future<LinkedStudentModel> linkStudent(
-    String studentId,
-    String studentCode,
-  ) async {
+  Future<LinkedStudentModel> linkStudent(String studentId, String studentCode) async {
     var response = await _dioClient.post(
       ApiEndpoints.postLinkedProfile,
       data: {'studentId': studentId},
@@ -113,10 +102,7 @@ class FeesRepositoryImpl implements FeesRepository {
   }
 
   @override
-  Future<PaginatedFeeTransactionModel> getWalletTransaction({
-    int page = 1,
-    int limit = 20,
-  }) async {
+  Future<PaginatedFeeTransactionModel> getWalletTransaction({int page = 1, int limit = 20}) async {
     var response = await _dioClient.get(
       '${ApiEndpoints.getFeeTransaction}?page=$page&limit=$limit',
     );
@@ -124,9 +110,7 @@ class FeesRepositoryImpl implements FeesRepository {
     final List<dynamic> walletJson = mainData['data'];
     final metadata = mainData['metadata'];
 
-    final wallet = walletJson
-        .map((json) => FeeTransactionModel.fromJson(json))
-        .toList();
+    final wallet = walletJson.map((json) => FeeTransactionModel.fromJson(json)).toList();
 
     return PaginatedFeeTransactionModel(
       transactions: wallet,
@@ -150,9 +134,7 @@ class FeesRepositoryImpl implements FeesRepository {
     final invoiceJson = (mainData['data'] as List<dynamic>?) ?? [];
     final metadata = mainData['metadata'] ?? {};
 
-    final invoices = invoiceJson
-        .map((json) => InvoiceModel.fromJson(json))
-        .toList();
+    final invoices = invoiceJson.map((json) => InvoiceModel.fromJson(json)).toList();
 
     return PaginatedInvoiceModel(
       invoices: invoices,
@@ -162,19 +144,24 @@ class FeesRepositoryImpl implements FeesRepository {
     );
   }
 
-@override
-Future<PaymentLink> initializeInvoicePayment(
-  String invoiceId,
-  List<String> feeItemIds,
-) async {
-  final response = await _dioClient.post(
-    ApiEndpoints.paywithPAystack,
-    data: {
-      "invoiceId": invoiceId,
-      "feeItemIds": feeItemIds,
-    },
-  );
+  @override
+  Future<PaymentLink> initializeInvoicePayment(String invoiceId, List<String> feeItemIds) async {
+    final idempotencyKey = IdempotencyKeyFactory.getOrCreateKey(invoiceId, feeItemIds);
 
-  return PaymentLink.fromJson(response.data['data']['paymentLink']);
-}
+    try {
+      final response = await _dioClient.post(
+        ApiEndpoints.paywithPAystack,
+        data: {
+          "invoiceId": invoiceId,
+          "feeItemIds": feeItemIds,
+          "idempotencyKey": idempotencyKey,
+        },
+      );
+
+      IdempotencyKeyFactory.clearKey(invoiceId, feeItemIds);
+      return PaymentLink.fromJson(response.data['data']['paymentLink']);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

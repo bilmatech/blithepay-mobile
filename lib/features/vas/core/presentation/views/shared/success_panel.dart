@@ -117,11 +117,27 @@ class SuccessPanel extends StatelessWidget {
                             'Amount',
                             '₦${transaction!.amount.toStringAsFixed(2)}',
                           ),
-                          _SummaryRow('Status', transaction!.status),
-                          if (transaction!.metadata.receiver.number.isNotEmpty)
+                          _SummaryRow(
+                            'Status',
+                            transaction!.status.toUpperCase(),
+                            valueColor: () {
+                              final upper = transaction!.status.toUpperCase();
+                              if (upper == 'SUCCESS' || upper == 'SUCCESSFUL') {
+                                return Colors.green.shade700;
+                              } else if (upper == 'FAILED') {
+                                return Colors.red.shade700;
+                              } else if (upper == 'REVERSED') {
+                                return Colors.orange.shade700;
+                              } else {
+                                return Colors.amber.shade800;
+                              }
+                            }(),
+                          ),
+                          if (transaction!.metadata != null &&
+                              transaction!.metadata!.receiver.number.isNotEmpty)
                             _SummaryRow(
                               'Recipient',
-                              transaction!.metadata.receiver.number,
+                              transaction!.metadata!.receiver.number,
                             ),
                           if (transaction!.token?.isNotEmpty == true)
                             _SummaryRow('Token', transaction!.token!),
@@ -166,8 +182,9 @@ class SuccessPanel extends StatelessWidget {
 class _SummaryRow extends StatelessWidget {
   final String label;
   final String value;
+  final Color? valueColor;
 
-  const _SummaryRow(this.label, this.value);
+  const _SummaryRow(this.label, this.value, {this.valueColor});
 
   @override
   Widget build(BuildContext context) {
@@ -186,10 +203,10 @@ class _SummaryRow extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
-                color: Color(0xFF061657),
+                color: valueColor ?? const Color(0xFF061657),
               ),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,

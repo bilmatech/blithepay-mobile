@@ -28,22 +28,46 @@ class ReceiptService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
         build: (_) {
-          final rawMeta = transaction.metadata.rawJson;
+          final rawMeta = transaction.metadata?.rawJson ?? {};
           final nestedMeta = rawMeta['metaData'] is Map ? rawMeta['metaData'] as Map : null;
 
           final discoVal = rawMeta['disco'] ?? nestedMeta?['disco'];
           final unitsVal = rawMeta['units'] ?? nestedMeta?['units'];
           final addressVal =
-              transaction.metadata.receiver.address ??
+              transaction.metadata?.receiver.address ??
               rawMeta['address'] ??
               nestedMeta?['address'] ??
               (rawMeta['receiver'] is Map ? rawMeta['receiver']['address'] : null);
 
           final parsedDate = transaction.createdAt.toLocal();
           final dateStr = DateFormat('MMM d, yyyy HH:mm:ss').format(parsedDate);
-          final isSuccess =
-              transaction.status.toLowerCase() == 'success' ||
-              transaction.status.toLowerCase() == 'successful';
+          final upperStatus = transaction.status.toUpperCase();
+          final statusColor = () {
+            if (upperStatus == 'SUCCESS' || upperStatus == 'SUCCESSFUL') {
+              return PdfColors.green700;
+            } else if (upperStatus == 'FAILED') {
+              return PdfColors.red700;
+            } else if (upperStatus == 'REVERSED') {
+              return PdfColor.fromHex('#C2410C');
+            } else {
+              return PdfColor.fromHex('#B45309');
+            }
+          }();
+
+          final vendTypeUpper = transaction.metadata?.receiver.vendType?.toUpperCase() ?? '';
+          final distUpper = transaction.metadata?.receiver.distribution?.toUpperCase() ?? '';
+          final isAirtime = vendTypeUpper == 'AIRTIME';
+          final isData = vendTypeUpper == 'DATA' || vendTypeUpper == 'INTERNET';
+          final isUtility = discoVal != null ||
+              vendTypeUpper == 'ELECTRICITY' ||
+              vendTypeUpper == 'PREPAID' ||
+              vendTypeUpper == 'POSTPAID';
+          final isCable = distUpper.contains('DSTV') ||
+              distUpper.contains('GOTV') ||
+              distUpper.contains('STARTIMES') ||
+              distUpper.contains('SHOWMAX') ||
+              distUpper.contains('CABLE') ||
+              distUpper.contains('TV');
 
           final cleanAmount = Helpers.formattedAmount(
             transaction.amount.toString(),
@@ -101,10 +125,10 @@ class ReceiptService {
                             ),
                             pw.SizedBox(height: 4),
                             pw.Text(
-                              isSuccess ? 'SUCCESS' : 'FAILED',
+                              upperStatus,
                               style: pw.TextStyle(
                                 fontWeight: pw.FontWeight.bold,
-                                color: isSuccess ? PdfColors.green700 : PdfColors.red700,
+                                color: statusColor,
                                 fontSize: 14,
                               ),
                             ),
@@ -140,12 +164,23 @@ class ReceiptService {
                   ),
                   pw.SizedBox(height: 8),
 
-                  _row('Transaction Type', transaction.metadata.receiver.vendType != null ? 'Utility Payment' : (transaction.metadata.receiver.distribution != null ? 'Cable TV' : 'Transfer/Generic')),
+                  _row(
+                    'Transaction Type',
+                    isAirtime
+                        ? 'Airtime Purchase'
+                        : isData
+                            ? 'Internet Data'
+                            : isUtility
+                                ? 'Utility Payment'
+                                : isCable
+                                    ? 'Cable TV Subscription'
+                                    : 'Utility/Services',
+                  ),
                   _row('Reference', transaction.reference),
                   _row('Date & Time', dateStr),
 
                   // Section: Service Details
-                  if (discoVal != null || transaction.metadata.receiver.vendType != null || transaction.metadata.receiver.distribution?.isNotEmpty == true || transaction.metadata.receiver.name?.isNotEmpty == true) ...[
+                  if (transaction.metadata != null) ...[
                     pw.SizedBox(height: 16),
                     pw.Text(
                       'Service Details',
@@ -153,32 +188,57 @@ class ReceiptService {
                     ),
                     pw.SizedBox(height: 8),
 
-                    if (discoVal != null || transaction.metadata.receiver.vendType != null) ...[
-                      // Electricity Details
+                    if (isAirtime) ...[
+                      _row(
+                        'Provider',
+                        transaction.metadata!.receiver.distribution ?? 'Airtime',
+                      ),
+                      if (transaction.metadata!.receiver.name?.isNotEmpty == true)
+                        _row('Recipient Name', transaction.metadata!.receiver.name!),
+                      _row('Mobile Number', transaction.metadata!.receiver.number),
+                      _row('Service Type', 'AIRTIME'),
+                    ] else if (isData) ...[
+                      _row(
+                        'Provider',
+                        transaction.metadata!.receiver.distribution ?? 'Data Bundle',
+                      ),
+                      if (transaction.metadata!.receiver.name?.isNotEmpty == true)
+                        _row('Recipient Name', transaction.metadata!.receiver.name!),
+                      _row('Mobile Number', transaction.metadata!.receiver.number),
+                      _row('Service Type', 'DATA BUNDLE'),
+                    ] else if (isUtility) ...[
                       _row(
                         'Provider',
                         discoVal?.toString() ??
-                            transaction.metadata.receiver.distribution ??
+                            transaction.metadata!.receiver.distribution ??
                             'Utility Payment',
                       ),
-                      if (transaction.metadata.receiver.name?.isNotEmpty == true)
-                        _row('Customer Name', transaction.metadata.receiver.name!),
+                      if (transaction.metadata!.receiver.name?.isNotEmpty == true)
+                        _row('Customer Name', transaction.metadata!.receiver.name!),
                       if (addressVal != null && addressVal.toString().isNotEmpty)
                         _row('Service Address', addressVal.toString()),
                       if (userName.isNotEmpty) _row('Bill To', userName),
-                      _row('Meter Number', transaction.metadata.receiver.number),
-                      _row('Meter Type', transaction.metadata.receiver.vendType ?? 'Prepaid'),
-                    ] else if (transaction.metadata.receiver.distribution?.isNotEmpty == true) ...[
-                      // Cable TV / Others
-                      _row('Provider', transaction.metadata.receiver.distribution!),
-                      if (transaction.metadata.receiver.name?.isNotEmpty == true)
-                        _row('Customer Name', transaction.metadata.receiver.name!),
-                      _row('Smartcard/Account Number', transaction.metadata.receiver.number),
+                      _row('Meter Number', transaction.metadata!.receiver.number),
+                      _row('Meter Type', transaction.metadata!.receiver.vendType ?? 'Prepaid'),
+                    ] else if (isCable) ...[
+                      _row(
+                        'Provider',
+                        transaction.metadata!.receiver.distribution ?? 'Cable TV',
+                      ),
+                      if (transaction.metadata!.receiver.name?.isNotEmpty == true)
+                        _row('Customer Name', transaction.metadata!.receiver.name!),
+                      _row('Smartcard/Account Number', transaction.metadata!.receiver.number),
+                      if (transaction.metadata!.receiver.vendType?.isNotEmpty == true)
+                        _row('Package', transaction.metadata!.receiver.vendType!),
                     ] else ...[
                       // Fallback
-                      _row('Recipient Number', transaction.metadata.receiver.number),
-                      if (transaction.metadata.receiver.name?.isNotEmpty == true)
-                        _row('Recipient Name', transaction.metadata.receiver.name!),
+                      if (transaction.metadata!.receiver.distribution?.isNotEmpty == true)
+                        _row('Provider', transaction.metadata!.receiver.distribution!),
+                      if (transaction.metadata!.receiver.name?.isNotEmpty == true)
+                        _row('Customer Name', transaction.metadata!.receiver.name!),
+                      _row('Recipient Number', transaction.metadata!.receiver.number),
+                      if (transaction.metadata!.receiver.vendType?.isNotEmpty == true)
+                        _row('Service Type', transaction.metadata!.receiver.vendType!),
                     ],
                   ],
 

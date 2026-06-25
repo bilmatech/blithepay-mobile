@@ -1,8 +1,18 @@
-enum TransactionStatus { successful, failed, pending }
+enum TransactionStatus {
+  PENDING,
+  SUCCESS,
+  REVERSED,
+  FAILED,
+}
 
 enum TransactionFlow { inflow, outflow }
 
-enum TransactionType { airtime, data, cable, electricity, other }
+enum TransactionType {
+  DEPOSIT,
+  WITHDRAWAL,
+  TRANSFER,
+  REVERSAL,
+}
 
 class TransactionModel {
   final String name;
@@ -81,13 +91,17 @@ class TransactionModel {
   }
 
   static TransactionStatus _parseStatus(String? status) {
-    switch (status?.toLowerCase()) {
-      case 'successful':
-        return TransactionStatus.successful;
-      case 'failed':
-        return TransactionStatus.failed;
+    switch (status?.toUpperCase()) {
+      case 'SUCCESS':
+      case 'SUCCESSFUL':
+        return TransactionStatus.SUCCESS;
+      case 'FAILED':
+        return TransactionStatus.FAILED;
+      case 'REVERSED':
+        return TransactionStatus.REVERSED;
+      case 'PENDING':
       default:
-        return TransactionStatus.pending;
+        return TransactionStatus.PENDING;
     }
   }
 
@@ -102,17 +116,17 @@ class TransactionModel {
   }
 
   static TransactionType _parseType(String? type) {
-    switch (type?.toLowerCase()) {
-      case 'airtime':
-        return TransactionType.airtime;
-      case 'data':
-        return TransactionType.data;
-      case 'cable':
-        return TransactionType.cable;
-      case 'electricity':
-        return TransactionType.electricity;
+    switch (type?.toUpperCase()) {
+      case 'DEPOSIT':
+        return TransactionType.DEPOSIT;
+      case 'WITHDRAWAL':
+        return TransactionType.WITHDRAWAL;
+      case 'TRANSFER':
+        return TransactionType.TRANSFER;
+      case 'REVERSAL':
+        return TransactionType.REVERSAL;
       default:
-        return TransactionType.other;
+        return TransactionType.TRANSFER;
     }
   }
 }

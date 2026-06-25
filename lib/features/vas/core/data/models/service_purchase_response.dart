@@ -21,6 +21,26 @@ class ServicePurchaseResponse<T> {
   }
 }
 
+class ChargeModel {
+  final String authorizationUrl;
+  final String accessCode;
+  final String reference;
+
+  const ChargeModel({
+    required this.authorizationUrl,
+    required this.accessCode,
+    required this.reference,
+  });
+
+  factory ChargeModel.fromJson(Map<String, dynamic> json) {
+    return ChargeModel(
+      authorizationUrl: json['authorization_url'] as String? ?? json['authorizationUrl'] as String? ?? '',
+      accessCode: json['access_code'] as String? ?? json['accessCode'] as String? ?? '',
+      reference: json['reference'] as String? ?? '',
+    );
+  }
+}
+
 class ServiceTransactionModel {
   final String id;
   final String transactionId;
@@ -31,11 +51,12 @@ class ServiceTransactionModel {
   final String? externalTransactionId;
   final String? token;
   final String? tokenUnits;
-  final PurchaseMetadataModel metadata;
+  final PurchaseMetadataModel? metadata;
   final String? phoneContactId;
   final bool isDeleted;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final ChargeModel? charge;
 
   const ServiceTransactionModel({
     required this.id,
@@ -47,29 +68,35 @@ class ServiceTransactionModel {
     this.externalTransactionId,
     this.token,
     this.tokenUnits,
-    required this.metadata,
+    this.metadata,
     this.phoneContactId,
     required this.isDeleted,
     required this.createdAt,
     required this.updatedAt,
+    this.charge,
   });
 
   factory ServiceTransactionModel.fromJson(Map<String, dynamic> json) {
     return ServiceTransactionModel(
-      id: json['id'] as String,
-      transactionId: json['transactionId'] as String,
-      reference: json['reference'] as String,
-      status: json['status'] as String,
-      amount: (json['amount'] as num).toDouble(),
+      id: json['id'] as String? ?? '',
+      transactionId: json['transactionId'] as String? ?? '',
+      reference: json['reference'] as String? ?? '',
+      status: json['status'] as String? ?? '',
+      amount: (json['amount'] as num? ?? 0).toDouble(),
       commission: (json['commission'] as num?)?.toDouble(),
       externalTransactionId: json['externalTransactionId'] as String?,
       token: json['token'] as String?,
       tokenUnits: json['tokenUnits'] as String?,
-      metadata: PurchaseMetadataModel.fromJson(json['metadata'] as Map<String, dynamic>),
+      metadata: json['metadata'] != null
+          ? PurchaseMetadataModel.fromJson(json['metadata'] as Map<String, dynamic>)
+          : null,
       phoneContactId: json['phoneContactId'] as String?,
       isDeleted: json['isDeleted'] as bool? ?? false,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(json['updatedAt'] as String? ?? DateTime.now().toIso8601String()),
+      charge: json['charge'] != null
+          ? ChargeModel.fromJson(json['charge'] as Map<String, dynamic>)
+          : null,
     );
   }
 }

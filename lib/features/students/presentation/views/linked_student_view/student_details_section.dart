@@ -9,7 +9,7 @@ import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_state.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student/components/unlink_button.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student_view/payment_history_section.dart';
-import 'package:blithepay/features/students/presentation/views/linked_student_view/student_info_card.dart';
+import 'package:blithepay/shared/widgets/layouts/app_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -24,10 +24,6 @@ class StudentDetailsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: StudentInfoCard(student: student),
-        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: OutstandingFeesCard(student: student),
@@ -79,7 +75,7 @@ class _InvoicesSection extends StatelessWidget {
               itemBuilder: (_, __) => Container(
                 width: 160,
                 decoration: BoxDecoration(
-                  color: AppColors.lightBackground.withAlpha(50),
+                  color: AppColors.lightBackground.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
@@ -107,7 +103,7 @@ class _InvoicesSection extends StatelessWidget {
         }
 
         return SizedBox(
-          height: 200,
+          height: 220,
           width: MediaQuery.of(context).size.width,
 
           child: PageView.builder(
@@ -130,22 +126,16 @@ class _InvoicesSection extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: OutlinedButton.icon(
-                            icon: const Icon(Icons.receipt, size: 16),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              side: const BorderSide(color: AppColors.border),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
+                          child: AppOutlinedButton(
+                            height: 40,
+                            borderRadius: 8,
                             onPressed: () {
                               context.push(
                                 AppRoutes.invoicedetail,
                                 extra: {'invoice': invoice, 'student': student},
                               );
                             },
-                            label: const Text('View Invoice'),
+                            label: 'View Invoice',
                           ),
                         ),
 
@@ -153,17 +143,9 @@ class _InvoicesSection extends StatelessWidget {
                         if (invoice.status.toLowerCase() != 'paid') ...[
                           const SizedBox(width: 12),
                           Expanded(
-                            child: OutlinedButton.icon(
-                              icon: const Icon(Icons.payment, size: 16),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                side: const BorderSide(color: AppColors.border),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
+                            child: AppButton(
+                              height: 40,
+                              borderRadius: 8,
                               onPressed: () => context.push(
                                 AppRoutes.feeSelection,
                                 extra: FeeSelectionArgs(
@@ -173,7 +155,7 @@ class _InvoicesSection extends StatelessWidget {
                                   latePaymentFee: invoice.fee.latePaymentFee,
                                 ),
                               ),
-                              label: const Text('Pay Fees'),
+                              label: 'Pay Fees',
                             ),
                           ),
                         ],
@@ -186,12 +168,6 @@ class _InvoicesSection extends StatelessWidget {
           ),
         );
       },
-
-      // return const SizedBox(
-      //   height: 140,
-      //   child: Center(child: Text('Invoices not loaded')),
-      // );
-      // },
     );
   }
 }
@@ -202,61 +178,146 @@ class InvoiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Compute grand total
+    final totalAmount = invoice.fee.feeBreakdowns?.fold<num>(
+          0,
+          (sum, item) => sum + item.amount,
+        ) ?? 0;
+    final double lateFee = double.tryParse(invoice.fee.latePaymentFee) ?? 0;
+    final grandTotal = totalAmount + lateFee;
+
+    final isPaid = invoice.status.toLowerCase() == 'paid';
+    final isPending = invoice.status.toLowerCase() == 'pending';
+    final accentColor = isPaid 
+        ? AppColors.success 
+        : (isPending ? AppColors.warning : AppColors.error);
+
     return Container(
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Outstanding Fees',
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Invoice No: ${invoice.invoiceNo}',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          Text(
-            'Fee Name: ${invoice.fee.name}',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          // Text(
-          //   'Fee Amount: ${Helpers.formattedAmount(invoice.fee.latePaymentFee)}',
-          //   style: AppTextStyles.bodySmall.copyWith(
-          //     color: AppColors.textSecondary,
-          //   ),
-          // ),
-          Text(
-            'Due Date: ${Helpers.formatDate(invoice.fee.dueAt)}',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Status: ${invoice.status}',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: invoice.status.toLowerCase() == 'pending'
-                  ? AppColors.warning
-                  : AppColors.success,
-              fontWeight: FontWeight.w600,
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              width: 4,
+              decoration: BoxDecoration(
+                color: accentColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            invoice.fee.name,
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildStatusBadge(invoice.status),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          Helpers.formattedAmount(grandTotal.toString()),
+                          style: AppTextStyles.h2.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 22,
+                          ),
+                        ),
+                        Text(
+                          'Inv No: ${invoice.invoiceNo}',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.textTertiary),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Due Date: ${Helpers.formatDate(invoice.dueAt)}',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String status) {
+    final s = status.toLowerCase();
+    Color bgColor = AppColors.warning.withValues(alpha: 0.1);
+    Color textColor = AppColors.warning;
+
+    if (s == 'paid') {
+      bgColor = AppColors.success.withValues(alpha: 0.1);
+      textColor = AppColors.success;
+    } else if (s == 'overdue' || s == 'failed') {
+      bgColor = AppColors.error.withValues(alpha: 0.1);
+      textColor = AppColors.error;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: TextStyle(
+          color: textColor,
+          fontWeight: FontWeight.bold,
+          fontSize: 9,
+          letterSpacing: 0.8,
+        ),
       ),
     );
   }

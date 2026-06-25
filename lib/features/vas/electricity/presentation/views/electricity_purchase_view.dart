@@ -654,7 +654,7 @@ class _ElectricityViewState extends State<_ElectricityView> {
         ServiceReviewDetail(label: 'Meter Type', value: meterType),
         ServiceReviewDetail(label: 'Amount', value: formattedAmount),
       ],
-      onPay: (pin) async {
+      onPay: (pin, paymentSource) async {
         final token = await repo.verifyPin(pin);
         final providerId = currentState.selectedProviderId ?? currentState.selectedProvider;
         return repo.purchaseUtility(
@@ -664,6 +664,7 @@ class _ElectricityViewState extends State<_ElectricityView> {
           meterType: currentState.meterType,
           amountKobo: currentState.amountKobo,
           challengeToken: token,
+          paymentSource: paymentSource,
         );
       },
       onCancel: () => bloc.add(ServiceResetRequested()),

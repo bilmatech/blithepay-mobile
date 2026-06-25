@@ -1,4 +1,5 @@
 import 'package:blithepay/core/navigation/app_routes.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,7 +10,16 @@ class LinkedStudentsAppBar extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: const Text('Linked Students'),
+      leading: BackArrowButtonIcon(
+        onPressed: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go(AppRoutes.home);
+          }
+        },
+      ),
+      title: const Text('Linked Childrens'),
       centerTitle: true,
       actions: [
         GestureDetector(

@@ -32,6 +32,7 @@ abstract class ServiceRepository {
     required int amountKobo,
     required String challengeToken,
     String? contactName,
+    String? paymentSource,
   });
   Future<ServiceTransactionModel> purchaseInternet({
     required String serviceId,
@@ -41,6 +42,7 @@ abstract class ServiceRepository {
     required int amountKobo,
     required String challengeToken,
     String? contactName,
+    String? paymentSource,
   });
   Future<ServiceTransactionModel> purchaseUtility({
     required String serviceId,
@@ -49,6 +51,7 @@ abstract class ServiceRepository {
     required int amountKobo,
     required String meterType,
     required String challengeToken,
+    String? paymentSource,
   });
   Future<ServiceTransactionModel> subscribeCableTv({
     required String provider,
@@ -58,6 +61,7 @@ abstract class ServiceRepository {
     required String pin,
     required String bundleCode,
     required String challengeToken,
+    String? paymentSource,
   });
   Future<List<UtilityBeneficiary>> getUtilityBeneficiaries({int page = 1, int limit = 10});
   Future<List<CableTvBeneficiary>> getCableTvBeneficiaries({int page = 1, int limit = 10});
@@ -149,6 +153,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
     required int amountKobo,
     required String challengeToken,
     String? contactName,
+    String? paymentSource,
   }) async {
     final response = await _dioClient.post(
       ApiEndpoints.purchaseAirtime,
@@ -157,8 +162,8 @@ class ServiceRepositoryImpl implements ServiceRepository {
         'phoneNumber': recipient,
         'amount': (amountKobo / 100).toStringAsFixed(2),
         if (contactName != null && contactName.isNotEmpty) 'contactName': contactName,
-        'idempotencyKey':
-            '${DateTime.now().millisecondsSinceEpoch}',
+        'idempotencyKey': '${DateTime.now().millisecondsSinceEpoch}',
+        'paymentSource': paymentSource ?? 'wallet',
       },
       options: Options(headers: {'X-PIN-CHALLENGE': challengeToken}),
     );
@@ -174,6 +179,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
     required int amountKobo,
     required String challengeToken,
     String? contactName,
+    String? paymentSource,
   }) async {
     final response = await _dioClient.post(
       ApiEndpoints.purchaseInternet,
@@ -184,6 +190,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
         'amount': (amountKobo / 100).toStringAsFixed(2),
         if (contactName != null && contactName.isNotEmpty) 'contactName': contactName,
         'idempotencyKey': '${DateTime.now().millisecondsSinceEpoch}',
+        'paymentSource': paymentSource ?? 'wallet',
       },
       options: Options(headers: {'X-PIN-CHALLENGE': challengeToken}),
     );
@@ -198,6 +205,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
     required int amountKobo,
     required String meterType,
     required String challengeToken,
+    String? paymentSource,
   }) async {
     final response = await _dioClient.post(
       ApiEndpoints.purchaseUtility,
@@ -208,6 +216,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
         'amount': (amountKobo / 100).toStringAsFixed(2),
         'meterType': meterType.toUpperCase(),
         'idempotencyKey': '${DateTime.now().millisecondsSinceEpoch}',
+        'paymentSource': paymentSource ?? 'wallet',
       },
       options: Options(headers: {'X-PIN-CHALLENGE': challengeToken}),
     );
@@ -223,6 +232,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
     required String pin,
     required String bundleCode,
     required String challengeToken,
+    String? paymentSource,
   }) async {
     final response = await _dioClient.post(
       ApiEndpoints.subscribeCableTv,
@@ -233,6 +243,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
         "bundleCode": bundleCode,
         'amount': (amountKobo / 100).toStringAsFixed(2),
         'idempotencyKey': '${DateTime.now().millisecondsSinceEpoch}',
+        'paymentSource': paymentSource ?? 'wallet',
       },
       options: Options(headers: {'X-PIN-CHALLENGE': challengeToken}),
     );

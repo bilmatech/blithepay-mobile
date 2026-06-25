@@ -89,7 +89,7 @@ class InvoiceByIdError extends InvoiceState {
 enum InvoiceDownloadStatus { idle, inProgress, success, failure }
 
 class InvoiceDownloadState extends InvoiceState {
-  final InvoiceModel? invoice;
+  final dynamic invoice;
   final InvoiceDownloadStatus downloadStatus;
   final String? downloadedFilePath;
   final String? errorMessage;

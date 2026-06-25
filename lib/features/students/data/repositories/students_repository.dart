@@ -222,6 +222,8 @@ class StudentsRepositoryImpl implements StudentsRepository {
       '${ApiEndpoints.getinvoices}?page=$page&limit=$limit',
       queryParameters: {"studentId": studentId},
     );
+    // ignore: avoid_print
+    print('RAW INVOICE RESPONSE: ${response.data}');
     final mainData = response.data['data'] ?? {};
     final invoiceJson = (mainData['data'] as List<dynamic>?) ?? [];
     final metadata = mainData['metadata'] ?? {};

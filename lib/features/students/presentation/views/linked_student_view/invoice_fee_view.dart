@@ -2,7 +2,6 @@ import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/core/utils/helpers.dart';
-import 'package:blithepay/features/fees/data/models/fee_model.dart';
 import 'package:blithepay/features/fees/data/models/fee_selection_args.dart';
 import 'package:blithepay/features/students/data/models/invoice_model.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
@@ -11,11 +10,10 @@ import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_event.dart';
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_state.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
+import 'package:blithepay/shared/widgets/layouts/app_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:open_filex/open_filex.dart';
 
 class InvoiceAndFeeDetailsView extends StatelessWidget {
   final InvoiceModel invoice;
@@ -30,12 +28,13 @@ class InvoiceAndFeeDetailsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
+      backgroundColor: const Color(0xFFF3F4F6),
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Invoice'),
+        title: const Text('Invoice Details'),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -46,16 +45,12 @@ class InvoiceAndFeeDetailsView extends StatelessWidget {
           child: BlocConsumer<InvoiceBloc, InvoiceState>(
             listener: (context, state) async {
               if (state is InvoiceDownloadState) {
-                if (state.downloadStatus == InvoiceDownloadStatus.success &&
-                    state.downloadedFilePath != null) {
+                if (state.downloadStatus == InvoiceDownloadStatus.success) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Invoice downloaded to ${state.downloadedFilePath}',
-                      ),
+                    const SnackBar(
+                      content: Text('Invoice prepared successfully'),
                     ),
                   );
-                  await OpenFilex.open(state.downloadedFilePath!);
                 } else if (state.downloadStatus ==
                         InvoiceDownloadStatus.failure &&
                     state.errorMessage != null) {
@@ -79,35 +74,216 @@ class InvoiceAndFeeDetailsView extends StatelessWidget {
 
               final fee = currentInvoice.fee;
 
+              // Compute total fee amount
+              final breakdownTotal = fee.feeBreakdowns?.fold<num>(
+                    0,
+                    (sum, item) => sum + item.amount,
+                  ) ?? 0;
+              final double lateFee = double.tryParse(fee.latePaymentFee) ?? 0;
+              final grandTotal = breakdownTotal + lateFee;
+
               return Stack(
                 children: [
-                  // MAIN CONTENT
                   SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _buildSectionTitle('Invoice Details'),
-                        const SizedBox(height: 8),
-                        _buildInvoiceTable(currentInvoice),
-                        const SizedBox(height: 24),
-                        _buildSectionTitle('Fee Details'),
-                        const SizedBox(height: 8),
-                        _buildFeeTable(fee),
-                        const SizedBox(height: 24),
-                        _buildSectionTitle('Fee Breakdown'),
-                        const SizedBox(height: 8),
-                        _buildFeeBreakdownTable(
-                          currentInvoice.fee.feeBreakdowns ?? [],
+                        // Prominent Amount & Status Badge
+                        Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                Helpers.formattedAmount(grandTotal.toString()),
+                                style: AppTextStyles.h1.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 32,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              _buildStatusBadge(currentInvoice.status),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 24),
 
-                        // Download & Pay buttons
+                        // Digital Invoice Receipt Card
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.border),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.04),
+                                blurRadius: 16,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // School Info Header
+                              Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withValues(alpha: 0.08),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.school_rounded,
+                                        color: AppColors.primary,
+                                        size: 24,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            student.school.name,
+                                            style: AppTextStyles.bodyLarge.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.textPrimary,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'School Code: ${student.school.schoolCode}',
+                                            style: AppTextStyles.bodySmall.copyWith(
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const DashedSeparator(),
+
+                              // Details Metadata Grid
+                              Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  children: [
+                                    _buildMetaRow('Student Name', student.fullName),
+                                    const SizedBox(height: 12),
+                                    _buildMetaRow('Student Reg ID', student.regNumber),
+                                    const SizedBox(height: 12),
+                                    _buildMetaRow('Class / Term', '${fee.classModel.name} - ${fee.term.name}'),
+                                    const SizedBox(height: 12),
+                                    _buildMetaRow('Academic Session', fee.academicSession.name),
+                                    const SizedBox(height: 12),
+                                    _buildMetaRow('Invoice No', currentInvoice.invoiceNo),
+                                    const SizedBox(height: 12),
+                                    _buildMetaRow('Due Date', Helpers.formatDate(currentInvoice.dueAt)),
+                                  ],
+                                ),
+                              ),
+
+                              const DashedSeparator(),
+
+                              // Fee Breakdown Header
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'FEE BREAKDOWN',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.textSecondary,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                    Text(
+                                      'AMOUNT',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.textSecondary,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Items list
+                              ... (fee.feeBreakdowns ?? []).map((item) => Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        item.name,
+                                        style: AppTextStyles.bodyRegular.copyWith(
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      Helpers.formattedAmount(item.amount.toString()),
+                                      style: AppTextStyles.bodyRegular.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )),
+
+                              if (lateFee > 0)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Late Payment Fee',
+                                          style: AppTextStyles.bodyRegular.copyWith(
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        Helpers.formattedAmount(fee.latePaymentFee),
+                                        style: AppTextStyles.bodyRegular.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                              const SizedBox(height: 16),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+
+                        // Action Buttons
                         Row(
                           children: [
                             Expanded(
-                              child: SecondaryOutlinedButton(
+                              child: AppOutlinedButton(
                                 onPressed: isDownloading
-                                    ? null
+                                    ? () {}
                                     : () {
                                         context.read<InvoiceBloc>().add(
                                           GetInvoiceByIdDownloadEvent(
@@ -115,15 +291,14 @@ class InvoiceAndFeeDetailsView extends StatelessWidget {
                                           ),
                                         );
                                       },
-                                label: isDownloading
-                                    ? 'Downloading...'
-                                    : 'Download Invoice',
+                                isLoading: isDownloading,
+                                label: 'Download PDF',
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 12),
                             if (currentInvoice.status != 'paid')
                               Expanded(
-                                child: SecondaryOutlinedButton(
+                                child: AppButton(
                                   onPressed: () => context.push(
                                     AppRoutes.feeSelection,
                                     extra: FeeSelectionArgs(
@@ -173,380 +348,96 @@ class InvoiceAndFeeDetailsView extends StatelessWidget {
       ),
     );
   }
-}
 
-// Fee Breakdown Table
-Widget _buildFeeBreakdownTable(List<FeeBreakdownModel> items) {
-  final rows = items
-      .map(
-        (item) => {
-          'label': item.name,
-          'value': Helpers.formattedAmount(item.amount.toString()),
-        },
-      )
-      .toList();
+  Widget _buildStatusBadge(String status) {
+    final s = status.toLowerCase();
+    Color bgColor = AppColors.warning.withValues(alpha: 0.1);
+    Color textColor = AppColors.warning;
 
-  return _buildKeyValueTable(rows);
-}
+    if (s == 'paid') {
+      bgColor = AppColors.success.withValues(alpha: 0.1);
+      textColor = AppColors.success;
+    } else if (s == 'overdue' || s == 'failed') {
+      bgColor = AppColors.error.withValues(alpha: 0.1);
+      textColor = AppColors.error;
+    }
 
-// Future<void> _downloadReceipt(
-//   BuildContext context,
-//   InvoiceModel invoice,
-// ) async {
-// context.read<InvoiceBloc>()
-//   ..add(GetInvoiceByIdDownloadEvent(invoiceId: invoice.id));
-// final pdf = pw.Document();
-
-// pdf.addPage(
-//   pw.Page(
-//     pageFormat: PdfPageFormat.a4,
-//     margin: const pw.EdgeInsets.all(32),
-//     build: (pw.Context context) {
-//       return pw.Column(
-//         crossAxisAlignment: pw.CrossAxisAlignment.start,
-//         children: [
-//           pw.Text(
-//             'Invoice Receipt',
-//             style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold),
-//           ),
-//           pw.SizedBox(height: 12),
-//           pw.Divider(color: PdfColors.grey, thickness: 1.5),
-//           pw.SizedBox(height: 20),
-
-//           // Invoice Table
-//           pw.Text(
-//             'Invoice Details',
-//             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
-//           ),
-//           pw.SizedBox(height: 8),
-//           _pdfKeyValueTable([
-//             {'label': 'Invoice No', 'value': invoice.invoiceNo},
-//             {'label': 'Class Name', 'value': invoice.fee.classModel.name},
-//             {'label': 'Term Name', 'value': invoice.fee.term.name},
-//             {'label': 'Academic', 'value': invoice.fee.academicSession.name},
-//             {'label': 'Due Date', 'value': Helpers.formatDate(invoice.dueAt)},
-//           ]),
-//           pw.SizedBox(height: 24),
-
-//           // Fee Table
-//           pw.Text(
-//             'Fee Details',
-//             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
-//           ),
-//           pw.SizedBox(height: 8),
-//           _pdfKeyValueTable([
-//             {'label': 'Fee Name', 'value': invoice.fee.name},
-//             {
-//               'label': 'Late Payment Fees',
-//               'value': 'N${invoice.fee.latePaymentFee}',
-//             },
-//           ]),
-//           pw.SizedBox(height: 24),
-
-//           // Fee Breakdown Table
-//           pw.Text(
-//             'Fee Breakdown',
-//             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
-//           ),
-//           pw.SizedBox(height: 8),
-//           if (invoice.fee.feeBreakdowns != null) ...[
-//             _pdfKeyValueTable(
-//               invoice.fee.feeBreakdowns!.map((item) {
-//                 return {'label': item.name, 'value': 'N${item.amount}'};
-//               }).toList(),
-//             ),
-//           ],
-
-//           pw.Spacer(),
-//           pw.Center(
-//             child: pw.Text(
-//               'Thank you for using BilthePay',
-//               style: pw.TextStyle(
-//                 fontSize: 14,
-//                 color: PdfColors.grey700,
-//                 fontStyle: pw.FontStyle.italic,
-//               ),
-//             ),
-//           ),
-//         ],
-//       );
-//     },
-//   ),
-// );
-
-// final pdfBytes = await pdf.save();
-// final filename = 'invoice_${invoice.invoiceNo}.pdf';
-// await Printing.sharePdf(bytes: pdfBytes, filename: filename);
-// }
-
-// class InvoiceAndFeeDetailsView extends StatelessWidget {
-//   final InvoiceModel invoice;
-//   final FeeModel fees;
-
-//   const InvoiceAndFeeDetailsView({
-//     super.key,
-//     required this.invoice,
-//     required this.fees,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return AppScaffold(
-//       appBar: AppBar(
-//         leading: IconButton(
-//           icon: const Icon(Icons.arrow_back_ios),
-//           onPressed: () => context.pop(),
-//         ),
-//         title: const Text('Invoice'),
-//         centerTitle: true,
-//       ),
-//       body: SingleChildScrollView(
-//         padding: const EdgeInsets.all(16),
-//         child: Column(
-//           children: [
-//             //  Table 1: Invoice Details
-//             _buildSectionTitle('Invoice Details'),
-//             const SizedBox(height: 8),
-//             _buildInvoiceTable(invoice),
-//             const SizedBox(height: 24),
-
-//             //  Table 2: Fee Breakdown
-//             _buildSectionTitle('Fee Details'),
-//             const SizedBox(height: 8),
-//             _buildFeeTable(fees),
-//             const SizedBox(height: 24),
-
-//             Row(
-//               children: [
-//                 Expanded(
-//                   child: SecondaryOutlinedButton(
-//                     onPressed: () => _downloadReceipt(context),
-//                     label: 'Download Invoice',
-//                   ),
-//                 ),
-//               ],
-//             ),
-//             const SizedBox(height: 24),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-Widget _buildSectionTitle(String title) {
-  return Align(
-    alignment: Alignment.centerLeft,
-    child: Text(
-      title,
-      style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
-    ),
-  );
-}
-
-// Invoice Table
-Widget _buildInvoiceTable(InvoiceModel invoice) {
-  final details = [
-    {'label': 'Invoice No', 'value': invoice.invoiceNo},
-    {'label': 'Class Name', 'value': invoice.fee.classModel.name},
-    {'label': 'Term Name', 'value': invoice.fee.term.name},
-    {'label': 'Academic', 'value': invoice.fee.academicSession.name},
-    {'label': 'Due Date', 'value': Helpers.formatDate(invoice.dueAt)},
-  ];
-
-  return _buildKeyValueTable(details);
-}
-
-// Fee Table
-Widget _buildFeeTable(FeeModel fees) {
-  final details = [
-    {'label': 'Fee Name', 'value': fees.name},
-    {
-      'label': 'Late Payment Fees',
-      'value': Helpers.formattedAmount(fees.latePaymentFee),
-    },
-  ];
-
-  return _buildKeyValueTable(details);
-}
-
-// Generic Table Builder
-Widget _buildKeyValueTable(List<Map<String, String>> rows) {
-  if (rows.isEmpty) {
-    return Column(
-      children: List.generate(
-        1,
-        (_) => Container(
-          height: 60,
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: AppColors.border.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(8),
-          ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: TextStyle(
+          color: textColor,
+          fontWeight: FontWeight.bold,
+          fontSize: 10,
+          letterSpacing: 1.0,
         ),
       ),
     );
-    // Container(
-    //   width: double.infinity,
-    //   padding: const EdgeInsets.all(16),
-    //   decoration: BoxDecoration(
-    //     border: Border.all(color: AppColors.border),
-    //     borderRadius: BorderRadius.circular(8),
-    //     color: AppColors.surface,
-    //   ),
-    //   child: const Text(
-    //     'No data available',
-    //     style: TextStyle(color: Colors.grey),
-    //   ),
-    // );
   }
 
-  return Container(
-    width: double.infinity,
-    decoration: BoxDecoration(
-      border: Border.all(color: AppColors.border),
-      borderRadius: BorderRadius.circular(8),
-      color: AppColors.surface,
-    ),
-    child: Column(
-      children: List.generate(rows.length * 2 - 1, (index) {
-        if (index.isOdd) return const Divider(height: 1);
-
-        final row = rows[index ~/ 2];
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                row['label'] ?? '',
-                style: AppTextStyles.bodyRegular.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  row['value'] ?? '',
-                  textAlign: TextAlign.right,
-                  style: AppTextStyles.bodyRegular.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+  Widget _buildMetaRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.bodyRegular.copyWith(
+            color: AppColors.textSecondary,
           ),
-        );
-      }),
-    ),
-  );
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: AppTextStyles.bodyRegular.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-// Future<void> _downloadReceipt(BuildContext context) async {
-//   final pdf = pw.Document();
+class DashedSeparator extends StatelessWidget {
+  final double height;
+  final Color color;
 
-//   pdf.addPage(
-//     pw.Page(
-//       pageFormat: PdfPageFormat.a4,
-//       margin: const pw.EdgeInsets.all(32),
-//       build: (pw.Context context) {
-//         return pw.Column(
-//           crossAxisAlignment: pw.CrossAxisAlignment.start,
-//           children: [
-//             // Header
-//             pw.Text(
-//               'Invoice Receipt',
-//               style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold),
-//             ),
-//             pw.SizedBox(height: 12),
-//             pw.Divider(color: PdfColors.grey, thickness: 1.5),
-//             pw.SizedBox(height: 20),
+  const DashedSeparator({
+    super.key,
+    this.height = 1.2,
+    this.color = AppColors.border,
+  });
 
-//             //  Invoice Table
-//             pw.Text(
-//               'Invoice Details',
-//               style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
-//             ),
-//             pw.SizedBox(height: 8),
-//             _pdfKeyValueTable([
-//               {'label': 'Invoice No', 'value': invoice.invoiceNo},
-//               {'label': 'Class Name', 'value': invoice.fee.classModel.name},
-//               {'label': 'Term Name', 'value': invoice.fee.term.name},
-//               {'label': 'Academic', 'value': invoice.fee.academicSession.name},
-//               {'label': 'Due Date', 'value': Helpers.formatDate(invoice.dueAt)},
-//             ]),
-//             pw.SizedBox(height: 24),
-
-//             //  Fee Table
-//             pw.Text(
-//               'Fee Details',
-//               style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
-//             ),
-//             pw.SizedBox(height: 8),
-//             _pdfKeyValueTable([
-//               {'label': 'Fee Name', 'value': invoice.fee.name},
-//               {
-//                 'label': 'Late Payment Fees',
-//                 'value': 'N${invoice.fee.latePaymentFee}',
-//               },
-//             ]),
-
-//             pw.Spacer(),
-
-//             // Footer
-//             pw.Center(
-//               child: pw.Text(
-//                 'Thank you for using BilthePay',
-//                 style: pw.TextStyle(
-//                   fontSize: 14,
-//                   color: PdfColors.grey700,
-//                   fontStyle: pw.FontStyle.italic,
-//                 ),
-//               ),
-//             ),
-//           ],
-//         );
-//       },
-//     ),
-//   );
-
-//   // Save / Share PDF
-//   final pdfBytes = await pdf.save();
-//   final filename = 'invoice_${invoice.invoiceNo}.pdf';
-//   await Printing.sharePdf(bytes: pdfBytes, filename: filename);
-// }
-
-// pw.Widget _pdfKeyValueTable(List<Map<String, String>> rows) {
-//   return pw.Container(
-//     decoration: pw.BoxDecoration(
-//       border: pw.Border.all(color: PdfColors.grey300),
-//       borderRadius: pw.BorderRadius.circular(8),
-//       color: PdfColors.grey100,
-//     ),
-//     child: pw.Column(
-//       children: List.generate(rows.length * 2 - 1, (index) {
-//         if (index.isOdd) {
-//           return pw.Divider(height: 1, color: PdfColors.grey300);
-//         }
-
-//         final row = rows[index ~/ 2];
-//         return pw.Padding(
-//           padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-//           child: pw.Row(
-//             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-//             children: [
-//               pw.Text(row['label']!, style: const pw.TextStyle(fontSize: 12)),
-//               pw.Text(
-//                 row['value']!,
-//                 style: pw.TextStyle(
-//                   fontSize: 12,
-//                   fontWeight: pw.FontWeight.bold,
-//                 ),
-//               ),
-//             ],
-//           ),
-//         );
-//       }),
-//     ),
-//   );
-// }
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final boxWidth = constraints.constrainWidth();
+        const dashWidth = 6.0;
+        final dashHeight = height;
+        final dashCount = (boxWidth / (2 * dashWidth)).floor();
+        return Flex(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          direction: Axis.horizontal,
+          children: List.generate(dashCount, (_) {
+            return SizedBox(
+              width: dashWidth,
+              height: dashHeight,
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: color),
+              ),
+            );
+          }),
+        );
+      },
+    );
+  }
+}

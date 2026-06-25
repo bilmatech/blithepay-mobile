@@ -1,9 +1,10 @@
 import 'package:equatable/equatable.dart';
 
 enum TransactionStatus {
-  pending,
-  successful,
-  failed,
+  PENDING,
+  SUCCESS,
+  REVERSED,
+  FAILED,
 }
 
 class TransactionEntity extends Equatable {

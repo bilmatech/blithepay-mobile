@@ -100,7 +100,7 @@ class PhoneNumberContainer extends StatelessWidget {
         ),
         ServiceReviewDetail(label: 'Amount', value: formattedAmount),
       ],
-      onPay: (pin) async {
+      onPay: (pin, paymentSource) async {
         final token = await repo.verifyPin(pin);
         return repo.purchaseAirtime(
           serviceId: bloc.currentServiceId ?? '',
@@ -109,6 +109,7 @@ class PhoneNumberContainer extends StatelessWidget {
           amountKobo: currentState.amountKobo,
           challengeToken: token,
           contactName: currentState.contactName,
+          paymentSource: paymentSource,
         );
       },
       onCancel: () => bloc.add(ServiceResetRequested()),

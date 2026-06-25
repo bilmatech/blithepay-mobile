@@ -4,6 +4,7 @@ import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class QueuedRequest {
   final RequestOptions options;
@@ -144,7 +145,9 @@ class DioInterceptor extends Interceptor {
 
     String message;
 
-    if (err.response == null) {
+    if (err.type == DioExceptionType.cancel) {
+      message = err.error?.toString() ?? 'Request cancelled';
+    } else if (err.response == null) {
       message = 'No internet connection';
     } else {
       final data = err.response?.data;
@@ -169,7 +172,9 @@ class DioInterceptor extends Interceptor {
 
     if (refreshToken == null) {
       await _logoutUser();
-      return handler.reject(err);
+      return handler.reject(
+        err.copyWith(error: 'Session expired. Please log in again.'),
+      );
     }
 
     if (_isRefreshing) {
@@ -229,7 +234,9 @@ class DioInterceptor extends Interceptor {
         }
       }
       _retryQueue.clear();
-      handler.reject(err);
+      handler.reject(
+        err.copyWith(error: 'Session expired. Please log in again.'),
+      );
       await _logoutUser();
     } finally {
       _isRefreshing = false;
@@ -258,9 +265,14 @@ class DioInterceptor extends Interceptor {
     await _localDataSource.clearSession();
 
     // Navigate to login safely
-    _navigatorKey.currentState?.pushNamedAndRemoveUntil(
-      '/login',
-      (route) => false,
-    );
+    final context = _navigatorKey.currentContext;
+    if (context != null && context.mounted) {
+      context.go('/login');
+    } else {
+      _navigatorKey.currentState?.pushNamedAndRemoveUntil(
+        '/login',
+        (route) => false,
+      );
+    }
   }
 }

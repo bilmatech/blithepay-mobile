@@ -2,10 +2,14 @@ import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
 import 'package:blithepay/features/vas/core/presentation/views/service_review_view.dart';
 import 'package:blithepay/features/students/data/models/verify_student_model.dart';
+import 'package:flutter/material.dart';
+
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 class AppRouterConfig {
   static GoRouter createRouter() {
     return GoRouter(
+      navigatorKey: rootNavigatorKey,
       initialLocation: AppRoutes.splash,
       routes: [
         GoRoute(path: AppRoutes.splash, builder: (_, __) => const SplashView()),

@@ -674,7 +674,7 @@ class _DataPackageSectionState extends State<_DataPackageSection> {
         ServiceReviewDetail(label: 'Validity', value: selectedPlan.validity),
         ServiceReviewDetail(label: 'Amount', value: selectedPlan.priceLabel),
       ],
-      onPay: (pin) async {
+      onPay: (pin, paymentSource) async {
         final token = await repo.verifyPin(pin);
         return repo.purchaseInternet(
           serviceId: bloc.currentServiceId ?? '',
@@ -686,6 +686,7 @@ class _DataPackageSectionState extends State<_DataPackageSection> {
           amountKobo: selectedPlan.amountKobo,
           challengeToken: token,
           contactName: currentState.contactName,
+          paymentSource: paymentSource,
         );
       },
       onCancel: () => bloc.add(ServiceResetRequested()),

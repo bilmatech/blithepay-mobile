@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:blithepay/core/constants/app_colors.dart';
-import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/bottom_sheets/bottom_sheet_container.dart';
 import 'package:blithepay/features/fees/presentation/views/widgets/nemeric_keyboard.dart';
@@ -8,7 +6,6 @@ import 'package:blithepay/features/fees/presentation/views/widgets/nemeric_keybo
 class PinBottomSheetContent extends StatefulWidget {
   final int pinLength;
   final Future<void> Function(String pin) onSubmit; // Kept your exact signature
-  final VoidCallback? onForgotPin;
   final bool isLoading;
   final String? errorMessage;
 
@@ -16,7 +13,6 @@ class PinBottomSheetContent extends StatefulWidget {
     super.key,
     this.pinLength = 4,
     required this.onSubmit,
-    this.onForgotPin,
     this.isLoading = false,
     this.errorMessage,
   });
@@ -112,20 +108,6 @@ class _PinBottomSheetContentState extends State<PinBottomSheetContent> {
               ),
             ),
           ),
-
-          if (widget.onForgotPin != null) ...[
-            const SizedBox(height: 16),
-            GestureDetector(
-              onTap: widget.isLoading ? null : widget.onForgotPin,
-              child: Text(
-                'Forgot PIN? Reset',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.success,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
 
           const SizedBox(height: 18),
 

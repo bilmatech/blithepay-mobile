@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:bloc/bloc.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:media_store_plus/media_store_plus.dart';
+import 'package:printing/printing.dart';
 import 'package:blithepay/features/students/data/models/invoice_model.dart';
 import 'package:blithepay/features/students/data/repositories/students_repository.dart';
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_event.dart';
@@ -46,7 +44,11 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
       _nextPage[studentId] = result.nextPage;
 
       emit(InvoiceLoaded(studentId: studentId, invoice: updated, nextPage: result.nextPage));
-    } catch (e) {
+    } catch (e, stack) {
+      // ignore: avoid_print
+      print('GetInvoiceEvent Error: $e');
+      // ignore: avoid_print
+      print(stack);
       emit(InvoiceError(studentId: studentId, message: e.toString()));
     } finally {
       _loadingStudents.remove(studentId);
@@ -104,6 +106,8 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     // Get the current invoice from state
     final currentInvoice = state is InvoiceByIdLoaded
         ? (state as InvoiceByIdLoaded).invoice
+        : state is InvoiceByIdViewLoaded
+        ? (state as InvoiceByIdViewLoaded).invoice
         : state is InvoiceDownloadState
         ? (state as InvoiceDownloadState).invoice
         : null;
@@ -131,39 +135,13 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
       final bytes = await repository.downloadInvoice(event.invoiceId);
       final fileName = 'invoice_${event.invoiceId}.pdf';
 
-      String filePath;
-      if (Platform.isAndroid) {
-        // Write to temp file first, then save via MediaStore (no MANAGE_EXTERNAL_STORAGE needed)
-        final tempDir = await getTemporaryDirectory();
-        final tempFile = File('${tempDir.path}/$fileName');
-        await tempFile.writeAsBytes(bytes, flush: true);
-
-        final mediaStore = MediaStore();
-        final saveInfo = await mediaStore.saveFile(
-          tempFilePath: tempFile.path,
-          dirType: DirType.download,
-          dirName: DirName.download,
-        );
-
-        if (saveInfo == null) {
-          throw Exception('Failed to save invoice to Downloads');
-        }
-
-        filePath =
-            await mediaStore.getFilePathFromUri(uriString: saveInfo.uri.toString()) ??
-            '/storage/emulated/0/Download/$fileName';
-      } else {
-        final dir = await getApplicationDocumentsDirectory();
-        filePath = '${dir.path}/$fileName';
-        final file = File(filePath);
-        await file.writeAsBytes(bytes, flush: true);
-      }
+      await Printing.sharePdf(bytes: bytes, filename: fileName);
 
       emit(
         InvoiceDownloadState(
           invoice: currentInvoice,
           downloadStatus: InvoiceDownloadStatus.success,
-          downloadedFilePath: filePath,
+          downloadedFilePath: fileName,
         ),
       );
     } catch (e) {

@@ -31,7 +31,6 @@ class PaymentHistorySection extends StatelessWidget {
         bool isLoading = state is StudentsLoading;
         if (state is StudentTransactionLoaded) {
           transactions = state.studentTransaction.take(4).toList();
-          print("$transactions");
         }
 
         return Column(
@@ -112,9 +111,8 @@ class StudentTransactionContainer extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.lightBack.withAlpha(13),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.borderColor),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -124,15 +122,18 @@ class StudentTransactionContainer extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
-                      color: AppColors.border,
-                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
-                      Icons.account_balance_wallet,
-                      size: 20,
-                      color: AppColors.textSecondary,
+                    child: Center(
+                      child: Icon(
+                        Icons.arrow_upward_rounded,
+                        color: Colors.red.shade700,
+                        size: 22,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -168,7 +169,7 @@ class StudentTransactionContainer extends StatelessWidget {
                 SizedBox(
                   width: 100, // constrain width to avoid overflow
                   child: Text(
-                    Helpers.formattedAmount(transaction.amount),
+                    Helpers.formattedAmount(transaction.amount, flow: 'outflow').replaceAll('₦', 'N'),
                     style: AppTextStyles.headingSmall.copyWith(
                       fontWeight: FontWeight.w600,
                     ),

@@ -1,6 +1,5 @@
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/core/utils/helpers.dart';
 import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_bloc.dart';
 import 'package:blithepay/features/fees/presentation/bloc/payment_bloc/payment_event.dart';
@@ -17,7 +16,7 @@ import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:blithepay/shared/widgets/paystack_webview.dart';
 
 class PaymentConfirmationView extends StatefulWidget {
   final String invoiceId;
@@ -271,6 +270,8 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
   void _showPinBottomSheet(ViewInvoiceModel invoice) async {
     await showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (_) {
         return BlocBuilder<PaymentBloc, PaymentState>(
           builder: (context, state) {
@@ -279,9 +280,6 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
               errorMessage: state.message,
               onSubmit: (pin) async {
                 context.read<PaymentBloc>().add(VerifyPin(pin));
-              },
-              onForgotPin: () {
-                context.push(AppRoutes.setupOtp);
               },
             );
           },
@@ -309,58 +307,6 @@ class _PaymentConfirmationViewState extends State<PaymentConfirmationView> {
   }
 }
 
-class PaystackWebView extends StatefulWidget {
-  final String url;
-
-  const PaystackWebView({super.key, required this.url});
-
-  @override
-  State<PaystackWebView> createState() => _PaystackWebViewState();
-}
-
-class _PaystackWebViewState extends State<PaystackWebView> {
-  late final WebViewController controller;
-
-  @override
-  void initState() {
-    super.initState();
-
-    controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onNavigationRequest: (request) {
-            final url = request.url;
-
-            // Detect payment completion redirect
-            if (url.contains('success') ||
-                url.contains('callback') ||
-                url.contains('payment-complete')) {
-              Navigator.pop(context, true);
-              return NavigationDecision.prevent;
-            }
-
-            // Detect cancel
-            if (url.contains('cancel')) {
-              Navigator.pop(context, false);
-              return NavigationDecision.prevent;
-            }
-
-            return NavigationDecision.navigate;
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(widget.url));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Complete Payment')),
-      body: WebViewWidget(controller: controller),
-    );
-  }
-}
 
 // class PaymentConfirmationView extends StatefulWidget {
 //   final PaymentPayload payload;

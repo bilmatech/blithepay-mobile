@@ -109,19 +109,30 @@ class FeeModel {
     this.feeBreakdowns,
   });
 
-  factory FeeModel.fromJson(Map<String, dynamic> json) {
+  factory FeeModel.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return FeeModel(
+        id: '',
+        name: '',
+        dueAt: DateTime.now(),
+        latePaymentFee: '0',
+        classModel: ClassModel(id: '', name: ''),
+        term: TermModel(id: '', name: ''),
+        academicSession: AcademicSessionModel(id: '', name: ''),
+      );
+    }
     final breakdowns = json['feeBreakdowns'] as List<dynamic>?;
 
     return FeeModel(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
-      dueAt: DateTime.parse(json['dueAt']),
-      latePaymentFee: json['latePaymentFee'] ?? '0',
-      classModel: ClassModel.fromJson(json['class']),
-      term: TermModel.fromJson(json['term']),
-      academicSession: AcademicSessionModel.fromJson(json['academicSession']),
+      dueAt: json['dueAt'] != null ? (DateTime.tryParse(json['dueAt']) ?? DateTime.now()) : DateTime.now(),
+      latePaymentFee: json['latePaymentFee']?.toString() ?? '0',
+      classModel: json['class'] != null ? ClassModel.fromJson(json['class']) : ClassModel(id: '', name: ''),
+      term: json['term'] != null ? TermModel.fromJson(json['term']) : TermModel(id: '', name: ''),
+      academicSession: json['academicSession'] != null ? AcademicSessionModel.fromJson(json['academicSession']) : AcademicSessionModel(id: '', name: ''),
       feeBreakdowns: breakdowns
-          ?.map((e) => FeeBreakdownModel.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => FeeBreakdownModel.fromJson(e as Map<String, dynamic>?))
           .toList(),
     );
   }

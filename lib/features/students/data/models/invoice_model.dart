@@ -56,7 +56,22 @@ class InvoiceModel {
     required this.fee,
   });
 
-  factory InvoiceModel.fromJson(Map<String, dynamic> json) {
+  factory InvoiceModel.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return InvoiceModel(
+        id: '',
+        invoiceNo: '',
+        feeId: '',
+        guardianId: '',
+        studentId: '',
+        status: '',
+        dueAt: DateTime.now(),
+        isDeleted: false,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        fee: FeeModel.fromJson(null),
+      );
+    }
     return InvoiceModel(
       id: json['id'] ?? '',
       invoiceNo: json['invoiceNo'] ?? '',
@@ -64,12 +79,12 @@ class InvoiceModel {
       guardianId: json['guardianId'] ?? '',
       studentId: json['studentId'] ?? '',
       status: json['status'] ?? '',
-      dueAt: DateTime.parse(json['dueAt']),
-      paidAt: json['paidAt'] != null ? DateTime.parse(json['paidAt']) : null,
+      dueAt: json['dueAt'] != null ? (DateTime.tryParse(json['dueAt']) ?? DateTime.now()) : DateTime.now(),
+      paidAt: json['paidAt'] != null ? DateTime.tryParse(json['paidAt']) : null,
       isDeleted: json['isDeleted'] ?? false,
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      fee: FeeModel.fromJson(json['fee']),
+      createdAt: json['createdAt'] != null ? (DateTime.tryParse(json['createdAt']) ?? DateTime.now()) : DateTime.now(),
+      updatedAt: json['updatedAt'] != null ? (DateTime.tryParse(json['updatedAt']) ?? DateTime.now()) : DateTime.now(),
+      fee: FeeModel.fromJson(json['fee'] as Map<String, dynamic>?),
     );
   }
 }
@@ -80,8 +95,12 @@ class ClassModel {
 
   ClassModel({required this.id, required this.name});
 
-  factory ClassModel.fromJson(Map<String, dynamic> json) {
-    return ClassModel(id: json['id'] ?? '', name: json['name'] ?? '');
+  factory ClassModel.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return ClassModel(id: '', name: '');
+    return ClassModel(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+    );
   }
 }
 
@@ -91,8 +110,12 @@ class TermModel {
 
   TermModel({required this.id, required this.name});
 
-  factory TermModel.fromJson(Map<String, dynamic> json) {
-    return TermModel(id: json['id'] ?? '', name: json['name'] ?? '');
+  factory TermModel.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return TermModel(id: '', name: '');
+    return TermModel(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+    );
   }
 }
 
@@ -102,8 +125,12 @@ class AcademicSessionModel {
 
   AcademicSessionModel({required this.id, required this.name});
 
-  factory AcademicSessionModel.fromJson(Map<String, dynamic> json) {
-    return AcademicSessionModel(id: json['id'] ?? '', name: json['name'] ?? '');
+  factory AcademicSessionModel.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return AcademicSessionModel(id: '', name: '');
+    return AcademicSessionModel(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+    );
   }
 }
 
@@ -122,14 +149,22 @@ class FeeBreakdownModel {
     this.amountInNaira,
   });
 
-  factory FeeBreakdownModel.fromJson(Map<String, dynamic> json) {
+  factory FeeBreakdownModel.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return FeeBreakdownModel(
+        id: '',
+        name: '',
+        amount: 0,
+        isRequired: false,
+      );
+    }
     return FeeBreakdownModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
       amount: json['amount'] is String
-          ? num.parse(json['amount'])
-          : json['amount'] as num,
-      isRequired: json['isRequired'] as bool,
+          ? (num.tryParse(json['amount']) ?? 0)
+          : (json['amount'] as num? ?? 0),
+      isRequired: json['isRequired'] as bool? ?? false,
       amountInNaira: json['amountInNaira'] as String?,
     );
   }

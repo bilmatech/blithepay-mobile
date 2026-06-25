@@ -5,6 +5,7 @@ import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/
 import 'package:blithepay/features/students/presentation/bloc/invoice_bloc.dart/invoice_event.dart';
 import 'package:blithepay/features/students/presentation/views/linked_student_view/student_details_section.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LinkedStudentsBody extends StatefulWidget {
@@ -59,10 +60,10 @@ class _LinkedStudentsBodyState extends State<LinkedStudentsBody> {
             onPageChanged: _onPageChanged,
             itemCount: widget.students.length,
             itemBuilder: (context, index) {
-           //   final s = widget.students[index];
+              final s = widget.students[index];
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: StudentCard(data: student.toStudentCardData()),
+                child: StudentCard(data: s.toStudentCardData()),
               );
             },
           ),
@@ -109,102 +110,146 @@ class StudentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(12),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1E3A8A).withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
         children: [
-          Row(
-            children: [
-              CircleAvatar(radius: 24, child: Text(data.fullName[0])),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Positioned(
+            right: -15,
+            bottom: -15,
+            child: Icon(
+              Icons.school_rounded,
+              size: 130,
+              color: Colors.white.withValues(alpha: 0.04),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      'Student ID: ${data.regNumber}',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.white,
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
+                      ),
+                      child: Center(
+                        child: Text(
+                          data.fullName.isNotEmpty ? data.fullName[0].toUpperCase() : '?',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
                     ),
-                    Text(
-                      data.fullName,
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        color: Colors.white,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            data.fullName,
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Student ID: ${data.regNumber}',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Colors.white.withValues(alpha: 0.8),
+                              fontWeight: FontWeight.w500,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.copy_rounded, color: Colors.white, size: 18),
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: data.regNumber));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Student ID copied to clipboard!'),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            backgroundColor: AppColors.primary,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      style: IconButton.styleFrom(
+                        padding: const EdgeInsets.all(6),
+                        backgroundColor: Colors.white.withValues(alpha: 0.1),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.copy, color: Colors.white),
-                onPressed: () {},
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Icon(Icons.school, color: Colors.white70, size: 16),
-              const SizedBox(width: 6),
-              Text(
-                data.className,
-                style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              const Icon(Icons.location_on, color: Colors.white70, size: 16),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  data.schoolName,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: Colors.white70,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Icon(Icons.class_rounded, color: Colors.white70, size: 15),
+                    const SizedBox(width: 8),
+                    Text(
+                      data.className,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (data.status != StudentCardStatus.none) ...[
-                Text(
-                  'Status: ${data.status.label}',
-                  style: AppTextStyles.bodyRegular.copyWith(
-                    color: data.status.color,
-                    fontWeight: FontWeight.w600,
-                  ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.location_on_rounded, color: Colors.white70, size: 15),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        data.schoolName,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
-              // GestureDetector(
-              //   onTap: () => context.push(
-              //     AppRoutes.feeSelection,
-              //     extra: FeeSelectionArgs(
-              //       feeId: student.classModel,
-              //       studentCode: '',
-              //       student: student,
-              //     ),
-              //   ),
-              //   //   onTap: () => context.push('/pay-fees'),
-              //   child: Text(
-              //     'Pay Fee',
-              //     style: AppTextStyles.bodyRegular.copyWith(
-              //       color: Colors.white,
-              //     ),
-              //   ),
-              // ),
-            ],
+            ),
           ),
         ],
       ),

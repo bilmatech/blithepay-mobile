@@ -7,6 +7,7 @@ import 'core/theme/dark_theme.dart';
 import 'core/theme/theme_cubit.dart';
 
 final GoRouter appRouter = AppRouterConfig.createRouter();
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
       builder: (context, themeState) {
         return MaterialApp.router(
           title: 'BLITHE',
+          scaffoldMessengerKey: scaffoldMessengerKey,
           theme: buildLightTheme(),
           darkTheme: buildDarkTheme(),
           themeMode: themeState.brightness == Brightness.dark

@@ -52,45 +52,50 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   TransactionModel _mapToTransactionModel(WalletTransactionModel walletTx) {
-    TransactionType type = TransactionType.other;
+    TransactionType type = TransactionType.TRANSFER;
     String name = walletTx.name;
     String iconKey = 'withdrawal';
 
     final desc = (walletTx.description ?? '').toLowerCase();
-    final typeStr = walletTx.type.toLowerCase();
+    final typeStr = walletTx.type.toUpperCase();
 
-    if (desc.contains('airtime') || typeStr.contains('airtime') || desc.contains('recharge')) {
-      type = TransactionType.airtime;
-      name = 'Airtime Recharge';
-      iconKey = 'airtime';
-    } else if (desc.contains('data') || desc.contains('internet') || typeStr.contains('data') || typeStr.contains('internet')) {
-      type = TransactionType.data;
-      name = 'Data Bundle';
-      iconKey = 'data';
-    } else if (desc.contains('dstv') || desc.contains('gotv') || desc.contains('startimes') || desc.contains('cable') || typeStr.contains('cable')) {
-      type = TransactionType.cable;
-      name = desc.contains('gotv') ? 'GOtv Subscription' : (desc.contains('dstv') ? 'DStv Subscription' : 'Cable TV Subscription');
-      iconKey = 'cable';
-    } else if (desc.contains('electricity') || desc.contains('meter') || desc.contains('power') || typeStr.contains('electricity') || typeStr.contains('utility')) {
-      type = TransactionType.electricity;
-      name = 'Electricity';
-      iconKey = 'electricity';
-    } else if (typeStr == 'deposit' || typeStr == 'inflow') {
-      type = TransactionType.other;
+    if (typeStr == 'DEPOSIT' || typeStr == 'INFLOW') {
+      type = TransactionType.DEPOSIT;
       name = 'Deposit';
       iconKey = 'deposit';
-    } else {
-      type = TransactionType.other;
+    } else if (typeStr == 'WITHDRAWAL') {
+      type = TransactionType.WITHDRAWAL;
       name = 'Withdrawal';
       iconKey = 'withdrawal';
+    } else if (typeStr == 'REVERSAL') {
+      type = TransactionType.REVERSAL;
+      name = 'Reversal';
+      iconKey = 'withdrawal';
+    } else {
+      type = TransactionType.TRANSFER;
+      if (desc.contains('airtime') || desc.contains('recharge')) {
+        name = 'Airtime Recharge';
+        iconKey = 'airtime';
+      } else if (desc.contains('data') || desc.contains('internet')) {
+        name = 'Data Bundle';
+        iconKey = 'data';
+      } else if (desc.contains('dstv') || desc.contains('gotv') || desc.contains('startimes') || desc.contains('cable')) {
+        name = desc.contains('gotv') ? 'GOtv Subscription' : (desc.contains('dstv') ? 'DStv Subscription' : 'Cable TV Subscription');
+        iconKey = 'cable';
+      } else if (desc.contains('electricity') || desc.contains('meter') || desc.contains('power') || desc.contains('utility')) {
+        name = 'Electricity';
+        iconKey = 'electricity';
+      }
     }
 
-    TransactionStatus status = TransactionStatus.pending;
-    final statusLower = walletTx.status.toLowerCase();
-    if (statusLower == 'success' || statusLower == 'successful') {
-      status = TransactionStatus.successful;
-    } else if (statusLower == 'failed') {
-      status = TransactionStatus.failed;
+    TransactionStatus status = TransactionStatus.PENDING;
+    final statusUpper = walletTx.status.toUpperCase();
+    if (statusUpper == 'SUCCESS' || statusUpper == 'SUCCESSFUL') {
+      status = TransactionStatus.SUCCESS;
+    } else if (statusUpper == 'FAILED') {
+      status = TransactionStatus.FAILED;
+    } else if (statusUpper == 'REVERSED') {
+      status = TransactionStatus.REVERSED;
     }
 
     TransactionFlow flow = walletTx.flow.toLowerCase() == 'inflow'
@@ -315,9 +320,12 @@ class _TransactionCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 CaptionMd(
                   transaction.status.name,
-                  color: transaction.status == TransactionStatus.successful
+                  color: transaction.status == TransactionStatus.SUCCESS
                       ? AppColors.success
-                      : AppColors.error,
+                      : (transaction.status == TransactionStatus.PENDING ||
+                              transaction.status == TransactionStatus.REVERSED)
+                          ? AppColors.warning
+                          : AppColors.error,
                 ),
               ],
             ),

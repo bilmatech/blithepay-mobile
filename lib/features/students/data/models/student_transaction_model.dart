@@ -66,25 +66,46 @@ class StudentTransactionModel {
     required this.student,
   });
 
-  factory StudentTransactionModel.fromJson(Map<String, dynamic> json) {
+  factory StudentTransactionModel.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return StudentTransactionModel(
+        id: '',
+        guardianId: '',
+        schoolId: '',
+        studentId: '',
+        invoiceId: '',
+        reference: '',
+        amount: '',
+        latePaymentFee: '',
+        vatAmount: '',
+        status: '',
+        transactionAt: DateTime.now(),
+        processedAt: DateTime.now(),
+        description: '',
+        isDeleted: false,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        student: Student(id: '', firstName: '', lastName: ''),
+      );
+    }
     return StudentTransactionModel(
-      id: json['id'] as String,
-      guardianId: json['guardianId'] as String,
-      schoolId: json['schoolId'] as String,
-      studentId: json['studentId'] as String,
-      invoiceId: json['invoiceId'] as String,
-      reference: json['reference'] as String,
-      amount: json['amount'] as String,
-      latePaymentFee: json['latePaymentFee'] as String,
-      vatAmount: json['vatAmount'] as String,
-      status: json['status'] as String,
-      transactionAt: DateTime.parse(json['transactionAt'] as String),
-      processedAt: DateTime.parse(json['processedAt'] as String),
-      description: json['description'] as String,
-      isDeleted: json['isDeleted'] as bool,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-      student: Student.fromJson(json['student'] as Map<String, dynamic>),
+      id: json['id'] ?? '',
+      guardianId: json['guardianId'] ?? '',
+      schoolId: json['schoolId'] ?? '',
+      studentId: json['studentId'] ?? '',
+      invoiceId: json['invoiceId'] ?? '',
+      reference: json['reference'] ?? '',
+      amount: json['amount']?.toString() ?? '',
+      latePaymentFee: json['latePaymentFee']?.toString() ?? '',
+      vatAmount: json['vatAmount']?.toString() ?? '',
+      status: json['status'] ?? '',
+      transactionAt: json['transactionAt'] != null ? (DateTime.tryParse(json['transactionAt']) ?? DateTime.now()) : DateTime.now(),
+      processedAt: json['processedAt'] != null ? (DateTime.tryParse(json['processedAt']) ?? DateTime.now()) : DateTime.now(),
+      description: json['description'] ?? '',
+      isDeleted: json['isDeleted'] ?? false,
+      createdAt: json['createdAt'] != null ? (DateTime.tryParse(json['createdAt']) ?? DateTime.now()) : DateTime.now(),
+      updatedAt: json['updatedAt'] != null ? (DateTime.tryParse(json['updatedAt']) ?? DateTime.now()) : DateTime.now(),
+      student: Student.fromJson(json['student'] as Map<String, dynamic>?),
     );
   }
 
@@ -116,11 +137,12 @@ class Student {
 
   Student({required this.id, required this.firstName, required this.lastName});
 
-  factory Student.fromJson(Map<String, dynamic> json) {
+  factory Student.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return Student(id: '', firstName: '', lastName: '');
     return Student(
-      id: json['id'] as String,
-      firstName: json['firstName'] as String,
-      lastName: json['lastName'] as String,
+      id: json['id'] ?? '',
+      firstName: json['firstName'] ?? '',
+      lastName: json['lastName'] ?? '',
     );
   }
 

@@ -593,7 +593,7 @@ class _CableTvScreenState extends State<_CableTvScreen> {
           value: state.formattedAmount,
         ),
       ],
-      onPay: (pin) async {
+      onPay: (pin, paymentSource) async {
         final token = await repo.verifyPin(pin);
         final providerId = state.selectedProviderId.isNotEmpty
             ? state.selectedProviderId
@@ -605,6 +605,7 @@ class _CableTvScreenState extends State<_CableTvScreen> {
           pin: pin,
           bundleCode: state.selectedPackage!.bundleCode,
           challengeToken: token,
+          paymentSource: paymentSource,
         );
       },
       onCancel: () => bloc.add(CableTvSuccessDismissed()),
