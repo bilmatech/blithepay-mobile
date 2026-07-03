@@ -1,22 +1,22 @@
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:country_picker/country_picker.dart';
+import 'package:blithepay/core/utils/validators.dart';
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_strings.dart';
-import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/navigation/app_routes.dart';
-import 'package:blithepay/core/utils/validators.dart';
-import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
+import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_event.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_state.dart';
-import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
-import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
-import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
-import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:country_picker/country_picker.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 
 class SignupView extends StatefulWidget {
   const SignupView({super.key});
@@ -70,20 +70,12 @@ class _SignupViewState extends State<SignupView> {
   void _handleSignup() {
     if (_formKey.currentState!.validate()) {
       if (!_agreedToTerms) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please accept the Terms and Conditions'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Please accept the Terms and Conditions')));
         return;
       }
-      // if (kDebugMode) {
-      //   context.push(
-      //     AppRoutes.verifyOtp,
-      //     extra: {'email': _emailController.text, 'flow': OtpFlow.signup},
-      //   );
-      //   return;
-      // }
+
       context.read<AuthBloc>().add(
         SignupRequested(
           email: _emailController.text,
@@ -133,15 +125,11 @@ class _SignupViewState extends State<SignupView> {
                         children: [
                           Text(
                             'Step 1 of 3',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
                           ),
                           Text(
                             AppStrings.personalInfo,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
                           ),
                         ],
                       ),
@@ -180,10 +168,7 @@ class _SignupViewState extends State<SignupView> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      const Text(
-                        AppStrings.createAccountTitle,
-                        style: AppTextStyles.h2,
-                      ),
+                      const Text(AppStrings.createAccountTitle, style: AppTextStyles.h2),
                       const SizedBox(height: 24),
                       Form(
                         key: _formKey,
@@ -215,9 +200,7 @@ class _SignupViewState extends State<SignupView> {
                                     context: context,
                                     showPhoneCode: true,
                                     onSelect: (Country country) {
-                                      setState(
-                                        () => _selectedCountry = country,
-                                      );
+                                      setState(() => _selectedCountry = country);
                                     },
                                   );
                                 },
@@ -235,11 +218,7 @@ class _SignupViewState extends State<SignupView> {
                                       style: AppTextStyles.bodyRegular,
                                     ),
                                     const SizedBox(width: 8),
-                                    Container(
-                                      height: 24,
-                                      width: 1,
-                                      color: AppColors.textTertiary,
-                                    ),
+                                    Container(height: 24, width: 1, color: AppColors.textTertiary),
                                     const SizedBox(width: 8),
                                   ],
                                 ),
@@ -262,12 +241,10 @@ class _SignupViewState extends State<SignupView> {
                               obscureText: true,
                               showPasswordToggle: true,
                               validator: (value) =>
-                                  Validators.validatePasswordMatch(
-                                    _passwordController.text,
-                                    value,
-                                  ),
+                                  Validators.validatePasswordMatch(_passwordController.text, value),
                             ),
                             const SizedBox(height: 18),
+
                             // Row(
                             //   children: [
                             //     const Expanded(
@@ -309,31 +286,38 @@ class _SignupViewState extends State<SignupView> {
                             //     ),
                             //   ],
                             // ),
-
                             const SizedBox(height: 24),
 
                             Row(
                               children: [
                                 Checkbox(
                                   value: _agreedToTerms,
-                                  onChanged: (value) => setState(
-                                    () => _agreedToTerms = value ?? false,
-                                  ),
+                                  onChanged: (value) =>
+                                      setState(() => _agreedToTerms = value ?? false),
                                 ),
                                 Expanded(
                                   child: Text.rich(
                                     TextSpan(
-                                      text:
-                                          'By registering your account, you accept the ',
+                                      text: 'By registering your account, you accept the ',
                                       style: AppTextStyles.bodySmall,
                                       children: [
                                         TextSpan(
                                           text: AppStrings.termsAndConditions,
-                                          style: AppTextStyles.bodySmall
-                                              .copyWith(
-                                                color: AppColors.primary,
-                                                fontWeight: FontWeight.w500,
-                                              ),
+                                          style: AppTextStyles.bodySmall.copyWith(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        const TextSpan(
+                                          text: ' and ',
+                                          style: AppTextStyles.bodySmall,
+                                        ),
+                                        TextSpan(
+                                          text: AppStrings.privacyPolicy,
+                                          style: AppTextStyles.bodySmall.copyWith(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
                                       ],
                                     ),
