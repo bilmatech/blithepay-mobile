@@ -7,18 +7,32 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 int getWalletBalanceKobo(BuildContext context) {
   final walletState = context.read<WalletBloc>().state;
+  final dashboardState = context.read<DashboardBloc>().state;
+
+  double? walletBalance;
   if (walletState is WalletLoaded) {
-    return (walletState.wallet.balance * 100).round();
+    walletBalance = walletState.wallet.balance.toDouble();
   }
 
-  final dashboardState = context.read<DashboardBloc>().state;
+  double? dashboardBalance;
   if (dashboardState is DashboardLoaded) {
     final rawBalance = dashboardState.dashboard.walletBalance;
     final cleanString = rawBalance.replaceAll(RegExp(r'[^\d.]'), '');
-    final doubleValue = double.tryParse(cleanString);
-    if (doubleValue != null) {
-      return (doubleValue * 100).round();
-    }
+    dashboardBalance = double.tryParse(cleanString);
+  }
+
+  // If both balances are available, use the larger/fresh non-zero value
+  if (walletBalance != null && dashboardBalance != null) {
+    final selectedBalance = walletBalance > dashboardBalance ? walletBalance : dashboardBalance;
+    return (selectedBalance * 100).round();
+  }
+
+  if (walletBalance != null) {
+    return (walletBalance * 100).round();
+  }
+
+  if (dashboardBalance != null) {
+    return (dashboardBalance * 100).round();
   }
 
   return 9455272; // default fallback mock balance

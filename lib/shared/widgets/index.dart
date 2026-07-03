@@ -17,3 +17,5 @@ export 'dialogs/error_dialog.dart';
 export 'dialogs/search_modal.dart';
 export 'empty_state.dart';
 export '../../core/constants/app_spacing.dart';
+export 'step_progress_indicator.dart';
+

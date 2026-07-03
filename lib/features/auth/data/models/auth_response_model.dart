@@ -87,7 +87,7 @@ class UserModel {
       phone: json['phone'],
       type: json['type'],
       accountStatus: json['accountStatus'],
-      profileImage: json['profileImage'],
+      profileImage: json['profileImage'] ?? json['picture'] ?? json['profile_image'],
       verifiedAt: json['verifiedAt'] != null
           ? DateTime.parse(json['verifiedAt'])
           : null,
@@ -144,7 +144,7 @@ class SignupUserModel {
       id: json['id'] as String,
       firstName: json['firstName'] as String,
       lastName: json['lastName'] as String,
-      profileImage: json['profileImage'],
+      profileImage: json['profileImage'] ?? json['picture'] ?? json['profile_image'],
       email: json['email'] as String,
       type: json['type'] as String,
       phone: json['phone'] as String,

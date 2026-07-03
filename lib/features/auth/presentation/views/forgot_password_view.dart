@@ -92,19 +92,29 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                       children: [
                         const BackArrowButtonIcon(),
                         const SizedBox(height: 12),
-                        Container(
-                          width: 128,
-                          height: 128,
+                         Container(
+                          width: 100,
+                          height: 100,
                           decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(32),
+                            color: AppColors.primary.withValues(alpha: 0.08),
+                            shape: BoxShape.circle,
                           ),
                           child: Center(
-                            child: Image.asset(
-                              'assets/images/secure.png',
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.contain,
+                            child: Container(
+                              width: 68,
+                              height: 68,
+                              decoration: const BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Image.asset(
+                                  'assets/images/secure.png',
+                                  width: 32,
+                                  height: 32,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
                             ),
                           ),
                         ),

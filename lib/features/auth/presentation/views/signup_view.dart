@@ -11,10 +11,12 @@ import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
+import 'package:blithepay/shared/widgets/step_progress_indicator.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_event.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_state.dart';
 import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
+import 'package:blithepay/shared/widgets/web_page_view.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 
@@ -120,52 +122,10 @@ class _SignupViewState extends State<SignupView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Step 1 of 3',
-                            style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                          Text(
-                            AppStrings.personalInfo,
-                            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Container(
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Container(
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ],
+                      const StepProgressIndicator(
+                        currentStep: 1,
+                        totalSteps: 3,
+                        label: AppStrings.personalInfo,
                       ),
                       const SizedBox(height: 24),
                       const Text(AppStrings.createAccountTitle, style: AppTextStyles.h2),
@@ -177,6 +137,7 @@ class _SignupViewState extends State<SignupView> {
                           children: [
                             AppTextField(
                               label: AppStrings.fullName,
+
                               controller: _nameController,
                               validator: Validators.validateFullName,
                             ),
@@ -307,6 +268,17 @@ class _SignupViewState extends State<SignupView> {
                                             color: AppColors.primary,
                                             fontWeight: FontWeight.w500,
                                           ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (_) => const WebPageView(
+                                                    url: 'https://www.blithepay.com/terms',
+                                                    title: 'Terms & Conditions',
+                                                  ),
+                                                ),
+                                              );
+                                            },
                                         ),
                                         const TextSpan(
                                           text: ' and ',
@@ -318,6 +290,17 @@ class _SignupViewState extends State<SignupView> {
                                             color: AppColors.primary,
                                             fontWeight: FontWeight.w500,
                                           ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (_) => const WebPageView(
+                                                    url: 'https://www.blithepay.com/privacy',
+                                                    title: 'Privacy Policy',
+                                                  ),
+                                                ),
+                                              );
+                                            },
                                         ),
                                       ],
                                     ),

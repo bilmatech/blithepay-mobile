@@ -234,50 +234,67 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                       alignment: Alignment.center,
                       children: [
                         Container(
-                          width: 90,
-                          height: 90,
+                          padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.surface,
-                            border: Border.all(
-                              color: isSubmitting
-                                  ? AppColors.primary.withValues(alpha: 0.3)
-                                  : AppColors.border,
-                              width: 2,
-                            ),
+                            color: AppColors.primary.withValues(alpha: 0.05),
                           ),
-                          child: _selectedImageFile != null
-                              ? ClipOval(
-                                  child: Image.file(
-                                    _selectedImageFile!,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              : _profileImageUrl.isNotEmpty
-                              ? ClipOval(
-                                  child: Image.network(
-                                    _profileImageUrl,
-                                    fit: BoxFit.cover,
-                                    key: ValueKey(
-                                      _profileImageUrl,
-                                    ), // Forces image refresh instantly when URL shifts
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Icon(Icons.person, size: 44),
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons.person,
-                                  size: 44,
-                                  color: AppColors.textTertiary,
-                                ),
-                        ),
-
-                        // Circular indicator over avatar when updating image path explicitly
-                        if (isSubmitting && _selectedImageFile != null)
-                          const SizedBox(
+                          child: Container(
                             width: 90,
                             height: 90,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.04),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                )
+                              ],
+                              border: Border.all(
+                                color: isSubmitting
+                                    ? AppColors.primary.withValues(alpha: 0.3)
+                                    : AppColors.primary.withValues(alpha: 0.15),
+                                width: 2.5,
+                              ),
+                            ),
+                            child: _selectedImageFile != null
+                                ? ClipOval(
+                                    child: Image.file(
+                                      _selectedImageFile!,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : _profileImageUrl.isNotEmpty
+                                ? ClipOval(
+                                    child: Image.network(
+                                      _profileImageUrl,
+                                      fit: BoxFit.cover,
+                                      key: ValueKey(
+                                        _profileImageUrl,
+                                      ),
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              const Icon(
+                                                Icons.person_rounded,
+                                                size: 44,
+                                                color: AppColors.primary,
+                                              ),
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.person_rounded,
+                                    size: 44,
+                                    color: AppColors.primary,
+                                  ),
+                          ),
+                        ),
+
+                        if (isSubmitting && _selectedImageFile != null)
+                          const SizedBox(
+                            width: 98,
+                            height: 98,
                             child: CircularProgressIndicator(
                               strokeWidth: 3,
                               valueColor: AlwaysStoppedAnimation<Color>(
@@ -288,8 +305,8 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
 
                         if (!isSubmitting)
                           Positioned(
-                            bottom: 0,
-                            right: 0,
+                            bottom: 2,
+                            right: 2,
                             child: Container(
                               padding: const EdgeInsets.all(6),
                               decoration: const BoxDecoration(

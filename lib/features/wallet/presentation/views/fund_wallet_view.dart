@@ -6,6 +6,12 @@ import 'package:blithepay/features/wallet/presentation/widgets/fund_wallet_widge
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:blithepay/features/wallet/presentation/bloc/wallet_bloc.dart';
+import 'package:blithepay/features/wallet/presentation/bloc/wallet_event.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
+
 
 class FundWalletView extends StatefulWidget {
   const FundWalletView({super.key});
@@ -60,14 +66,9 @@ class _FundWalletViewState extends State<FundWalletView> {
               PrimaryButton(
                 label: 'Transfer Done',
                 onPressed: () {
+                  context.read<WalletBloc>().add(const FetchWalletDataEvent(forceRefresh: true));
+                  context.read<DashboardBloc>().add(const FetchDashboardData(forceRefresh: true));
                   context.go(AppRoutes.home);
-
-                  // context.go(AppRoutes.home);
-                  // showDialog(
-                  //   context: context,
-                  //   builder: (context) =>
-                  //       WalletUpdateDialog(amount: 0.00, onViewReceipt: () {}),
-                  // );
                 },
               ),
             ],

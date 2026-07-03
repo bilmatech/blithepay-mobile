@@ -10,6 +10,7 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
+import 'package:blithepay/shared/widgets/step_progress_indicator.dart';
 import '../../../../shared/layouts/app_scaffold.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -58,25 +59,6 @@ class _SetupOtpViewState extends State<SetupOtpView> {
     final code = _otpControllers.map((c) => c.text).join();
 
     if (code.length == 4) {
-      // if (kDebugMode) {
-      //   if (widget.popOnSuccess) {
-      //     Navigator.of(context).pop(true);
-      //     return;
-      //   }
-      //   context.go(
-      //     AppRoutes.success,
-      //     extra: const SuccessArgs(
-      //       title: AppStrings.successful,
-      //       message: AppStrings.anAccounthasbeen,
-      //       buttonLabel: AppStrings.gotToHome,
-      //       nextRoute: AppRoutes.linkedStudents,
-      //       useAuthBackground: true,
-      //     ),
-      //   );
-      //   context.read<DashboardBloc>().add(const FetchDashboardData());
-      //   return;
-      // }
-
       context.read<AuthBloc>().add(
         SetupPinRequested(email: widget.email, code: code, flow: widget.flow),
       );
@@ -96,16 +78,6 @@ class _SetupOtpViewState extends State<SetupOtpView> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        // if (state.status == AuthStatus.otpVerified) {
-        //   context.go(
-        //     AppRoutes.success,
-        //     extra: const SuccessArgs(
-        //       title: AppStrings.successful,
-        //       message: AppStrings.anAccounthasbeen,
-        //       buttonLabel: AppStrings.gotToHome,
-        //       nextRoute: AppRoutes.home,
-        //     ),
-        //   );
         if (state.status == AuthStatus.pinSetup) {
           if (widget.popOnSuccess) {
             Navigator.of(context).pop(true);
@@ -125,74 +97,53 @@ class _SetupOtpViewState extends State<SetupOtpView> {
         }
       },
       child: AppScaffold(
-        showBackButton: false,
-        // background: const AuthFlowBackground(),
+        showBackButton: true,
         body: AuthBackgroundWrapper(
           child: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               return SafeArea(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 24,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 40),
                       if (widget.flow == OtpFlow.signup) ...[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Step 3 of 3',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              'Security',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
+                        const StepProgressIndicator(
+                          currentStep: 3,
+                          totalSteps: 3,
+                          label: 'Security',
                         ),
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Container(
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Container(
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        const SizedBox(height: 36),
+                      ] else ...[
                         const SizedBox(height: 24),
                       ],
-
-                      const SizedBox(height: 32),
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.08),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Image.asset(
+                            'assets/images/key.png',
+                            width: 48,
+                            height: 48,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 28),
                       const Text(
                         AppStrings.setupDigitPin,
                         style: AppTextStyles.h3,
@@ -203,8 +154,7 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                         style: AppTextStyles.bodyRegular,
                         textAlign: TextAlign.center,
                       ),
-
-                      const SizedBox(height: 48),
+                      const SizedBox(height: 36),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: List.generate(
@@ -221,16 +171,31 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
                               ],
+                              obscureText: true,
                               onChanged: (value) =>
                                   _onOtpFieldChanged(index, value),
-                              style: AppTextStyles.h3,
+                              style: AppTextStyles.h3.copyWith(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
                               decoration: InputDecoration(
                                 counter: const Offstage(),
+                                fillColor: AppColors.surface,
+                                filled: true,
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.border,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.border,
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(14),
                                   borderSide: const BorderSide(
                                     color: AppColors.primary,
                                     width: 2,
@@ -241,13 +206,15 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 48),
-                      PrimaryButton(
-                        label: AppStrings.continueS,
-                        onPressed: _handleVerifyOtp,
-                        isLoading: state.status == AuthStatus.loading,
-                        isEnabled: state.status != AuthStatus.loading,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: PrimaryButton(
+                          label: AppStrings.continueS,
+                          onPressed: _handleVerifyOtp,
+                          isLoading: state.status == AuthStatus.loading,
+                          isEnabled: state.status != AuthStatus.loading,
+                        ),
                       ),
                     ],
                   ),

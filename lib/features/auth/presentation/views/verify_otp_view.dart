@@ -11,6 +11,7 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
+import 'package:blithepay/shared/widgets/step_progress_indicator.dart';
 import '../../../../shared/layouts/app_scaffold.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -63,47 +64,6 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
     final code = _otpControllers.map((c) => c.text).join();
 
     if (code.length == 6) {
-      // if (kDebugMode) {
-      //   switch (widget.flow) {
-      //     case OtpFlow.signup:
-      //       context.go(
-      //         AppRoutes.success,
-      //         extra: SuccessArgs(
-      //           title: AppStrings.verificationSuccess,
-      //           message: AppStrings.anAccounthasbeen,
-      //           buttonLabel: AppStrings.setupPin,
-      //           nextRoute: AppRoutes.setupOtp,
-      //           nextExtra: {
-      //             'email': widget.email,
-      //             'flow': OtpFlow.signup,
-      //             'fromProfile': widget.fromProfile,
-      //           },
-      //           useAuthBackground: true,
-      //         ),
-      //       );
-      //       break;
-      //     case OtpFlow.forgotPassword:
-      //       context.push(
-      //         AppRoutes.resetPassword,
-      //         extra: {'email': widget.email, 'fromProfile': widget.fromProfile},
-      //       );
-      //       break;
-      //     case OtpFlow.verifyEmail:
-      //       context.go(
-      //         AppRoutes.success,
-      //         extra: SuccessArgs(
-      //           title: AppStrings.verificationSuccess,
-      //           message: AppStrings.anAccounthasbeen,
-      //           buttonLabel: AppStrings.logIn,
-      //           nextRoute: AppRoutes.login,
-      //           nextExtra: {'email': widget.email, 'flow': OtpFlow.verifyEmail},
-      //         ),
-      //       );
-      //       break;
-      //   }
-      //   return;
-      // }
-
       if (widget.flow == OtpFlow.forgotPassword) {
         context.read<AuthBloc>().add(
           VerifyForgotPasswordOtpRequested(
@@ -180,7 +140,13 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final fieldWidth = ((screenWidth - 80) / 6).clamp(44.0, 56.0);
+    final horizontalPadding = 48.0; // 24 on each side
+    final spacing = screenWidth < 360 ? 6.0 : 8.0;
+    final totalSpacing = spacing * 5;
+    // Calculate precise field width based on actual screen size and padding/spacing
+    final fieldWidth = ((screenWidth - horizontalPadding - totalSpacing - 4) / 6).clamp(38.0, 56.0);
+
+
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
@@ -243,95 +209,53 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
         }
       },
       child: AppScaffold(
-        showBackButton: false,
-        // background: const AuthFlowBackground(),
+        showBackButton: true,
         body: AuthBackgroundWrapper(
           child: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               return SafeArea(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
-                    vertical: 24,
-                    horizontal: 8,
+                    vertical: 12,
+                    horizontal: 24,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 24),
                       if (widget.flow == OtpFlow.signup) ...[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Step 2 of 3',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              'Verification',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
+                        const StepProgressIndicator(
+                          currentStep: 2,
+                          totalSteps: 3,
+                          label: 'Verification',
                         ),
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Container(
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Container(
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        const SizedBox(height: 36),
+                      ] else ...[
                         const SizedBox(height: 24),
                       ],
                       Container(
-                        width: 128,
-                        height: 128,
+                        width: 100,
+                        height: 100,
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(32),
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.08),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
                         child: Center(
                           child: Image.asset(
                             'assets/images/message.png',
-                            width: 60,
-                            height: 60,
+                            width: 48,
+                            height: 48,
                             fit: BoxFit.contain,
                           ),
                         ),
                       ),
                       const SizedBox(height: 28),
-
-                      // BackArrowButtonIcon(),
-                      const SizedBox(height: 24),
                       const Text(
                         AppStrings.enterVerificationCode,
                         style: AppTextStyles.h3,
@@ -347,12 +271,13 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                               text: widget.email,
                               style: AppTextStyles.bodyRegular.copyWith(
                                 fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 48),
+                      const SizedBox(height: 36),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(6, (index) {
@@ -374,69 +299,89 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                                   ],
                                   onChanged: (value) =>
                                       _onOtpFieldChanged(index, value),
+                                  style: AppTextStyles.h3.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                   decoration: InputDecoration(
                                     counterText: '',
                                     isDense: true,
+                                    fillColor: AppColors.surface,
+                                    filled: true,
                                     contentPadding: const EdgeInsets.symmetric(
                                       vertical: 14,
                                     ),
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.border,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.border,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.primary,
+                                        width: 2,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
 
-                              // 👇 spacing BETWEEN fields
-                              if (index != 5) const SizedBox(width: 12),
+                              // spacing BETWEEN fields
+                              if (index != 5) SizedBox(width: spacing),
                             ],
                           );
                         }),
                       ),
-                      const SizedBox(height: 32),
-                      Align(
-                        alignment: Alignment.centerRight,
+                      const SizedBox(height: 24),
+                      Center(
                         child: GestureDetector(
                           onTap: _canResend ? _handleResendOtp : null,
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Text(
-                              //   _canResend
-                              //       ? AppStrings.resendCode
-                              //       : '${AppStrings.resendCode} (${_secondsRemaining}s)',
-                              //   style: AppTextStyles.link.copyWith(
-                              //     color: _canResend
-                              //         ? AppColors.primary
-                              //         : AppColors.textSecondary,
-                              //   ),
-                              // ),
                               Text(
                                 _canResend
                                     ? AppStrings.resendCode
-                                    : '${_secondsRemaining}s',
-
+                                    : '${AppStrings.resendCode} in ',
                                 style: AppTextStyles.link.copyWith(
                                   color: _canResend
                                       ? AppColors.primary
                                       : AppColors.textSecondary,
+                                  decoration: _canResend
+                                      ? TextDecoration.underline
+                                      : TextDecoration.none,
                                 ),
                               ),
                               if (!_canResend) ...[
+                                Text(
+                                  '${_secondsRemaining}s',
+                                  style: AppTextStyles.bodyRegular.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
                                 const Icon(
                                   Icons.access_time,
                                   size: 16,
                                   color: AppColors.textSecondary,
                                 ),
-                                const SizedBox(width: 4),
                               ],
                             ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 48),
+                      const SizedBox(height: 40),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: PrimaryButton(
                           label: AppStrings.verify,
                           onPressed: _handleVerifyOtp,

@@ -41,6 +41,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
             'name': '${user.firstName} ${user.lastName}',
             'phone': user.phone ?? '',
             'email': user.email ?? '',
+            'picture': user.profileImage ?? '',
           },
         ),
       );

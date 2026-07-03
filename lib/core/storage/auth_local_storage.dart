@@ -17,6 +17,9 @@ abstract class AppLocalDataSource {
 
   Future<void> clearSession();
   Stream<UserModel?> get userStream;
+
+  Future<void> setBalanceVisible(bool visible);
+  Future<bool> isBalanceVisible();
 }
 
 class AppLocalDataSourceImpl implements AppLocalDataSource {
@@ -38,6 +41,7 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
   static const _refreshTokenKey = 'refresh_token';
   static const _expiresAtKey = 'expires_at';
   static const _userKey = 'user';
+  static const _balanceVisibleKey = 'wallet_balance_visible';
 
   @override
   Future<void> setOnboardingCompleted() async {
@@ -126,5 +130,16 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
     await _storage.delete(key: _expiresAtKey);
     await _storage.delete(key: _userKey);
     _sessionController.add(null);
+  }
+
+  @override
+  Future<void> setBalanceVisible(bool visible) async {
+    await _storage.write(key: _balanceVisibleKey, value: visible.toString());
+  }
+
+  @override
+  Future<bool> isBalanceVisible() async {
+    final value = await _storage.read(key: _balanceVisibleKey);
+    return value == 'true';
   }
 }

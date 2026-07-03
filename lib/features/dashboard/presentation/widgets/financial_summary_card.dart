@@ -3,8 +3,10 @@ import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/shared/widgets/layouts/app_text.dart';
 import 'package:blithepay/shared/widgets/layouts/spacing.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'package:blithepay/core/storage/auth_local_storage.dart';
 
 class FinancialSummaryCard extends StatefulWidget {
   final String totalOutstanding;
@@ -25,7 +27,26 @@ class FinancialSummaryCard extends StatefulWidget {
 }
 
 class _FinancialSummaryCardState extends State<FinancialSummaryCard> {
-  bool _balanceVisible = true;
+  bool _balanceVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBalanceVisibility();
+  }
+
+  Future<void> _loadBalanceVisibility() async {
+    try {
+      final visible = await context.read<AppLocalDataSource>().isBalanceVisible();
+      if (mounted) {
+        setState(() {
+          _balanceVisible = visible;
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to load balance visibility: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,8 +83,17 @@ class _FinancialSummaryCardState extends State<FinancialSummaryCard> {
                   color: Colors.white,
                   size: 20,
                 ),
-                onPressed: () =>
-                    setState(() => _balanceVisible = !_balanceVisible),
+                onPressed: () async {
+                  final newValue = !_balanceVisible;
+                  setState(() {
+                    _balanceVisible = newValue;
+                  });
+                  try {
+                    await context.read<AppLocalDataSource>().setBalanceVisible(newValue);
+                  } catch (e) {
+                    debugPrint('Failed to save balance visibility: $e');
+                  }
+                },
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
               ),

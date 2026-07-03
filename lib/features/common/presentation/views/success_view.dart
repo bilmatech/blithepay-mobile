@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 
-class SuccessView extends StatelessWidget {
+class SuccessView extends StatefulWidget {
   final String title;
   final String message;
   final String buttonLabel;
@@ -25,9 +26,37 @@ class SuccessView extends StatelessWidget {
   });
 
   @override
+  State<SuccessView> createState() => _SuccessViewState();
+}
+
+class _SuccessViewState extends State<SuccessView> {
+  Timer? _redirectTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Start auto-redirect timer (3 seconds)
+    _redirectTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        context.go(widget.nextRoute, extra: widget.nextExtra);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _redirectTimer?.cancel();
+    super.dispose();
+  }
+
+  void _navigateNow() {
+    _redirectTimer?.cancel();
+    context.go(widget.nextRoute, extra: widget.nextExtra);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      //  background: useAuthBackground ? const AuthFlowBackground() : null,
       body: AuthBackgroundWrapper(
         child: SafeArea(
           child: Center(
@@ -54,13 +83,13 @@ class SuccessView extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    title,
+                    widget.title,
                     style: AppTextStyles.headingLarge,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    message,
+                    widget.message,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -68,10 +97,8 @@ class SuccessView extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
                   PrimaryButton(
-                    label: buttonLabel,
-                    onPressed: () {
-                      context.go(nextRoute, extra: nextExtra);
-                    },
+                    label: widget.buttonLabel,
+                    onPressed: _navigateNow,
                   ),
                 ],
               ),

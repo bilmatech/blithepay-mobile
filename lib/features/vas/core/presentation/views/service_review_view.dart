@@ -4,7 +4,7 @@ import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.da
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:blithepay/features/vas/core/data/models/service_purchase_response.dart';
 import 'package:blithepay/features/vas/core/presentation/views/shared/receipt_services.dart';
-import 'package:blithepay/features/vas/core/presentation/views/shared/success_panel.dart';
+import 'package:blithepay/features/vas/core/presentation/views/vas_success_view.dart';
 import 'package:blithepay/features/vas/core/presentation/widgets/purchase_overlay.dart';
 import 'package:blithepay/features/fees/presentation/views/widgets/pin_bottom_sheet_content.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
@@ -544,27 +544,26 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
     BuildContext targetContext,
     ServiceTransactionModel transaction,
   ) {
-    showModalBottomSheet(
-      context: targetContext,
-      isDismissible: false,
-      enableDrag: false,
-      backgroundColor: Colors.transparent,
-      builder: (successContext) {
-        return SuccessPanel(
+    Navigator.push(
+      targetContext,
+      MaterialPageRoute(
+        builder: (successContext) => VasSuccessView(
           title: 'Payment Successful!',
           description:
               'Your ${widget.args.title} transaction was completed successfully.',
           transaction: transaction,
-          onDownloadReceipt: () async {
-            await _showReceiptPreview(successContext, transaction);
+          onDownloadReceipt: (ctx) async {
+            await _showReceiptPreview(ctx, transaction);
           },
           onGoHome: () {
             widget.args.onCancel();
+            // Pop the VasSuccessView
             Navigator.pop(successContext);
+            // Pop the review page
             Navigator.pop(targetContext);
           },
-        );
-      },
+        ),
+      ),
     );
   }
 
