@@ -9,9 +9,14 @@ class AppScaffold extends StatelessWidget {
   final VoidCallback? onBackPressed;
   final Widget? floatingActionButton;
   final FloatingActionButtonLocation? floatingActionButtonLocation;
+  final bool? centerTitle;
+  final Widget? background;
+  final Widget? bottomNavigationBar;
+  final bool useSafeArea;
+  final Color? backgroundColor;
 
   const AppScaffold({
-    Key? key,
+    super.key,
     this.title,
     required this.body,
     this.appBar,
@@ -19,30 +24,51 @@ class AppScaffold extends StatelessWidget {
     this.onBackPressed,
     this.floatingActionButton,
     this.floatingActionButtonLocation,
-  }) : super(key: key);
+    this.centerTitle,
+    this.background,
+    this.bottomNavigationBar,
+    this.useSafeArea = true,
+    this.backgroundColor,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final bodyWidget = background != null
+        ? Stack(
+            children: [
+              background!,
+              useSafeArea ? SafeArea(child: body) : body,
+            ],
+          )
+        : (useSafeArea ? SafeArea(child: body) : body);
+
     return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: appBar ??
+      backgroundColor:
+          backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+      appBar:
+          appBar ??
           (title != null
               ? AppBar(
                   title: Text(title!),
-                  centerTitle: false,
+                  centerTitle: centerTitle ?? false,
                   elevation: 0,
                   backgroundColor: AppColors.white,
                   leading: showBackButton
                       ? IconButton(
-                          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-                          onPressed: onBackPressed ?? () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
+                            color: AppColors.textPrimary,
+                          ),
+                          onPressed:
+                              onBackPressed ?? () => Navigator.pop(context),
                         )
                       : null,
                 )
               : null),
-      body: body,
+      body: bodyWidget,
       floatingActionButton: floatingActionButton,
       floatingActionButtonLocation: floatingActionButtonLocation,
+      bottomNavigationBar: bottomNavigationBar,
     );
   }
 }

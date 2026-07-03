@@ -1,0 +1,10 @@
+export 'auth/presentation/views/views.dart';
+export 'dashboard/presentation/views/views.dart';
+export 'students/presentation/views/views.dart';
+export 'schools/presentation/views/views.dart';
+export 'wallet/presentation/views/views.dart';
+export 'fees/presentation/views/views.dart';
+export 'profile/presentation/views/views.dart';
+export 'notifications/presentation/views/views.dart';
+export 'support/presentation/views/views.dart';
+export 'common/presentation/views/views.dart';

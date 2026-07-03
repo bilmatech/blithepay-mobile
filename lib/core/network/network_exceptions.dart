@@ -10,29 +10,29 @@ abstract class NetworkException extends Equatable implements Exception {
 }
 
 class ServerException extends NetworkException {
-  const ServerException({required String message}) : super(message: message);
+  const ServerException({required super.message});
 }
 
 class CacheException extends NetworkException {
-  const CacheException({required String message}) : super(message: message);
+  const CacheException({required super.message});
 }
 
 class NetworkError extends NetworkException {
-  const NetworkError({required String message}) : super(message: message);
+  const NetworkError({required super.message});
 }
 
 class BadRequestException extends NetworkException {
-  const BadRequestException({required String message}) : super(message: message);
+  const BadRequestException({required super.message});
 }
 
 class UnauthorizedException extends NetworkException {
-  const UnauthorizedException({required String message}) : super(message: message);
+  const UnauthorizedException({required super.message});
 }
 
 class NotFoundException extends NetworkException {
-  const NotFoundException({required String message}) : super(message: message);
+  const NotFoundException({required super.message});
 }
 
 class TimeoutException extends NetworkException {
-  const TimeoutException({required String message}) : super(message: message);
+  const TimeoutException({required super.message});
 }

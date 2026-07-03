@@ -1,6 +1,6 @@
 class AppLocalizations {
   static const Map<String, String> _englishStrings = {
-    'app_name': 'BÜTHE',
+    'app_name': 'BLITHE',
     'welcome': 'Welcome',
     'logout': 'Logout',
   };

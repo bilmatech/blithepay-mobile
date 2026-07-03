@@ -1,13 +1,65 @@
 abstract class AppRoutes {
+  static const String home = '/home';
+
   static const String splash = '/';
   static const String onboarding = '/onboarding';
   static const String login = '/login';
   static const String signup = '/signup';
   static const String forgotPassword = '/forgot-password';
   static const String verifyOtp = '/verify-otp';
+  static const String setupOtp = '/setup-otp';
   static const String resetPassword = '/reset-password';
-  static const String home = '/home';
+  static const String passwordChanged = '/password-changed';
+  static const String biometric = '/biometric';
+  static const String changePassword = '/change-password';
+  static const String changePin = '/change-pin';
+  static const String confirmSchool = '/confirm-school';
+  static const String dashboard = '/dashboard';
+  static const String linkStudents = '/link-students';
+  static const String linkchildSchool = '/link-child-school';
+  static const String linkProfile = '/link-profile';
+  static const String addSchool = '/add-school';
+  static const String changePhoneNumber = '/change-phone';
+  static const String guardianVerification = '/guardian-verification';
   static const String students = '/students';
   static const String fees = '/fees';
   static const String payments = '/payments';
+  static const String notifications = '/notifications';
+  static const String fundWallet = '/fund-wallet';
+  static const String linkedStudents = '/linked-students';
+  static const String transactions = '/transactions';
+  static const String transactionsList = '/transactions-list';
+  static const String feeTransactions = '/feeTransactions';
+  static const String transactionReceiptView = '/transactionReceiptView';
+
+  static const String invoicedetail = '/invoicedetail';
+
+  static const String profile = '/profile';
+  static const String service = '/service';
+  static const String airtimeService = '/service/airtime';
+  static const String dataService = '/service/data';
+  static const String cableTvService = '/service/cable-tv';
+  static const String electricityService = '/service/electricity';
+  static const String profileDetail = '/profile-detail';
+  static const String walletManagement = '/wallet-management';
+  static const String payFees = '/pay-fees';
+  static const String helpSupport = '/help-support';
+  static const String wallettransactionDetail = '/wallet-transaction-detail';
+  static const String transactionDetail = '/transaction-detail';
+  static const String editSchools = '/edit-schools';
+  static const String editSchoolDetail = '/edit-school/:id';
+  static const String searchSchool = '/search-school';
+  static const String requestPending = '/request-pending';
+  static const String requestFailed = '/request-failed';
+  static const String success = '/success';
+  static const String studentLinkedSuccess = '/student-link-Success';
+  static const String feeSelection = '/fee-selection';
+  static const String feeConfirmation = '/fee-confirmation';
+  // static const String feeSuccess = '/fee-success';
+  static const String studentTransactionDetail = '/student-transaction-detail';
+  static const String recurringPaymentDetails = '/recurring-payment-details';
+  static const String reocurringPayment = '/reoccurring-payment';
+  static const String createReocurringPayment = '/create-recurring-payment';
+  static const String serviceReview = '/service/review';
+  static const String betting = '/service/betting';
 }

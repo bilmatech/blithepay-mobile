@@ -1,135 +1,305 @@
+import 'dart:io';
+
+import 'package:blithepay/core/storage/auth_local_storage.dart';
+import 'package:blithepay/core/storage/hive_service.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:mime/mime.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/dio_client.dart';
-import '../../../../core/network/network_exceptions.dart';
 import '../models/auth_response_model.dart';
 
 abstract class AuthRepositoryInterface {
-  Future<AuthResponseModel> signup(String email, String password, String fullName, String phoneNumber);
-  Future<AuthResponseModel> login(String email, String password);
-  Future<void> forgotPassword(String email);
-  Future<void> verifyOtp(String email, String code);
-  Future<void> resetPassword(String email, String newPassword, String confirmPassword);
-  Future<void> logout();
-}
-
-class AuthRepository implements AuthRepositoryInterface {
-  final DioClient _dioClient;
-
-  AuthRepository({DioClient? dioClient}) : _dioClient = dioClient ?? DioClient();
-
-  @override
-  Future<AuthResponseModel> signup(
+  Future<UserModel> signup(
     String email,
     String password,
     String fullName,
     String phoneNumber,
-  ) async {
-    try {
-      final response = await _dioClient.post(
-        ApiEndpoints.signup,
-        data: {
-          'email': email,
-          'password': password,
-          'full_name': fullName,
-          'phone_number': phoneNumber,
-        },
-      );
+    String fcmtoken,
+  );
+  Future<AuthResponseModel> login(String email, String password);
+  Future<void> forgotPassword(String email);
+  Future<AuthResponseModel> verifyOtp(String code);
+  Future<String> verifyForgotPasswordOtp(String code);
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = response.data as Map<String, dynamic>;
-        return AuthResponseModel.fromJson(data);
-      }
-      throw const ServerException(message: 'Failed to sign up');
-    } on DioException catch (e) {
-      throw _handleDioException(e);
-    }
+  Future<AuthResponseModel> resendOtp(String email);
+  Future<AuthResponseModel> resendForgotPasswordOtp(String email);
+
+  Future<void> setupPin(String email, String code);
+  Future<void> resetPassword(String resetToken, String newPassword);
+  Future<void> logout();
+  Future<void> persistSession(AuthResponseModel session);
+  Future<AuthTokensModel> refresh(String token);
+
+  Future<AuthResponseModel?> getSession();
+  Future<bool> isOnboardingCompleted();
+  Future<void> syncFcmToken(String token);
+
+  Future<void> deleteAccount();
+  Future<UserModel> updateAccount({
+    String? fullName,
+    String? phone,
+    String? picture,
+  });
+  Future<AuthResponseModel> authenticateSso(String firebaseIdToken);
+  Future<void> changeAppPin(String oldPin, String newPin, String password);
+}
+
+class AuthRepository implements AuthRepositoryInterface {
+  final DioClient _dioClient;
+  final AppLocalDataSource _localDataSource;
+
+  AuthRepository({
+    required DioClient dioClient,
+    required AppLocalDataSource localDataSource,
+  }) : _dioClient = dioClient,
+       _localDataSource = localDataSource;
+
+  FlutterSecureStorage get secureStorage => const FlutterSecureStorage();
+  final HiveService hive = HiveService();
+
+  @override
+  Future<UserModel> signup(
+    String email,
+    String password,
+    String fullName,
+    String phoneNumber,
+    String fcmtoken,
+  ) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.signup,
+      data: {
+        "fullName": fullName,
+        "email": email,
+        "phone": phoneNumber,
+        "isTermsAndPrivacyAccepted": true,
+        "password": password,
+        "fcmToken": fcmtoken,
+      },
+    );
+    return UserModel.fromJson(response.data['data']);
   }
 
   @override
   Future<AuthResponseModel> login(String email, String password) async {
-    try {
-      // Mock response for demo
-      await Future.delayed(const Duration(seconds: 1));
-      
-      return AuthResponseModel(
-        token: 'mock_token_${DateTime.now().millisecondsSinceEpoch}',
-        user: UserModel(
-          id: '1',
-          email: email,
-          fullName: 'User Name',
-          emailVerified: true,
-          createdAt: DateTime.now(),
-        ),
-      );
-    } catch (e) {
-      throw const ServerException(message: 'Login failed');
-    }
+    return AuthResponseModel.fromJson(
+      (await _dioClient.post(
+        ApiEndpoints.login,
+        data: {"email": email, "password": password, "source": 'mobile'},
+      )).data['data'],
+    );
   }
 
   @override
   Future<void> forgotPassword(String email) async {
-    try {
-      await _dioClient.post(
-        ApiEndpoints.forgotPassword,
-        data: {'email': email},
-      );
-    } on DioException catch (e) {
-      throw _handleDioException(e);
-    }
+    await _dioClient.post(ApiEndpoints.forgotPassword, data: {'email': email});
   }
 
   @override
-  Future<void> verifyOtp(String email, String code) async {
-    try {
-      // Mock OTP verification
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (code.length != 4) {
-        throw const BadRequestException(message: 'Invalid code');
-      }
-    } on DioException catch (e) {
-      throw _handleDioException(e);
-    }
+  Future<AuthResponseModel> verifyOtp(String code) async {
+    var response = await _dioClient.post(
+      ApiEndpoints.verifyOtp,
+      data: {"code": code},
+    );
+
+    return AuthResponseModel.fromJson(response.data['data']);
   }
 
   @override
-  Future<void> resetPassword(String email, String newPassword, String confirmPassword) async {
-    try {
-      await _dioClient.post(
-        ApiEndpoints.resetPassword,
-        data: {
-          'email': email,
-          'new_password': newPassword,
-          'confirm_password': confirmPassword,
-        },
-      );
-    } on DioException catch (e) {
-      throw _handleDioException(e);
-    }
+  Future<AuthResponseModel> resendOtp(String email) async {
+    var response = await _dioClient.post(
+      ApiEndpoints.resendOtp,
+      data: {'email': email},
+    );
+
+    return AuthResponseModel.fromJson(response.data['data']);
+  }
+
+  @override
+  Future<String> verifyForgotPasswordOtp(String code) async {
+    var response = await _dioClient.post(
+      ApiEndpoints.verifyForgotPasswordCode,
+      data: {"code": code},
+    );
+
+    return response.data['data'];
+  }
+
+  @override
+  Future<AuthResponseModel> resendForgotPasswordOtp(String email) async {
+    var response = await _dioClient.post(
+      ApiEndpoints.resendForgotPasswordCode,
+      data: {'email': email},
+    );
+
+    return AuthResponseModel.fromJson(response.data['data']);
+  }
+
+  @override
+  Future<void> setupPin(String email, String code) async {
+    await _dioClient.post(ApiEndpoints.setupPin, data: {"pin": code});
+  }
+
+  @override
+  Future<void> resetPassword(String resetToken, String newPassword) async {
+    // if (resetToken.isEmpty) {
+    //   throw Exception('Reset token not found');
+    // }
+
+    await _dioClient.post(
+      ApiEndpoints.resetPassword,
+      data: {'token': resetToken, 'newPassword': newPassword},
+    );
   }
 
   @override
   Future<void> logout() async {
+    await _dioClient.post(ApiEndpoints.logout);
+  }
+
+  @override
+  Future<void> persistSession(AuthResponseModel session) async {
+    await _localDataSource.saveTokens(session.tokens!);
+    await _localDataSource.saveSession(session);
+  }
+
+  @override
+  Future<bool> isOnboardingCompleted() async {
+    return await _localDataSource.isOnboardingCompleted();
+  }
+
+  @override
+  Future<AuthResponseModel?> getSession() async {
+    return await _localDataSource.getSession();
+  }
+
+  @override
+  Future<AuthTokensModel> refresh(String token) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.refreshToken,
+      data: {'token': token},
+    );
+    return AuthTokensModel.fromJson(response.data['data']);
+  }
+
+  @override
+  Future<void> syncFcmToken(String token) async {
+    await _dioClient.post(ApiEndpoints.synToken, data: {'token': token});
+  }
+
+  Future<String> uploadImage(File picture, String folder) async {
     try {
-      await _dioClient.post(ApiEndpoints.logout);
-    } on DioException catch (e) {
-      throw _handleDioException(e);
+      final fileName = picture.path.split('/').last;
+      final mimeType = lookupMimeType(picture.path) ?? 'image/png';
+
+      // Step 1: Get presigned URL from your server using your configured _dioClient
+      final response = await _dioClient.post(
+        ApiEndpoints.uploadimage,
+        data: {"fileName": fileName, "mimeType": mimeType, "folder": folder},
+      );
+
+      // Accessing data through dio's Response object layout (.data)
+      final responseData = response.data['data'];
+      final signedUrl = responseData['endpoint']; // Presigned S3 PUT URL
+      final fileUrl = responseData['file']; // Public S3 file URL
+
+      // Step 2: Upload file binary directly to AWS S3
+      // NOTE: We use a clean, fresh Dio instance here because sending your backend's
+      // interceptors or auth headers to Amazon S3 will cause a 403 Access Denied error.
+      final uploadRes = await Dio().put(
+        signedUrl,
+        data: picture
+            .openRead(), // Using a stream instead of readAsBytes is better for device memory
+        options: Options(
+          headers: {
+            'Content-Type': mimeType,
+            'Content-Length': await picture.length(),
+          },
+        ),
+      );
+
+      if (uploadRes.statusCode == 200) {
+        print('Upload successful. File available at: $fileUrl');
+        return fileUrl;
+      } else {
+        throw Exception('S3 upload failed');
+      }
+    } catch (e) {
+      print('Upload error: $e');
+      rethrow;
     }
   }
 
-  NetworkException _handleDioException(DioException e) {
-    if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.receiveTimeout) {
-      return const TimeoutException(message: 'Connection timeout');
+  @override
+  Future<UserModel> updateAccount({
+    String? fullName,
+    String? phone,
+    String? picture,
+  }) async {
+    Map<String, dynamic> data = {};
+    if (fullName != null) data['fullName'] = fullName;
+    if (phone != null) data['phone'] = phone;
+    if (picture != null) data['profileImage'] = picture;
+    final response = await _dioClient.patch(
+      ApiEndpoints.accountupdate,
+      data: {"fullName": fullName, "phone": phone, "profileImage": picture},
+    );
+
+    final res = response.data['data'];
+
+    return UserModel.fromJson(res);
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    await _dioClient.delete(ApiEndpoints.accountupdate);
+  }
+
+  @override
+  Future<AuthResponseModel> authenticateSso(String firebaseIdToken) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.authenticateSso,
+      data: {"firebaseIdToken": firebaseIdToken},
+    );
+    return AuthResponseModel.fromJson(response.data['data']);
+  }
+
+  @override
+  Future<void> changeAppPin(String oldPin, String newPin, String password) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.changeAppPin,
+      data: {
+        "oldPin": oldPin,
+        "newPin": int.tryParse(newPin) ?? 0,
+        "password": password,
+      },
+    );
+    if (response.data == null || response.data['status'] != true) {
+      final message = response.data?['message'] ?? 'Failed to change PIN';
+      throw Exception(message);
     }
-    if (e.type == DioExceptionType.connectionError) {
-      return const NetworkError(message: 'Network error');
-    }
-    if (e.response?.statusCode == 401) {
-      return const UnauthorizedException(message: 'Unauthorized');
-    }
-    if (e.response?.statusCode == 400) {
-      return BadRequestException(message: e.response?.data['message'] ?? 'Bad request');
-    }
-    return ServerException(message: e.message ?? 'Unknown error');
+  }
+}
+
+class TokenRefreshResponse {
+  final String userId;
+  final String accessToken;
+  final String refreshToken;
+  final DateTime expiresAt;
+
+  TokenRefreshResponse({
+    required this.userId,
+    required this.accessToken,
+    required this.refreshToken,
+    required this.expiresAt,
+  });
+
+  factory TokenRefreshResponse.fromJson(Map<String, dynamic> json) {
+    return TokenRefreshResponse(
+      userId: json['userId'],
+      accessToken: json['accessToken'],
+      refreshToken: json['refreshToken'],
+      expiresAt: DateTime.parse(json['expiresAt']),
+    );
   }
 }

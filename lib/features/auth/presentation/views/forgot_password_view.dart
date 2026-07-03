@@ -1,5 +1,9 @@
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/navigation/app_routes.dart';
@@ -13,7 +17,10 @@ import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 
 class ForgotPasswordView extends StatefulWidget {
-  const ForgotPasswordView({Key? key}) : super(key: key);
+  final String? email;
+  final bool fromProfile;
+
+  const ForgotPasswordView({super.key, this.email, this.fromProfile = false});
 
   @override
   State<ForgotPasswordView> createState() => _ForgotPasswordViewState();
@@ -26,7 +33,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   @override
   void initState() {
     super.initState();
-    _emailController = TextEditingController();
+    _emailController = TextEditingController(text: widget.email ?? '');
   }
 
   @override
@@ -37,9 +44,21 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
 
   void _handleForgotPassword() {
     if (_formKey.currentState!.validate()) {
+      // if (kDebugMode) {
+      //   context.push(
+      //     AppRoutes.verifyOtp,
+      //     extra: {
+      //       'email': _emailController.text,
+      //       'flow': OtpFlow.forgotPassword,
+      //       'fromProfile': widget.fromProfile,
+      //     },
+      //   );
+      //   return;
+      // }
+
       context.read<AuthBloc>().add(
-            ForgotPasswordRequested(email: _emailController.text),
-          );
+        ForgotPasswordRequested(email: _emailController.text),
+      );
     }
   }
 
@@ -48,65 +67,104 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.otpSent) {
-          Navigator.pushNamed(
-            context,
+          context.push(
             AppRoutes.verifyOtp,
-            arguments: _emailController.text,
-          );
-        } else if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage ?? 'Failed to send reset code')),
+            extra: {
+              'email': _emailController.text,
+              'flow': OtpFlow.forgotPassword,
+              'fromProfile': widget.fromProfile,
+            },
           );
         }
       },
       child: AppScaffold(
-        title: AppStrings.forgotPassword,
-        body: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 40),
-                    Text(
-                      AppStrings.forgotPassword,
-                      style: AppTextStyles.h2,
+        showBackButton: false,
+        //   background: const AuthFlowBackground(),
+        body: AuthBackgroundWrapper(
+          child: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              return SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        const BackArrowButtonIcon(),
+                        const SizedBox(height: 12),
+                         Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.08),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Container(
+                              width: 68,
+                              height: 68,
+                              decoration: const BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Image.asset(
+                                  'assets/images/secure.png',
+                                  width: 32,
+                                  height: 32,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                        Text(
+                          widget.fromProfile
+                              ? 'Change Password'
+                              : AppStrings.forgotPassword,
+                          style: AppTextStyles.h2,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          AppStrings.forgotPasswordSubtitle,
+                          style: AppTextStyles.bodyRegular,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 32),
+                        AppTextField(
+                          label: AppStrings.email,
+                          hint: AppStrings.enterEmail,
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: Validators.validateEmail,
+                          readOnly: widget.fromProfile,
+                        ),
+                        const SizedBox(height: 40),
+
+                        if (!widget.fromProfile) ...[
+                          const SizedBox(height: 16),
+                          Center(
+                            child: SecondaryButton(
+                              label: 'Back To Log In',
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                          ),
+                        ],
+                        PrimaryButton(
+                          label: AppStrings.changePassword,
+                          onPressed: _handleForgotPassword,
+                          isLoading: state.status == AuthStatus.loading,
+                          isEnabled: state.status != AuthStatus.loading,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Follow these steps to change your account password.',
-                      style: AppTextStyles.bodyRegular,
-                    ),
-                    const SizedBox(height: 32),
-                    AppTextField(
-                      label: AppStrings.email,
-                      hint: AppStrings.enterEmail,
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: Validators.validateEmail,
-                    ),
-                    const SizedBox(height: 48),
-                    PrimaryButton(
-                      text: AppStrings.changePassword,
-                      onPressed: _handleForgotPassword,
-                      isLoading: state.status == AuthStatus.loading,
-                      isEnabled: state.status != AuthStatus.loading,
-                    ),
-                    const SizedBox(height: 16),
-                    Center(
-                      child: SecondaryButton(
-                        text: 'Back To Log In',
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

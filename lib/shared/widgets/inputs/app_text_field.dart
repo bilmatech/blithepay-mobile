@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_text_styles.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_text_styles.dart';
 
 class AppTextField extends StatefulWidget {
   final String label;
@@ -16,9 +16,12 @@ class AppTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final TextInputAction textInputAction;
   final Widget? suffixIcon;
+  final Widget? prefix;
+  final FocusNode? focusNode;
+  final bool readOnly;
 
   const AppTextField({
-    Key? key,
+    super.key,
     required this.label,
     this.hint,
     this.validator,
@@ -32,7 +35,10 @@ class AppTextField extends StatefulWidget {
     this.onChanged,
     this.textInputAction = TextInputAction.next,
     this.suffixIcon,
-  }) : super(key: key);
+    this.prefix,
+    this.focusNode,
+    this.readOnly = false,
+  });
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -54,29 +60,86 @@ class _AppTextFieldState extends State<AppTextField> {
       children: [
         Text(widget.label, style: AppTextStyles.bodyLarge),
         const SizedBox(height: 8),
-        TextFormField(
-          controller: widget.controller,
-          validator: widget.validator,
-          keyboardType: widget.keyboardType,
-          obscureText: _obscureText,
-          maxLines: _obscureText ? 1 : widget.maxLines,
-          minLines: widget.minLines,
-          enabled: widget.enabled,
-          onChanged: widget.onChanged,
-          textInputAction: widget.textInputAction,
-          style: AppTextStyles.bodyRegular,
-          decoration: InputDecoration(
-            hintText: widget.hint,
-            hintStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
-            suffixIcon: widget.showPasswordToggle
-                ? GestureDetector(
-                    onTap: () => setState(() => _obscureText = !_obscureText),
-                    child: Icon(
-                      _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                      color: AppColors.textSecondary,
-                    ),
-                  )
-                : widget.suffixIcon,
+        SizedBox(
+          height: widget.maxLines! > 1 ? 120 : null,
+          child: TextFormField(
+            focusNode: widget.focusNode,
+            controller: widget.controller,
+            validator: widget.validator,
+            keyboardType: widget.maxLines! > 1
+                ? TextInputType.multiline
+                : widget.keyboardType,
+            obscureText: _obscureText,
+            maxLines: _obscureText ? 1 : widget.maxLines,
+            minLines: widget.minLines,
+            enabled: widget.enabled,
+            onChanged: widget.onChanged,
+            textInputAction: widget.maxLines! > 1
+                ? TextInputAction.newline
+                : widget.textInputAction,
+            style: AppTextStyles.bodyRegular,
+            readOnly: widget.readOnly,
+            decoration: InputDecoration(
+              hintText: widget.hint,
+              hintStyle: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textTertiary,
+              ),
+              filled: true,
+              fillColor: AppColors.grey.withValues(alpha: 0.05),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: widget.maxLines! > 1 ? 16 : 18,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 1.5,
+                ),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              alignLabelWithHint: widget.maxLines! > 1,
+              prefixIcon: widget.prefix,
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 0,
+                minHeight: 0,
+              ),
+              suffixIcon: widget.showPasswordToggle
+                  ? GestureDetector(
+                      onTap: () => setState(() => _obscureText = !_obscureText),
+                      child: Icon(
+                        _obscureText
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: AppColors.textSecondary,
+                      ),
+                    )
+                  : widget.suffixIcon,
+            ),
+            // InputDecoration(
+            //   hintText: widget.hint,
+            //   hintStyle: AppTextStyles.bodySmall.copyWith(
+            //     color: AppColors.textTertiary,
+            //   ),
+            //   suffixIcon: widget.showPasswordToggle
+            //       ? GestureDetector(
+            //           onTap: () => setState(() => _obscureText = !_obscureText),
+            //           child: Icon(
+            //             _obscureText
+            //                 ? Icons.visibility_off_outlined
+            //                 : Icons.visibility_outlined,
+            //             color: AppColors.textSecondary,
+            //           ),
+            //         )
+            //       : widget.suffixIcon,
+            // ),
           ),
         ),
       ],
