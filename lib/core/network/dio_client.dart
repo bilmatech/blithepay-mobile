@@ -52,57 +52,88 @@ class DioClient {
 
   Dio get instance => _dio;
 
+  Future<Response<T>> _wrapRequest<T>(Future<Response<T>> Function() request) async {
+    try {
+      return await request();
+    } on DioException catch (e) {
+      throw NetworkException(_mapDioError(e));
+    }
+  }
+
+  String _mapDioError(DioException err) {
+    final error = err.error;
+    if (error is String && error.isNotEmpty) {
+      return error;
+    }
+    if (err.response == null) {
+      return 'No internet connection';
+    }
+    final data = err.response?.data;
+    if (data is Map<String, dynamic>) {
+      return data['message']?.toString() ?? data['error']?.toString() ?? 'Something went wrong, please try again';
+    }
+    return 'Something went wrong, please try again';
+  }
+
   Future<Response<T>> get<T>(
     String path, {
     Map<String, dynamic>? queryParameters,
     Options? options,
-  }) => _dio.get<T>(path, queryParameters: queryParameters, options: options);
+  }) => _wrapRequest(() => _dio.get<T>(path, queryParameters: queryParameters, options: options));
 
   Future<Response<T>> post<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
-  }) => _dio.post<T>(
+  }) => _wrapRequest(() => _dio.post<T>(
     path,
     data: data,
     queryParameters: queryParameters,
     options: options,
-  );
+  ));
 
   Future<Response<T>> put<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
-  }) => _dio.put<T>(
+  }) => _wrapRequest(() => _dio.put<T>(
     path,
     data: data,
     queryParameters: queryParameters,
     options: options,
-  );
+  ));
 
   Future<Response<T>> delete<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
-  }) => _dio.delete<T>(
+  }) => _wrapRequest(() => _dio.delete<T>(
     path,
     data: data,
     queryParameters: queryParameters,
     options: options,
-  );
+  ));
 
   Future<Response<T>> patch<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
-  }) => _dio.patch<T>(
+  }) => _wrapRequest(() => _dio.patch<T>(
     path,
     data: data,
     queryParameters: queryParameters,
     options: options,
-  );
+  ));
+}
+
+class NetworkException implements Exception {
+  final String message;
+  NetworkException(this.message);
+
+  @override
+  String toString() => message;
 }

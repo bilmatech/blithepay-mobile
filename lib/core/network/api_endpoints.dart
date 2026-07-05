@@ -9,12 +9,10 @@ class ApiEndpoints {
   static const String biometricVerify = '$_baseAuth/biometric/verify';
   static const String forgotPassword = '$_baseAuth/forgot_password';
   static const String verifyOtp = '$_baseAuth/verify_account';
-  static const String verifyForgotPasswordCode =
-      '$_baseAuth/verify_forgot_password_code';
+  static const String verifyForgotPasswordCode = '$_baseAuth/verify_forgot_password_code';
 
   static const String resendOtp = '$_baseAuth/resend_verification_code';
-  static const String resendForgotPasswordCode =
-      '$_baseAuth/resend_forgot_password_code';
+  static const String resendForgotPasswordCode = '$_baseAuth/resend_forgot_password_code';
 
   static const String resetPassword = '$_baseAuth/reset_password';
   static const String verifyPin = '$_baseAuth/verify_app_pin';
@@ -50,10 +48,9 @@ class ApiEndpoints {
   static const String synToken = '/notification/sync_token';
 
   //wallet tramsaction
-  //static const String getWalletTransaction = '/wallet/transactions';
-    static const String getWalletTransaction = '/transactions/app';
+  static const String getWalletTransaction = '/transactions/app';
 
-// transactions/app?page=1&limit=10
+  // transactions/app?page=1&limit=10
   // Fees
   static String getfeesById(String id) => '/fees/$id';
 
@@ -85,8 +82,7 @@ class ApiEndpoints {
   //Service
   static const String services = '/vas';
   static String getProviders(String serviceId) => '/vas/providers/$serviceId';
-  static String getProductsById(String providerId) =>
-      '/vas/providers/$providerId/products';
+  static String getProductsById(String providerId) => '/vas/providers/$providerId/products';
 
   static const String verifyMeter = '/vas/verify-meter';
   static const String verifySmartCard = '/vas/verify-smart-card';

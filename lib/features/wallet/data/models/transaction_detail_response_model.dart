@@ -74,6 +74,7 @@ class VasDetailModel {
   final String? phoneContactId;
   final String? utilityCustomerId;
   final String? cabletvCustomerId;
+  final String? paymentMethod;
   final bool isDeleted;
   final String updatedAt;
   final String createdAt;
@@ -95,6 +96,7 @@ class VasDetailModel {
     this.phoneContactId,
     this.utilityCustomerId,
     this.cabletvCustomerId,
+    this.paymentMethod,
     required this.isDeleted,
     required this.updatedAt,
     required this.createdAt,
@@ -118,6 +120,7 @@ class VasDetailModel {
       phoneContactId: json['phoneContactId'] as String?,
       utilityCustomerId: json['utilityCustomerId'] as String?,
       cabletvCustomerId: json['cabletvCustomerId'] as String?,
+      paymentMethod: json['paymentMethod'] as String?,
       isDeleted: json['isDeleted'] as bool? ?? false,
       updatedAt: json['updatedAt'] as String? ?? '',
       createdAt: json['createdAt'] as String? ?? '',

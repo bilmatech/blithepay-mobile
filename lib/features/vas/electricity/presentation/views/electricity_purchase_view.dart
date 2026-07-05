@@ -395,6 +395,39 @@ class _ElectricityViewState extends State<_ElectricityView> {
     );
   }
 
+  String _formatProviderName(ServiceProviderModel provider) {
+    final slugPart = provider.slug != null && provider.slug!.isNotEmpty
+        ? ' - ${provider.slug!.toUpperCase()}'
+        : '';
+    return '${provider.name}$slugPart Electricity Distribution';
+  }
+
+  void _showDistributorBottomSheet(
+    BuildContext parentContext,
+    ServiceState state,
+    List<ServiceProviderModel> providers,
+  ) {
+    final bloc = parentContext.read<ServiceBloc>();
+    showModalBottomSheet(
+      context: parentContext,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.zero,
+      ),
+      builder: (_) {
+        return BlocProvider.value(
+          value: bloc,
+          child: _DistributorBottomSheetContent(
+            providers: providers,
+            selectedProvider: state.selectedProvider,
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildDistributorSection(BuildContext context, ServiceState state) {
     final providerLabel = state.config.providerLabel;
 
@@ -473,6 +506,18 @@ class _ElectricityViewState extends State<_ElectricityView> {
       );
     }
 
+    final selectedProviderName = state.selectedProvider;
+    final bool hasSelection = selectedProviderName.isNotEmpty;
+
+    final selectedProviderModel = providers.firstWhere(
+      (p) => p.name == selectedProviderName,
+      orElse: () => ServiceProviderModel(id: '', name: selectedProviderName),
+    );
+
+    final displayLabelText = hasSelection
+        ? _formatProviderName(selectedProviderModel)
+        : 'Select distributor';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -483,121 +528,79 @@ class _ElectricityViewState extends State<_ElectricityView> {
             color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 68,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: providers.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final provider = providers[index];
-              final isSelected = provider.name == state.selectedProvider;
-
-              return GestureDetector(
-                onTap: () {
-                  context.read<ServiceBloc>().add(
-                        ServiceProviderSelected(
-                          provider.name,
-                          providerId: state.providers.isNotEmpty
-                              ? provider.id
-                              : null,
-                        ),
-                      );
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 160,
-                  height: 68,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.primary.withValues(alpha: 0.05)
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.border.withValues(alpha: 0.5),
-                      width: isSelected ? 2.0 : 1.5,
+        const SizedBox(height: 12),
+        InkWell(
+          onTap: () => _showDistributorBottomSheet(context, state, providers),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: hasSelection ? AppColors.primary : AppColors.border,
+                width: hasSelection ? 1.8 : 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                if (hasSelection) ...[
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.grey.shade100),
                     ),
-                    boxShadow: [
-                      if (isSelected)
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.15),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        )
-                      else
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
-                        ),
-                    ],
+                    clipBehavior: Clip.antiAlias,
+                    child: Center(
+                      child: selectedProviderModel.logo != null && selectedProviderModel.logo!.isNotEmpty
+                          ? Image.network(
+                              selectedProviderModel.logo!,
+                              width: 32,
+                              height: 32,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => _buildPlaceholderLetter(selectedProviderName),
+                            )
+                          : _buildPlaceholderLetter(selectedProviderName),
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isSelected
-                                ? AppColors.primary.withValues(alpha: 0.2)
-                                : Colors.grey.shade100,
-                          ),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Center(
-                          child: provider.logo != null && provider.logo!.isNotEmpty
-                              ? Image.network(
-                                  provider.logo!,
-                                  width: 44,
-                                  height: 44,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (_, __, ___) =>
-                                      _buildPlaceholderLetter(provider.name),
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 1.5,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                            AppColors.primary.withValues(alpha: 0.4),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                )
-                              : _buildPlaceholderLetter(provider.name),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          provider.name,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: 12),
+                ] else ...[
+                  const Icon(
+                    Icons.bolt_rounded,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Text(
+                    displayLabelText,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: hasSelection ? FontWeight.w700 : FontWeight.w500,
+                      color: hasSelection ? AppColors.textPrimary : AppColors.textSecondary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              );
-            },
+                const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: AppColors.textSecondary,
+                  size: 24,
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -887,6 +890,210 @@ class _UtilityBeneficiaryChip extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _DistributorBottomSheetContent extends StatefulWidget {
+  final List<ServiceProviderModel> providers;
+  final String selectedProvider;
+
+  const _DistributorBottomSheetContent({
+    required this.providers,
+    required this.selectedProvider,
+  });
+
+  @override
+  State<_DistributorBottomSheetContent> createState() => _DistributorBottomSheetContentState();
+}
+
+class _DistributorBottomSheetContentState extends State<_DistributorBottomSheetContent> {
+  late List<ServiceProviderModel> _filteredProviders;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredProviders = widget.providers;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filterProviders(String query) {
+    final cleanQuery = query.toLowerCase().trim();
+    setState(() {
+      _filteredProviders = widget.providers.where((p) {
+        final nameMatches = p.name.toLowerCase().contains(cleanQuery);
+        final slugMatches = p.slug?.toLowerCase().contains(cleanQuery) ?? false;
+        return nameMatches || slugMatches;
+      }).toList();
+    });
+  }
+
+  String _formatProviderName(ServiceProviderModel provider) {
+    final slugPart = provider.slug != null && provider.slug!.isNotEmpty
+        ? ' - ${provider.slug!.toUpperCase()}'
+        : '';
+    return '${provider.name}$slugPart Electricity Distribution';
+  }
+
+  Widget _buildPlaceholderLetter(String name) {
+    final cleanName = name.trim().toUpperCase();
+    final displayLetter = cleanName.isNotEmpty ? cleanName[0] : '?';
+    return Text(
+      displayLetter,
+      style: TextStyle(
+        fontWeight: FontWeight.w900,
+        color: AppColors.primary.withValues(alpha: 0.6),
+        fontSize: 16,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      height: size.height,
+      padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + bottomInset),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const BodyLg('Select Distributor'),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary),
+                splashRadius: 20,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _searchController,
+            onChanged: _filterProviders,
+            decoration: InputDecoration(
+              hintText: 'Search distributor...',
+              prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 18),
+                      onPressed: () {
+                        _searchController.clear();
+                        _filterProviders('');
+                      },
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.6)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Expanded(
+            child: _filteredProviders.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade400),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'No distributors found',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : ListView.separated(
+                    padding: EdgeInsets.only(bottom: 24 + MediaQuery.of(context).padding.bottom),
+                    itemCount: _filteredProviders.length,
+                    separatorBuilder: (_, __) => Divider(
+                      height: 1,
+                      color: Colors.grey.shade100,
+                    ),
+                    itemBuilder: (context, index) {
+                      final provider = _filteredProviders[index];
+                      final isSelected = provider.name == widget.selectedProvider;
+
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                        onTap: () {
+                          final bloc = context.read<ServiceBloc>();
+                          bloc.add(
+                            ServiceProviderSelected(
+                              provider.name,
+                              providerId: bloc.state.providers.isNotEmpty ? provider.id : null,
+                            ),
+                          );
+                          Navigator.pop(context);
+                        },
+                        leading: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade100),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: Center(
+                            child: provider.logo != null && provider.logo!.isNotEmpty
+                                ? Image.network(
+                                    provider.logo!,
+                                    width: 40,
+                                    height: 40,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (_, __, ___) => _buildPlaceholderLetter(provider.name),
+                                  )
+                                : _buildPlaceholderLetter(provider.name),
+                          ),
+                        ),
+                        title: Text(
+                          _formatProviderName(provider),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? const Icon(
+                                Icons.check_circle_rounded,
+                                color: Colors.green,
+                                size: 22,
+                              )
+                            : null,
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
     );
   }

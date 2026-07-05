@@ -26,6 +26,18 @@ class MyApp extends StatelessWidget {
               : ThemeMode.light,
           routerConfig: appRouter,
           debugShowCheckedModeBanner: false,
+          builder: (context, child) {
+            return GestureDetector(
+              onTap: () {
+                final currentFocus = FocusScope.of(context);
+                if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                }
+              },
+              behavior: HitTestBehavior.translucent,
+              child: child,
+            );
+          },
         );
       },
     );

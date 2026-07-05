@@ -596,6 +596,11 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
       }
     }
 
+    final channel = vas?.paymentMethod ?? tx.metadata?['paymentSource'] ?? tx.metadata?['paymentMethod'];
+    if (channel != null && channel.toString().isNotEmpty) {
+      details.add({'label': 'Paid With', 'value': channel.toString().toUpperCase()});
+    }
+
     if (tx.description.isNotEmpty) {
       details.add({'label': 'Description', 'value': tx.description});
     }
@@ -749,6 +754,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
           rawMeta['tokenUnits'] ??
           nestedMeta?['tokenUnits'];
       final tokenVal = vas?.token ?? rawMeta['token'] ?? nestedMeta?['token'];
+      final String? paymentMethod = vas?.paymentMethod ?? tx.metadata?['paymentSource'] ?? tx.metadata?['paymentMethod']?.toString();
 
       final addressVal =
           vas?.utility?.customerAddress ??
@@ -866,6 +872,8 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                     ),
                     _pdfRow('Reference', tx.reference),
                     _pdfRow('Date & Time', dateStr),
+                    if (paymentMethod != null && paymentMethod.isNotEmpty)
+                      _pdfRow('Paid With', paymentMethod.toUpperCase()),
 
                     // Section: Service Details
                     if (vas != null || receiverMap != null || isFeePayment) ...[
