@@ -18,11 +18,15 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
 
     final onboardingCompleted = await authRepository.isOnboardingCompleted();
     final session = await authRepository.getSession();
+    final biometricsEnabled = await authRepository.isBiometricsEnabled();
+    final biometricEmail = await authRepository.getBiometricEmail();
 
     if (!onboardingCompleted) {
       emit(SplashNavigateOnboarding());
     } else if (session != null && session.tokens != null) {
       emit(SplashNavigateDashboard());
+    } else if (biometricsEnabled && biometricEmail != null && biometricEmail.isNotEmpty) {
+      emit(SplashNavigateBiometric());
     } else {
       emit(SplashNavigateLogin());
     }

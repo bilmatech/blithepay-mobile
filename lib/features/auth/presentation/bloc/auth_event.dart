@@ -148,3 +148,13 @@ class ResendForgotPasswordOtpRequested extends AuthEvent {
     required this.flow,
   });
 }
+
+class BiometricLoginRequested extends AuthEvent {
+  final String email;
+  final String deviceId;
+
+  const BiometricLoginRequested({required this.email, required this.deviceId});
+
+  @override
+  List<Object?> get props => [email, deviceId];
+}

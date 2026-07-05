@@ -4,6 +4,9 @@ class ApiEndpoints {
   // Auth Endpoints
   static const String signup = '$_baseAuth/create_guardian_account';
   static const String login = '$_baseAuth/authorize';
+  static const String biometricChallenge = '$_baseAuth/biometric/challenge';
+  static const String biometricEnroll = '$_baseAuth/biometric/enroll';
+  static const String biometricVerify = '$_baseAuth/biometric/verify';
   static const String forgotPassword = '$_baseAuth/forgot_password';
   static const String verifyOtp = '$_baseAuth/verify_account';
   static const String verifyForgotPasswordCode =

@@ -128,4 +128,4 @@ enum AuthStatus {
   error,
 }
 
-enum LoadingType { none, email, google, apple }
+enum LoadingType { none, email, google, apple, biometric }

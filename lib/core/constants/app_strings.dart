@@ -29,7 +29,7 @@ class AppStrings {
 
   static const String changePassword = 'Change Password';
   static const String returnToLogIn = 'Return To Log In';
-  static const String welcomeBackSubtitle = 'Please enter your credentials to access your ledger.';
+  static const String welcomeBackSubtitle = 'Please enter your credentials to access your account.';
   static const String orContinueWith = 'OR CONTINUE WITH';
   static const String biometricSignIn = 'Biometric Sign In';
   static const String usePasswordInstead = 'Use Password Instead';

@@ -14,3 +14,5 @@ class SplashNavigateOnboarding extends SplashState {}
 class SplashNavigateDashboard extends SplashState {}
 
 class SplashNavigateLogin extends SplashState {}
+
+class SplashNavigateBiometric extends SplashState {}

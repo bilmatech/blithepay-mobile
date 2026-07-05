@@ -18,6 +18,7 @@ import 'package:blithepay/shared/widgets/buttons/social_auth_button.dart';
 import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
+import 'package:blithepay/core/storage/auth_local_storage.dart';
 
 
 class LoginView extends StatefulWidget {
@@ -31,6 +32,8 @@ class _LoginViewState extends State<LoginView> {
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
   final _formKey = GlobalKey<FormState>();
+  bool _biometricsEnabled = false;
+  String? _biometricEmail;
 
   @override
   void initState() {
@@ -41,6 +44,34 @@ class _LoginViewState extends State<LoginView> {
     if (kDebugMode) {
       _emailController.text = '';
       _passwordController.text = '';
+    }
+
+    _checkBiometrics();
+  }
+
+  Future<void> _checkBiometrics() async {
+    final localDataSource = context.read<AppLocalDataSource>();
+    final enabled = await localDataSource.isBiometricsEnabled();
+    final email = await localDataSource.getBiometricEmail();
+    if (mounted) {
+      setState(() {
+        _biometricsEnabled = enabled && email != null && email.isNotEmpty;
+        _biometricEmail = email;
+      });
+    }
+  }
+
+  Future<void> _handleBiometricLogin() async {
+    if (_biometricEmail == null || _biometricEmail!.isEmpty) return;
+    final localDataSource = context.read<AppLocalDataSource>();
+    final deviceId = await localDataSource.getOrCreateDeviceId();
+    if (mounted) {
+      context.read<AuthBloc>().add(
+        BiometricLoginRequested(
+          email: _biometricEmail!,
+          deviceId: deviceId,
+        ),
+      );
     }
   }
 
@@ -163,13 +194,49 @@ class _LoginViewState extends State<LoginView> {
                           ],
                         ),
                         const SizedBox(height: 24),
-                        PrimaryButton(
-                          label: AppStrings.logIn,
-                          onPressed: _handleLogin,
-                          isLoading:
-                              state.status == AuthStatus.loading &&
-                              state.loadingType == LoadingType.email,
-                          isEnabled: state.status != AuthStatus.loading,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: PrimaryButton(
+                                label: AppStrings.logIn,
+                                onPressed: _handleLogin,
+                                isLoading:
+                                    state.status == AuthStatus.loading &&
+                                    state.loadingType == LoadingType.email,
+                                isEnabled: state.status != AuthStatus.loading,
+                              ),
+                            ),
+                            if (_biometricsEnabled) ...[
+                              const SizedBox(width: 12),
+                              InkWell(
+                                onTap: state.status == AuthStatus.loading ? null : _handleBiometricLogin,
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  height: 50,
+                                  width: 50,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: AppColors.primary),
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: AppColors.primary.withValues(alpha: 0.05),
+                                  ),
+                                  child: state.status == AuthStatus.loading &&
+                                          state.loadingType == LoadingType.biometric
+                                      ? const Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: AppColors.primary,
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.fingerprint,
+                                          color: AppColors.primary,
+                                          size: 28,
+                                        ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 32),
 

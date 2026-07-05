@@ -7,6 +7,7 @@ import '../../data/repositories/auth_repository.dart';
 import 'package:blithepay/core/network/dio_error_mapper.dart';
 import 'package:blithepay/core/services/firebase_notifications.dart';
 import 'package:blithepay/core/services/firebase_auth_service.dart';
+import 'package:blithepay/core/services/biometric_crypto_service.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepositoryInterface _authRepository;
@@ -26,6 +27,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<ResetPasswordRequested>(_onResetPasswordRequested);
     on<GoogleSignInRequested>(_onGoogleSignInRequested);
     on<AppleSignInRequested>(_onAppleSignInRequested);
+    on<BiometricLoginRequested>(_onBiometricLoginRequested);
   }
 
   Future<void> _onSignupRequested(
@@ -314,4 +316,51 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   //     emit(AuthState.error(extractError(e)));
   //   }
   // }
+
+  Future<void> _onBiometricLoginRequested(
+    BiometricLoginRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        status: AuthStatus.loading,
+        loadingType: LoadingType.biometric,
+      ),
+    );
+    try {
+      // 1. Get single-use challenge from NestJS backend
+      final challenge = await _authRepository.getBiometricChallenge(
+        email: event.email,
+        deviceId: event.deviceId,
+      );
+
+      // 2. Request signature of challenge from native hardware
+      final signature = await BiometricCryptoService.signChallenge(challenge);
+      if (signature == null || signature.isEmpty) {
+        emit(const AuthState.error('Biometric authentication cancelled or failed.'));
+        return;
+      }
+
+      // 3. Verify signature and log in against NestJS backend
+      final result = await _authRepository.verifyBiometrics(
+        email: event.email,
+        deviceId: event.deviceId,
+        challenge: challenge,
+        signatureBase64: signature,
+      );
+
+      // 4. Persist user session locally
+      await _authRepository.persistSession(result);
+
+      // Sync FCM notification token
+      final fcmToken = await getFcmToken();
+      if (fcmToken.isNotEmpty) {
+        await _authRepository.syncFcmToken(fcmToken);
+      }
+
+      emit(AuthState.authenticated(result));
+    } catch (e) {
+      emit(AuthState.error(extractError(e)));
+    }
+  }
 }

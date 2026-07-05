@@ -55,6 +55,8 @@ class _SplashViewState extends State<SplashView>
           context.go(AppRoutes.home);
         } else if (state is SplashNavigateLogin) {
           context.go(AppRoutes.login);
+        } else if (state is SplashNavigateBiometric) {
+          context.go(AppRoutes.biometric);
         }
       },
       child: Scaffold(

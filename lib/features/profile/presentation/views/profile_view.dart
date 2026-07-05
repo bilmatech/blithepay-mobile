@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:blithepay/core/navigation/index.dart';
 import 'package:blithepay/shared/widgets/app_bar.dart';
 import 'package:blithepay/core/constants/app_colors.dart';
@@ -14,6 +15,8 @@ import 'package:blithepay/features/profile/presentation/bloc/profile_event.dart'
 import 'package:blithepay/features/profile/presentation/bloc/profile_state.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:blithepay/shared/widgets/dialogs/confirmation_bottom_sheet.dart';
+import 'package:blithepay/core/services/biometric_crypto_service.dart';
+import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -128,6 +131,8 @@ class ProfileView extends StatelessWidget {
                                   });
                                 },
                               ),
+                              const _Divider(),
+                              _BiometricToggleItem(userEmail: user?.email ?? ''),
                               const _Divider(),
                               _ModernProfileItem(
                                 icon: Icons.pin_outlined,
@@ -396,6 +401,183 @@ class _DestructiveDivider extends StatelessWidget {
         height: 1,
         thickness: 1,
         color: const Color(0xFFFEECEE).withValues(alpha: 0.6),
+      ),
+    );
+  }
+}
+
+class _BiometricToggleItem extends StatefulWidget {
+  final String userEmail;
+
+  const _BiometricToggleItem({required this.userEmail});
+
+  @override
+  State<_BiometricToggleItem> createState() => _BiometricToggleItemState();
+}
+
+class _BiometricToggleItemState extends State<_BiometricToggleItem> {
+  bool _isEnabled = false;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricStatus();
+  }
+
+  Future<void> _loadBiometricStatus() async {
+    final localDataSource = context.read<AppLocalDataSource>();
+    final enabled = await localDataSource.isBiometricsEnabled();
+    setState(() {
+      _isEnabled = enabled;
+    });
+  }
+
+  Future<void> _toggleBiometrics(bool value) async {
+    if (_isLoading) return;
+    if (widget.userEmail.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Cannot enable biometric login without a logged-in user email.")),
+      );
+      return;
+    }
+
+    final localDataSource = context.read<AppLocalDataSource>();
+    final authRepository = context.read<AuthRepository>();
+
+    if (value) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        // 1. Generate key pair natively in secure hardware
+        final publicKey = await BiometricCryptoService.generateKeyPair();
+        if (publicKey == null || publicKey.isEmpty) {
+          throw Exception("Biometric key pair generation cancelled or failed.");
+        }
+
+        // 2. Get/create device ID
+        final deviceId = await localDataSource.getOrCreateDeviceId();
+
+        // 3. Enroll device on backend NestJS API
+        await authRepository.enrollBiometric(
+          email: widget.userEmail,
+          deviceId: deviceId,
+          publicKey: publicKey,
+        );
+
+        // 4. Save settings locally
+        await localDataSource.setBiometricsEnabled(true);
+        await localDataSource.setBiometricEmail(widget.userEmail);
+
+        setState(() {
+          _isEnabled = true;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Biometric Login enabled successfully!")),
+          );
+        }
+      } catch (e) {
+        String errorMsg = "Enrollment failed.";
+        if (e is PlatformException) {
+          errorMsg = e.message ?? errorMsg;
+        } else {
+          errorMsg = "Enrollment failed: ${e.toString().replaceAll('Exception: ', '')}";
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMsg)),
+          );
+        }
+        setState(() {
+          _isEnabled = false;
+        });
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    } else {
+      setState(() {
+        _isLoading = true;
+      });
+      try {
+        await localDataSource.setBiometricsEnabled(false);
+        setState(() {
+          _isEnabled = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Biometric Login disabled.")),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error: ${e.toString()}")),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.fingerprint_rounded,
+              color: AppColors.primary,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Text(
+              'Biometric Login',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                color: Color(0xFF061657),
+              ),
+            ),
+          ),
+          if (_isLoading)
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.primary,
+              ),
+            )
+          else
+            Switch.adaptive(
+              value: _isEnabled,
+              activeTrackColor: AppColors.primary,
+              onChanged: _toggleBiometrics,
+            ),
+        ],
       ),
     );
   }

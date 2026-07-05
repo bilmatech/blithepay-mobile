@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:blithepay/features/auth/data/models/auth_response_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:rxdart/subjects.dart';
+import 'package:uuid/uuid.dart';
+import 'package:crypto/crypto.dart';
 
 abstract class AppLocalDataSource {
   Future<void> setOnboardingCompleted();
@@ -20,6 +22,13 @@ abstract class AppLocalDataSource {
 
   Future<void> setBalanceVisible(bool visible);
   Future<bool> isBalanceVisible();
+
+  Future<void> setBiometricsEnabled(bool enabled);
+  Future<bool> isBiometricsEnabled();
+  Future<void> setBiometricEmail(String email);
+  Future<String?> getBiometricEmail();
+  Future<void> clearBiometricEmail();
+  Future<String> getOrCreateDeviceId();
 }
 
 class AppLocalDataSourceImpl implements AppLocalDataSource {
@@ -42,6 +51,9 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
   static const _expiresAtKey = 'expires_at';
   static const _userKey = 'user';
   static const _balanceVisibleKey = 'wallet_balance_visible';
+  static const _biometricsEnabledKey = 'biometrics_enabled';
+  static const _biometricEmailKey = 'biometric_email';
+  static const _deviceIdKey = 'device_id';
 
   @override
   Future<void> setOnboardingCompleted() async {
@@ -141,5 +153,43 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
   Future<bool> isBalanceVisible() async {
     final value = await _storage.read(key: _balanceVisibleKey);
     return value == 'true';
+  }
+
+  @override
+  Future<void> setBiometricsEnabled(bool enabled) async {
+    await _storage.write(key: _biometricsEnabledKey, value: enabled.toString());
+  }
+
+  @override
+  Future<bool> isBiometricsEnabled() async {
+    final value = await _storage.read(key: _biometricsEnabledKey);
+    return value == 'true';
+  }
+
+  @override
+  Future<void> setBiometricEmail(String email) async {
+    await _storage.write(key: _biometricEmailKey, value: email);
+  }
+
+  @override
+  Future<String?> getBiometricEmail() {
+    return _storage.read(key: _biometricEmailKey);
+  }
+
+  @override
+  Future<void> clearBiometricEmail() async {
+    await _storage.delete(key: _biometricEmailKey);
+  }
+
+  @override
+  Future<String> getOrCreateDeviceId() async {
+    String? deviceId = await _storage.read(key: _deviceIdKey);
+    if (deviceId == null) {
+      final randomUuid = const Uuid().v4();
+      final bytes = utf8.encode(randomUuid);
+      deviceId = sha256.convert(bytes).toString();
+      await _storage.write(key: _deviceIdKey, value: deviceId);
+    }
+    return deviceId;
   }
 }

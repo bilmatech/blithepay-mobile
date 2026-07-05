@@ -33,6 +33,8 @@ abstract class AuthRepositoryInterface {
 
   Future<AuthResponseModel?> getSession();
   Future<bool> isOnboardingCompleted();
+  Future<bool> isBiometricsEnabled();
+  Future<String?> getBiometricEmail();
   Future<void> syncFcmToken(String token);
 
   Future<void> deleteAccount();
@@ -43,6 +45,9 @@ abstract class AuthRepositoryInterface {
   });
   Future<AuthResponseModel> authenticateSso(String firebaseIdToken);
   Future<void> changeAppPin(String oldPin, String newPin, String password);
+  Future<String> getBiometricChallenge({required String email, required String deviceId});
+  Future<String> enrollBiometric({required String email, required String deviceId, required String publicKey});
+  Future<AuthResponseModel> verifyBiometrics({required String email, required String deviceId, required String challenge, required String signatureBase64});
 }
 
 class AuthRepository implements AuthRepositoryInterface {
@@ -169,6 +174,16 @@ class AuthRepository implements AuthRepositoryInterface {
   }
 
   @override
+  Future<bool> isBiometricsEnabled() async {
+    return await _localDataSource.isBiometricsEnabled();
+  }
+
+  @override
+  Future<String?> getBiometricEmail() async {
+    return await _localDataSource.getBiometricEmail();
+  }
+
+  @override
   Future<AuthResponseModel?> getSession() async {
     return await _localDataSource.getSession();
   }
@@ -278,6 +293,61 @@ class AuthRepository implements AuthRepositoryInterface {
       final message = response.data?['message'] ?? 'Failed to change PIN';
       throw Exception(message);
     }
+  }
+
+  @override
+  Future<String> getBiometricChallenge({
+    required String email,
+    required String deviceId,
+  }) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.biometricChallenge,
+      data: {
+        "deviceId": deviceId,
+        "userEmail": email,
+      },
+    );
+    final data = response.data['data'];
+    if (data is Map) {
+      return data['challenge'] as String;
+    }
+    return data as String;
+  }
+
+  @override
+  Future<String> enrollBiometric({
+    required String email,
+    required String deviceId,
+    required String publicKey,
+  }) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.biometricEnroll,
+      data: {
+        "deviceId": deviceId,
+        "userEmail": email,
+        "publicKey": publicKey,
+      },
+    );
+    return response.data['data'] as String;
+  }
+
+  @override
+  Future<AuthResponseModel> verifyBiometrics({
+    required String email,
+    required String deviceId,
+    required String challenge,
+    required String signatureBase64,
+  }) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.biometricVerify,
+      data: {
+        "deviceId": deviceId,
+        "userEmail": email,
+        "signatureBase64": signatureBase64,
+        "challenge": challenge,
+      },
+    );
+    return AuthResponseModel.fromJson(response.data['data']);
   }
 }
 
