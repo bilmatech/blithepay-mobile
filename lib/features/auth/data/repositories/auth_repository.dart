@@ -30,6 +30,10 @@ abstract class AuthRepositoryInterface {
   Future<void> logout();
   Future<void> persistSession(AuthResponseModel session);
   Future<AuthTokensModel> refresh(String token);
+  Future<void> clearSession();
+  Future<void> saveLastActiveTime(DateTime time);
+  Future<DateTime?> getLastActiveTime();
+  Future<void> clearLastActiveTime();
 
   Future<AuthResponseModel?> getSession();
   Future<bool> isOnboardingCompleted();
@@ -159,7 +163,31 @@ class AuthRepository implements AuthRepositoryInterface {
 
   @override
   Future<void> logout() async {
-    await _dioClient.post(ApiEndpoints.logout);
+    try {
+      await _dioClient.post(ApiEndpoints.logout);
+    } catch (_) {}
+    await _localDataSource.clearSession();
+    await _localDataSource.clearLastActiveTime();
+  }
+
+  @override
+  Future<void> clearSession() async {
+    await _localDataSource.clearSession();
+  }
+
+  @override
+  Future<void> saveLastActiveTime(DateTime time) async {
+    await _localDataSource.saveLastActiveTime(time);
+  }
+
+  @override
+  Future<DateTime?> getLastActiveTime() async {
+    return await _localDataSource.getLastActiveTime();
+  }
+
+  @override
+  Future<void> clearLastActiveTime() async {
+    await _localDataSource.clearLastActiveTime();
   }
 
   @override

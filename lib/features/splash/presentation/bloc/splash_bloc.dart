@@ -1,4 +1,5 @@
- import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
+import 'package:blithepay/core/services/session_timeout_manager.dart';
+import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -15,6 +16,13 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
   Future<void> _onCheckSplashStatus(
       CheckSplashStatus event, Emitter<SplashState> emit) async {
     await Future.delayed(const Duration(seconds: 3));
+
+    // Clear session on fresh boot to satisfy "or the user closes the app"
+    if (AppLifecycleManager.isFreshBoot) {
+      AppLifecycleManager.isFreshBoot = false;
+      await authRepository.clearSession();
+      await authRepository.clearLastActiveTime();
+    }
 
     final onboardingCompleted = await authRepository.isOnboardingCompleted();
     final session = await authRepository.getSession();

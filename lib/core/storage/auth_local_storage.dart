@@ -20,9 +20,12 @@ abstract class AppLocalDataSource {
   Future<void> clearSession();
   Stream<UserModel?> get userStream;
 
+  Future<void> saveLastActiveTime(DateTime time);
+  Future<DateTime?> getLastActiveTime();
+  Future<void> clearLastActiveTime();
+
   Future<void> setBalanceVisible(bool visible);
   Future<bool> isBalanceVisible();
-
   Future<void> setBiometricsEnabled(bool enabled);
   Future<bool> isBiometricsEnabled();
   Future<void> setBiometricEmail(String email);
@@ -191,5 +194,21 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
       await _storage.write(key: _deviceIdKey, value: deviceId);
     }
     return deviceId;
+  }
+
+  @override
+  Future<void> saveLastActiveTime(DateTime time) async {
+    await _storage.write(key: 'session_last_active_time', value: time.toIso8601String());
+  }
+
+  @override
+  Future<DateTime?> getLastActiveTime() async {
+    final raw = await _storage.read(key: 'session_last_active_time');
+    return raw != null ? DateTime.parse(raw) : null;
+  }
+
+  @override
+  Future<void> clearLastActiveTime() async {
+    await _storage.delete(key: 'session_last_active_time');
   }
 }

@@ -1,3 +1,5 @@
+import 'package:blithepay/core/services/session_timeout_manager.dart';
+import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -27,15 +29,18 @@ class MyApp extends StatelessWidget {
           routerConfig: appRouter,
           debugShowCheckedModeBanner: false,
           builder: (context, child) {
-            return GestureDetector(
-              onTap: () {
-                final currentFocus = FocusScope.of(context);
-                if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                }
-              },
-              behavior: HitTestBehavior.translucent,
-              child: child,
+            return SessionTimeoutListener(
+              localDataSource: context.read<AppLocalDataSource>(),
+              child: GestureDetector(
+                onTap: () {
+                  final currentFocus = FocusScope.of(context);
+                  if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  }
+                },
+                behavior: HitTestBehavior.translucent,
+                child: child,
+              ),
             );
           },
         );
