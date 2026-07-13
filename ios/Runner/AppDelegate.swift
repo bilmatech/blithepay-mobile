@@ -13,9 +13,14 @@ import FirebaseCore
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     }
 
-    let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
+//  FIX: Safely guard against a nil window or root view controller
+    guard let rootViewController = window?.rootViewController as? FlutterViewController else {
+            // If the window isn't initialized yet, register plugins and let it load normally
+            GeneratedPluginRegistrant.register(with: self)
+            return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
     let biometricChannel = FlutterMethodChannel(name: "com.bilmatech.blithepayapp/biometrics",
-                                              binaryMessenger: controller.binaryMessenger)
+                                              binaryMessenger: rootViewController.binaryMessenger)
     
     biometricChannel.setMethodCallHandler({
       (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
