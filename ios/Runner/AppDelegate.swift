@@ -13,32 +13,36 @@ import FirebaseCore
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     }
 
-    let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
-    let biometricChannel = FlutterMethodChannel(name: "com.bilmatech.blithepayapp/biometrics",
-                                              binaryMessenger: controller.binaryMessenger)
-    
-    biometricChannel.setMethodCallHandler({
-      (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
-      if call.method == "generateKeyPair" {
-          if let pubKey = self.generateSecureEnclaveKey() {
-              result(pubKey)
-          } else {
-              result(FlutterError(code: "KEYGEN_FAIL", message: "Failed to generate EC key pair in Secure Enclave", details: nil))
-          }
-      } else if call.method == "signPayload" {
-          guard let args = call.arguments as? [String: Any],
-                let payload = args["payload"] as? String else {
-              result(FlutterError(code: "INVALID_ARGS", message: "Missing payload to sign", details: nil))
-              return
-          }
-          self.signData(payload: payload, result: result)
-      } else {
-          result(FlutterMethodNotImplemented)
-      }
-    })
-
     GeneratedPluginRegistrant.register(with: self)
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
+
+    if let controller = window?.rootViewController as? FlutterViewController {
+      let biometricChannel = FlutterMethodChannel(name: "com.bilmatech.blithepayapp/biometrics",
+                                                binaryMessenger: controller.binaryMessenger)
+      
+      biometricChannel.setMethodCallHandler({
+        [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+        guard let self = self else { return }
+        if call.method == "generateKeyPair" {
+            if let pubKey = self.generateSecureEnclaveKey() {
+                result(pubKey)
+            } else {
+                result(FlutterError(code: "KEYGEN_FAIL", message: "Failed to generate EC key pair in Secure Enclave", details: nil))
+            }
+        } else if call.method == "signPayload" {
+            guard let args = call.arguments as? [String: Any],
+                  let payload = args["payload"] as? String else {
+                result(FlutterError(code: "INVALID_ARGS", message: "Missing payload to sign", details: nil))
+                return
+            }
+            self.signData(payload: payload, result: result)
+        } else {
+            result(FlutterMethodNotImplemented)
+        }
+      })
+    }
+
+    return result
   }
 
   private func generateSecureEnclaveKey() -> String? {
