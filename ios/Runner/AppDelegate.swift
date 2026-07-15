@@ -80,7 +80,15 @@ class BiometricPlugin: NSObject, FlutterPlugin {
     guard let publicKey = SecKeyCopyPublicKey(privateKey) else { return nil }
     guard let keyData = SecKeyCopyExternalRepresentation(publicKey, &error) as Data? else { return nil }
     
-    let base64Key = keyData.base64EncodedString(options: .lineLength64Characters)
+    // Convert raw EC public key (65 bytes) to SubjectPublicKeyInfo (SPKI) DER format
+    let header: [UInt8] = [
+      0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01,
+      0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x03, 0x42, 0x00
+    ]
+    var spkiData = Data(header)
+    spkiData.append(keyData)
+    
+    let base64Key = spkiData.base64EncodedString(options: .lineLength64Characters)
     return "-----BEGIN PUBLIC KEY-----\n\(base64Key)\n-----END PUBLIC KEY-----"
   }
 
