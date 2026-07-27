@@ -25,6 +25,8 @@ import 'package:blithepay/features/dashboard/presentation/widgets/financial_summ
 import 'package:blithepay/features/dashboard/presentation/widgets/recent_transactions.dart';
 import 'package:blithepay/features/transaction/presentation/bloc/transaction_state.dart';
 
+import 'package:upgrader/upgrader.dart';
+
 class DashboardView extends StatelessWidget {
   final Widget child;
 
@@ -38,12 +40,17 @@ class DashboardView extends StatelessWidget {
     // Keep bottom nav visible for the main services screen (/service)
     final hideBottomNavigation = location.contains('/service/');
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(child: child),
-      bottomNavigationBar: hideBottomNavigation
-          ? null
-          : BottomNavigationWidget(currentRoute: location),
+    return UpgradeAlert(
+      upgrader: Upgrader(
+        dialogStyle: UpgradeDialogStyle.cupertino,
+      ),
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: SafeArea(child: child),
+        bottomNavigationBar: hideBottomNavigation
+            ? null
+            : BottomNavigationWidget(currentRoute: location),
+      ),
     );
   }
 }

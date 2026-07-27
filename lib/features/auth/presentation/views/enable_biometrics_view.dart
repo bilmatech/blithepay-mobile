@@ -1,16 +1,16 @@
-import 'package:blithepay/core/constants/app_colors.dart';
-import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/core/navigation/index.dart';
-import 'package:blithepay/core/services/biometric_crypto_service.dart';
-import 'package:blithepay/core/storage/auth_local_storage.dart';
-import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
-import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
-import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
-import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
-import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/core/storage/auth_local_storage.dart';
+import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
+import 'package:blithepay/core/services/biometric_crypto_service.dart';
+import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
+import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 
 class EnableBiometricsView extends StatefulWidget {
   final String? email;
@@ -55,15 +55,13 @@ class _EnableBiometricsViewState extends State<EnableBiometricsView> {
     String? userEmail = widget.email;
     if (userEmail == null || userEmail.isEmpty) {
       final session = await localDataSource.getSession();
-      userEmail = session?.user.email;
+      userEmail = session!.user!.email;
     }
 
     if (userEmail == null || userEmail.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Cannot enable biometric login without user email."),
-          ),
+          const SnackBar(content: Text("Cannot enable biometric login without user email.")),
         );
       }
       return;
@@ -95,11 +93,9 @@ class _EnableBiometricsViewState extends State<EnableBiometricsView> {
       await localDataSource.setBiometricEmail(userEmail);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Biometric Login enabled successfully!"),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Biometric Login enabled successfully!")));
         await _proceedToDashboard();
       }
     } catch (e) {
@@ -107,13 +103,10 @@ class _EnableBiometricsViewState extends State<EnableBiometricsView> {
       if (e is PlatformException) {
         errorMsg = e.message ?? errorMsg;
       } else {
-        errorMsg =
-            "Enrollment failed: ${e.toString().replaceAll('Exception: ', '')}";
+        errorMsg = "Enrollment failed: ${e.toString().replaceAll('Exception: ', '')}";
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMsg)),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMsg)));
       }
     } finally {
       if (mounted) {
@@ -155,11 +148,7 @@ class _EnableBiometricsViewState extends State<EnableBiometricsView> {
                   color: AppColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.fingerprint_rounded,
-                  size: 56,
-                  color: AppColors.primary,
-                ),
+                child: const Icon(Icons.fingerprint_rounded, size: 56, color: AppColors.primary),
               ),
               const SizedBox(height: 32),
               const Text(
@@ -180,10 +169,7 @@ class _EnableBiometricsViewState extends State<EnableBiometricsView> {
                 onPressed: _enableBiometrics,
               ),
               const SizedBox(height: 12),
-              SecondaryOutlinedButton(
-                label: 'Skip for Now',
-                onPressed: _isLoading ? null : _skip,
-              ),
+              SecondaryOutlinedButton(label: 'Skip for Now', onPressed: _isLoading ? null : _skip),
               const SizedBox(height: 16),
               GestureDetector(
                 onTap: _isLoading ? null : _dontShowAgain,

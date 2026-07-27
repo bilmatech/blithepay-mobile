@@ -8,7 +8,9 @@ import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_strings.dart';
 import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/shared/widgets/web_page_view.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/step_progress_indicator.dart';
@@ -16,7 +18,6 @@ import 'package:blithepay/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_event.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_state.dart';
 import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
-import 'package:blithepay/shared/widgets/web_page_view.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
 
@@ -111,8 +112,7 @@ class _SignupViewState extends State<SignupView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                state.errorMessage ??
-                    'Registration successful! Verification email sent.',
+                state.errorMessage ?? 'Registration successful! Verification email sent.',
               ),
               behavior: SnackBarBehavior.floating,
             ),

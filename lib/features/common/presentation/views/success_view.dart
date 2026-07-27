@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:blithepay/core/services/rating_service.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
 import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +36,9 @@ class _SuccessViewState extends State<SuccessView> {
   @override
   void initState() {
     super.initState();
+    // Check if eligible for in-app store rating/review
+    RatingService().promptReviewIfEligible();
+
     // Start auto-redirect timer (3 seconds)
     _redirectTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) {
