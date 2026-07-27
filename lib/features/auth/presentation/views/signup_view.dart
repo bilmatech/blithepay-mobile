@@ -12,6 +12,7 @@ import 'package:blithepay/shared/widgets/web_page_view.dart';
 import 'package:blithepay/core/constants/app_text_styles.dart';
 import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/shared/widgets/inputs/app_text_field.dart';
+import 'package:blithepay/shared/widgets/inputs/password_requirement_widget.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/step_progress_indicator.dart';
 import 'package:blithepay/features/auth/presentation/bloc/auth_bloc.dart';
@@ -58,6 +59,9 @@ class _SignupViewState extends State<SignupView> {
     _phoneController = TextEditingController();
     _passwordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
+    _passwordController.addListener(() {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -109,18 +113,13 @@ class _SignupViewState extends State<SignupView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.signupSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.errorMessage ?? 'Registration successful! Verification email sent.',
-              ),
-              behavior: SnackBarBehavior.floating,
-            ),
+          context.push(
+            AppRoutes.verifyOtp,
+            extra: {
+              'email': _emailController.text,
+              'flow': OtpFlow.signup,
+            },
           );
-        }
-
-        if (state.status == AuthStatus.otpSent) {
-          context.push(AppRoutes.verifyOtp, extra: {'flow': OtpFlow.signup});
         }
 
         if (state.status == AuthStatus.authenticated) {
@@ -211,6 +210,10 @@ class _SignupViewState extends State<SignupView> {
                               obscureText: true,
                               showPasswordToggle: true,
                               validator: Validators.validatePassword,
+                              onChanged: (value) => setState(() {}),
+                            ),
+                            PasswordRequirementWidget(
+                              password: _passwordController.text,
                             ),
                             const SizedBox(height: 16),
                             AppTextField(

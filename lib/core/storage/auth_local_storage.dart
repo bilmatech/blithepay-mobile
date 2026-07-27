@@ -34,6 +34,9 @@ abstract class AppLocalDataSource {
   Future<void> setDontShowBiometricPrompt(bool value);
   Future<bool> getDontShowBiometricPrompt();
   Future<String> getOrCreateDeviceId();
+  Future<void> saveSavedEmail(String email);
+  Future<String?> getSavedEmail();
+  Future<void> clearSavedEmail();
 }
 
 class AppLocalDataSourceImpl implements AppLocalDataSource {
@@ -227,5 +230,22 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
   @override
   Future<void> clearLastActiveTime() async {
     await _storage.delete(key: 'session_last_active_time');
+  }
+
+  static const _savedEmailKey = 'saved_email';
+
+  @override
+  Future<void> saveSavedEmail(String email) async {
+    await _storage.write(key: _savedEmailKey, value: email);
+  }
+
+  @override
+  Future<String?> getSavedEmail() {
+    return _storage.read(key: _savedEmailKey);
+  }
+
+  @override
+  Future<void> clearSavedEmail() async {
+    await _storage.delete(key: _savedEmailKey);
   }
 }

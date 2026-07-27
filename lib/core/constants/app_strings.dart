@@ -73,8 +73,8 @@ class AppStrings {
 
   //set up pin
 
-  static const String setupDigitPin = 'Set Up four Digit Pin';
-  static const String setup = 'Set up a 4 digit pin for carrying out transactions on BlithePay';
+  static const String setupDigitPin = 'Create Transaction PIN';
+  static const String setup = 'Create your 4 digit transaction pin.';
   static const String continueS = 'Continue';
 
   // Onboarding

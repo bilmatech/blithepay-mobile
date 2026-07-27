@@ -87,12 +87,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       // Persist session
       await _authRepository.persistSession(result);
 
-      // Sync FCM token on login to handle device changes
-      final fcmToken = await getFcmToken();
-      if (fcmToken.isNotEmpty) {
-        await _authRepository.syncFcmToken(fcmToken);
-      }
-
       emit(AuthState.authenticated(result));
     } catch (e) {
       emit(AuthState.error(extractError(e)));
@@ -222,12 +216,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       // Persist session
       await _authRepository.persistSession(result);
 
-      // Sync FCM token
-      final fcmToken = await getFcmToken();
-      if (fcmToken.isNotEmpty) {
-        await _authRepository.syncFcmToken(fcmToken);
-      }
-
       emit(AuthState.authenticated(result));
     } catch (e) {
       emit(AuthState.error(extractError(e)));
@@ -267,10 +255,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final result = await _authRepository.authenticateSso(idToken);
       await _authRepository.persistSession(result);
 
-      final fcmToken = await getFcmToken();
-      if (fcmToken.isNotEmpty) {
-        await _authRepository.syncFcmToken(fcmToken);
-      }
       emit(AuthState.authenticated(result));
     } catch (e) {
       emit(AuthState.error(extractError(e)));
@@ -304,12 +288,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   //     // Persist session
   //     await _authRepository.persistSession(result);
-
-  //     // Sync FCM token
-  //     final fcmToken = await getFcmToken();
-  //     if (fcmToken.isNotEmpty) {
-  //       await _authRepository.syncFcmToken(fcmToken);
-  //     }
 
   //     emit(AuthState.authenticated(result));
   //   } catch (e) {
@@ -351,12 +329,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       // 4. Persist user session locally
       await _authRepository.persistSession(result);
-
-      // Sync FCM notification token
-      final fcmToken = await getFcmToken();
-      if (fcmToken.isNotEmpty) {
-        await _authRepository.syncFcmToken(fcmToken);
-      }
 
       emit(AuthState.authenticated(result));
     } catch (e) {

@@ -1,13 +1,15 @@
 import 'dart:io';
-
-import 'package:blithepay/core/storage/auth_local_storage.dart';
-import 'package:blithepay/core/storage/hive_service.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mime/mime.dart';
-import '../../../../core/network/api_endpoints.dart';
-import '../../../../core/network/dio_client.dart';
 import '../models/auth_response_model.dart';
+import '../../../../core/network/dio_client.dart';
+import '../../../../core/network/api_endpoints.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:blithepay/core/storage/hive_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:blithepay/core/storage/auth_local_storage.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 abstract class AuthRepositoryInterface {
   Future<UserModel> signup(
@@ -17,7 +19,12 @@ abstract class AuthRepositoryInterface {
     String phoneNumber,
     String fcmtoken,
   );
-  Future<AuthResponseModel> login(String email, String password);
+  Future<AuthResponseModel> login(
+    String email,
+    String password, {
+    String? deviceId,
+    String? fcmToken,
+  });
   Future<void> forgotPassword(String email);
   Future<AuthResponseModel> verifyOtp(String code);
   Future<String> verifyForgotPasswordOtp(String code);
@@ -41,33 +48,84 @@ abstract class AuthRepositoryInterface {
   Future<String?> getBiometricEmail();
   Future<void> setDontShowBiometricPrompt(bool value);
   Future<bool> getDontShowBiometricPrompt();
-  Future<void> syncFcmToken(String token);
+  Future<void> saveSavedEmail(String email);
+  Future<String?> getSavedEmail();
+  Future<void> clearSavedEmail();
 
   Future<void> deleteAccount();
-  Future<UserModel> updateAccount({
-    String? fullName,
-    String? phone,
-    String? picture,
+  Future<UserModel> updateAccount({String? fullName, String? phone, String? picture});
+  Future<AuthResponseModel> authenticateSso(
+    String firebaseIdToken, {
+    String? deviceId,
+    String? fcmToken,
   });
-  Future<AuthResponseModel> authenticateSso(String firebaseIdToken);
   Future<void> changeAppPin(String oldPin, String newPin, String password);
   Future<String> getBiometricChallenge({required String email, required String deviceId});
-  Future<String> enrollBiometric({required String email, required String deviceId, required String publicKey});
-  Future<AuthResponseModel> verifyBiometrics({required String email, required String deviceId, required String challenge, required String signatureBase64});
+  Future<String> enrollBiometric({
+    required String email,
+    required String deviceId,
+    required String publicKey,
+  });
+  Future<AuthResponseModel> verifyBiometrics({
+    required String email,
+    required String deviceId,
+    required String challenge,
+    required String signatureBase64,
+  });
 }
 
 class AuthRepository implements AuthRepositoryInterface {
   final DioClient _dioClient;
   final AppLocalDataSource _localDataSource;
 
-  AuthRepository({
-    required DioClient dioClient,
-    required AppLocalDataSource localDataSource,
-  }) : _dioClient = dioClient,
-       _localDataSource = localDataSource;
+  AuthRepository({required DioClient dioClient, required AppLocalDataSource localDataSource})
+    : _dioClient = dioClient,
+      _localDataSource = localDataSource;
 
   FlutterSecureStorage get secureStorage => const FlutterSecureStorage();
   final HiveService hive = HiveService();
+
+  Future<Map<String, dynamic>> _buildDeviceObject(String fcmToken) async {
+    final deviceId = await _localDataSource.getOrCreateDeviceId();
+    final effectiveFcmToken = fcmToken.isNotEmpty
+        ? fcmToken
+        : (await FirebaseMessaging.instance.getToken() ?? '');
+
+    String platform = Platform.isAndroid ? 'Android' : (Platform.isIOS ? 'iOS' : 'Unknown');
+    String deviceName = 'Unknown Device';
+    String osVersion = 'Unknown OS';
+    String appVersion = '1.0.0';
+    String buildNumber = '1';
+
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      appVersion = packageInfo.version;
+      buildNumber = packageInfo.buildNumber;
+    } catch (_) {}
+
+    try {
+      final deviceInfo = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfo.androidInfo;
+        deviceName = '${androidInfo.manufacturer} ${androidInfo.model}';
+        osVersion = 'Android ${androidInfo.version.release}';
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfo.iosInfo;
+        deviceName = iosInfo.name.isNotEmpty ? iosInfo.name : iosInfo.model;
+        osVersion = 'iOS ${iosInfo.systemVersion}';
+      }
+    } catch (_) {}
+
+    return {
+      "deviceId": deviceId,
+      "platform": platform,
+      "deviceName": deviceName,
+      "osVersion": osVersion,
+      "appVersion": appVersion,
+      "buildNumber": buildNumber,
+      "fcmToken": effectiveFcmToken,
+    };
+  }
 
   @override
   Future<UserModel> signup(
@@ -77,6 +135,8 @@ class AuthRepository implements AuthRepositoryInterface {
     String phoneNumber,
     String fcmtoken,
   ) async {
+    final deviceObject = await _buildDeviceObject(fcmtoken);
+
     final response = await _dioClient.post(
       ApiEndpoints.signup,
       data: {
@@ -85,20 +145,33 @@ class AuthRepository implements AuthRepositoryInterface {
         "phone": phoneNumber,
         "isTermsAndPrivacyAccepted": true,
         "password": password,
-        "fcmToken": fcmtoken,
+        "device": deviceObject,
       },
     );
     return UserModel.fromJson(response.data['data']);
   }
 
   @override
-  Future<AuthResponseModel> login(String email, String password) async {
-    return AuthResponseModel.fromJson(
-      (await _dioClient.post(
-        ApiEndpoints.login,
-        data: {"email": email, "password": password, "source": 'mobile'},
-      )).data['data'],
+  Future<AuthResponseModel> login(
+    String email,
+    String password, {
+    String? deviceId,
+    String? fcmToken,
+  }) async {
+    final effectiveDeviceId = deviceId ?? await _localDataSource.getOrCreateDeviceId();
+    final effectiveFcmToken = fcmToken ?? (await FirebaseMessaging.instance.getToken() ?? '');
+
+    final response = await _dioClient.post(
+      ApiEndpoints.login,
+      data: {
+        "email": email,
+        "password": password,
+        "source": 'mobile',
+        "deviceId": effectiveDeviceId,
+        "fcmToken": effectiveFcmToken,
+      },
     );
+    return AuthResponseModel.fromJson(response.data['data']);
   }
 
   @override
@@ -108,20 +181,14 @@ class AuthRepository implements AuthRepositoryInterface {
 
   @override
   Future<AuthResponseModel> verifyOtp(String code) async {
-    var response = await _dioClient.post(
-      ApiEndpoints.verifyOtp,
-      data: {"code": code},
-    );
+    var response = await _dioClient.post(ApiEndpoints.verifyOtp, data: {"code": code});
 
     return AuthResponseModel.fromJson(response.data['data']);
   }
 
   @override
   Future<AuthResponseModel> resendOtp(String email) async {
-    var response = await _dioClient.post(
-      ApiEndpoints.resendOtp,
-      data: {'email': email},
-    );
+    var response = await _dioClient.post(ApiEndpoints.resendOtp, data: {'email': email});
 
     return AuthResponseModel.fromJson(response.data['data']);
   }
@@ -196,6 +263,24 @@ class AuthRepository implements AuthRepositoryInterface {
   Future<void> persistSession(AuthResponseModel session) async {
     await _localDataSource.saveTokens(session.tokens!);
     await _localDataSource.saveSession(session);
+    if (session.user?.email != null) {
+      await _localDataSource.saveSavedEmail(session.user!.email!);
+    }
+  }
+
+  @override
+  Future<void> saveSavedEmail(String email) async {
+    await _localDataSource.saveSavedEmail(email);
+  }
+
+  @override
+  Future<String?> getSavedEmail() async {
+    return await _localDataSource.getSavedEmail();
+  }
+
+  @override
+  Future<void> clearSavedEmail() async {
+    await _localDataSource.clearSavedEmail();
   }
 
   @override
@@ -230,17 +315,10 @@ class AuthRepository implements AuthRepositoryInterface {
 
   @override
   Future<AuthTokensModel> refresh(String token) async {
-    final response = await _dioClient.post(
-      ApiEndpoints.refreshToken,
-      data: {'token': token},
-    );
+    final response = await _dioClient.post(ApiEndpoints.refreshToken, data: {'token': token});
     return AuthTokensModel.fromJson(response.data['data']);
   }
 
-  @override
-  Future<void> syncFcmToken(String token) async {
-    await _dioClient.post(ApiEndpoints.synToken, data: {'token': token});
-  }
 
   Future<String> uploadImage(File picture, String folder) async {
     try {
@@ -266,10 +344,7 @@ class AuthRepository implements AuthRepositoryInterface {
         data: picture
             .openRead(), // Using a stream instead of readAsBytes is better for device memory
         options: Options(
-          headers: {
-            'Content-Type': mimeType,
-            'Content-Length': await picture.length(),
-          },
+          headers: {'Content-Type': mimeType, 'Content-Length': await picture.length()},
         ),
       );
 
@@ -286,11 +361,7 @@ class AuthRepository implements AuthRepositoryInterface {
   }
 
   @override
-  Future<UserModel> updateAccount({
-    String? fullName,
-    String? phone,
-    String? picture,
-  }) async {
+  Future<UserModel> updateAccount({String? fullName, String? phone, String? picture}) async {
     Map<String, dynamic> data = {};
     if (fullName != null) data['fullName'] = fullName;
     if (phone != null) data['phone'] = phone;
@@ -311,10 +382,21 @@ class AuthRepository implements AuthRepositoryInterface {
   }
 
   @override
-  Future<AuthResponseModel> authenticateSso(String firebaseIdToken) async {
+  Future<AuthResponseModel> authenticateSso(
+    String firebaseIdToken, {
+    String? deviceId,
+    String? fcmToken,
+  }) async {
+    final effectiveDeviceId = deviceId ?? await _localDataSource.getOrCreateDeviceId();
+    final effectiveFcmToken = fcmToken ?? (await FirebaseMessaging.instance.getToken() ?? '');
+
     final response = await _dioClient.post(
       ApiEndpoints.authenticateSso,
-      data: {"firebaseIdToken": firebaseIdToken},
+      data: {
+        "firebaseIdToken": firebaseIdToken,
+        "deviceId": effectiveDeviceId,
+        "fcmToken": effectiveFcmToken,
+      },
     );
     return AuthResponseModel.fromJson(response.data['data']);
   }
@@ -323,11 +405,7 @@ class AuthRepository implements AuthRepositoryInterface {
   Future<void> changeAppPin(String oldPin, String newPin, String password) async {
     final response = await _dioClient.post(
       ApiEndpoints.changeAppPin,
-      data: {
-        "oldPin": oldPin,
-        "newPin": int.tryParse(newPin) ?? 0,
-        "password": password,
-      },
+      data: {"oldPin": oldPin, "newPin": int.tryParse(newPin) ?? 0, "password": password},
     );
     if (response.data == null || response.data['status'] != true) {
       final message = response.data?['message'] ?? 'Failed to change PIN';
@@ -336,16 +414,10 @@ class AuthRepository implements AuthRepositoryInterface {
   }
 
   @override
-  Future<String> getBiometricChallenge({
-    required String email,
-    required String deviceId,
-  }) async {
+  Future<String> getBiometricChallenge({required String email, required String deviceId}) async {
     final response = await _dioClient.post(
       ApiEndpoints.biometricChallenge,
-      data: {
-        "deviceId": deviceId,
-        "userEmail": email,
-      },
+      data: {"deviceId": deviceId, "userEmail": email},
     );
     final data = response.data['data'];
     if (data is Map) {
@@ -362,11 +434,7 @@ class AuthRepository implements AuthRepositoryInterface {
   }) async {
     final response = await _dioClient.post(
       ApiEndpoints.biometricEnroll,
-      data: {
-        "deviceId": deviceId,
-        "userEmail": email,
-        "publicKey": publicKey,
-      },
+      data: {"deviceId": deviceId, "userEmail": email, "publicKey": publicKey},
     );
     return response.data['data'] as String;
   }

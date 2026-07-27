@@ -175,21 +175,21 @@ class ProfileView extends StatelessWidget {
                           child: Column(
                             children: [
                               _ModernProfileItem(
-                                icon: Icons.delete_outline_rounded,
-                                iconBgColor: const Color(0xFFFFF2F3),
-                                iconColor: AppColors.error,
-                                label: 'Delete Account',
-                                isDestructive: true,
-                                onTap: () => _showDeleteDialog(context),
-                              ),
-                              const _DestructiveDivider(),
-                              _ModernProfileItem(
                                 icon: Icons.logout_rounded,
                                 iconBgColor: const Color(0xFFFFF2F3),
                                 iconColor: AppColors.error,
                                 label: 'Sign Out',
                                 isDestructive: true,
                                 onTap: () => _showLogoutDialog(context),
+                              ),
+                              const _DestructiveDivider(),
+                              _ModernProfileItem(
+                                icon: Icons.delete_outline_rounded,
+                                iconBgColor: const Color(0xFFFFF2F3),
+                                iconColor: AppColors.error,
+                                label: 'Delete Account',
+                                isDestructive: true,
+                                onTap: () => _showDeleteDialog(context),
                               ),
                             ],
                           ),

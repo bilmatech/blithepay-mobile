@@ -1,24 +1,24 @@
+import 'dart:async';
+import 'package:blithepay/app.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:blithepay/core/constants/app_colors.dart';
-import 'package:blithepay/core/constants/app_text_styles.dart';
-import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
-import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
-import 'package:blithepay/features/vas/core/data/models/service_purchase_response.dart';
-import 'package:blithepay/features/vas/core/presentation/views/shared/receipt_services.dart';
-import 'package:blithepay/features/vas/core/presentation/views/vas_success_view.dart';
-import 'package:blithepay/features/vas/core/presentation/widgets/purchase_overlay.dart';
-import 'package:blithepay/features/fees/presentation/views/widgets/pin_bottom_sheet_content.dart';
+import 'package:blithepay/core/navigation/app_routes.dart';
 import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/core/network/dio_error_mapper.dart';
+import 'package:blithepay/core/constants/app_text_styles.dart';
+import 'package:blithepay/shared/widgets/paystack_webview.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:blithepay/core/navigation/app_routes.dart';
-import 'package:blithepay/core/network/dio_error_mapper.dart';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:blithepay/features/wallet/data/repositories/wallet_repository.dart';
-import 'package:blithepay/shared/widgets/paystack_webview.dart';
-import 'package:blithepay/app.dart';
-import 'dart:async';
+import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
+import 'package:blithepay/features/vas/core/presentation/views/vas_success_view.dart';
+import 'package:blithepay/features/vas/core/data/models/service_purchase_response.dart';
+import 'package:blithepay/features/vas/core/presentation/widgets/purchase_overlay.dart';
+import 'package:blithepay/features/vas/core/presentation/views/shared/receipt_services.dart';
+import 'package:blithepay/features/fees/presentation/views/widgets/pin_bottom_sheet_content.dart';
 
 // ── Service Review Args ──────────────────────────────────────────────────────
 
@@ -77,9 +77,7 @@ class PaymentMethodTile extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        color: selected
-            ? AppColors.primary.withValues(alpha: 0.04)
-            : AppColors.surface,
+        color: selected ? AppColors.primary.withValues(alpha: 0.04) : AppColors.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: selected ? AppColors.primary : AppColors.border,
@@ -118,9 +116,7 @@ class PaymentMethodTile extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
-                        color: selected
-                            ? AppColors.primary
-                            : AppColors.textPrimary,
+                        color: selected ? AppColors.primary : AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -144,12 +140,7 @@ class PaymentMethodTile extends StatelessWidget {
                   ),
                 ),
                 child: selected
-                    ? const Center(
-                        child: CircleAvatar(
-                          radius: 4,
-                          backgroundColor: AppColors.white,
-                        ),
-                      )
+                    ? const Center(child: CircleAvatar(radius: 4, backgroundColor: AppColors.white))
                     : null,
               ),
             ],
@@ -199,10 +190,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
         ),
         title: const Text(
           'Review Payment',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
         ),
         centerTitle: true,
         actions: [
@@ -213,11 +201,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
             },
             child: const Text(
               'Cancel',
-              style: TextStyle(
-                color: AppColors.error,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w600, fontSize: 14),
             ),
           ),
         ],
@@ -231,9 +215,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight - 40,
-                  ),
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight - 40),
                   child: IntrinsicHeight(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,18 +223,12 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                         // ── AMOUNT HERO ──────────────────────────────────────
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 28,
-                            horizontal: 20,
-                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              colors: [
-                                AppColors.primary,
-                                AppColors.primary.withValues(alpha: 0.8),
-                              ],
+                              colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
                             ),
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
@@ -264,7 +240,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                             ],
                           ),
                           child: Column(
-                             children: [
+                            children: [
                               const Text(
                                 'TOTAL AMOUNT',
                                 style: TextStyle(
@@ -286,10 +262,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                               ),
                               const SizedBox(height: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 4,
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: AppColors.white.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(20),
@@ -349,10 +322,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                         const SizedBox(height: 20),
 
                         // ── PAYMENT METHOD ────────────────────────────────────
-                        const Text(
-                          'Payment Method',
-                          style: AppTextStyles.bodyLarge,
-                        ),
+                        const Text('Payment Method', style: AppTextStyles.bodyLarge),
                         const SizedBox(height: 12),
                         PaymentMethodTile(
                           title: 'Pay with Wallet',
@@ -362,26 +332,22 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                               : null,
                           icon: Icons.account_balance_wallet_outlined,
                           selected: _method == PaymentMethod.wallet,
-                          onTap: () =>
-                              setState(() => _method = PaymentMethod.wallet),
+                          onTap: () => setState(() => _method = PaymentMethod.wallet),
                         ),
                         const SizedBox(height: 10),
                         PaymentMethodTile(
-                          title: 'Pay with Card',
-                          subtitle:
-                              'Secure card, bank transfer, and USSD via Paystack',
+                          title: 'Pay with Other Methods',
+                          subtitle: 'Card, Bank transfer, USSD, and more via Paystack',
                           icon: Icons.credit_card_rounded,
                           selected: _method == PaymentMethod.card,
-                          onTap: () =>
-                              setState(() => _method = PaymentMethod.card),
+                          onTap: () => setState(() => _method = PaymentMethod.card),
                         ),
 
                         const Spacer(),
                         const SizedBox(height: 28),
 
                         PrimaryButton(
-                          label:
-                              'Pay ₦${(widget.args.amountKobo / 100).toStringAsFixed(2)}',
+                          label: 'Pay ₦${(widget.args.amountKobo / 100).toStringAsFixed(2)}',
                           onPressed: () {
                             if (_method != null) {
                               _showPin(context);
@@ -426,10 +392,8 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
                     _errorMessage = null;
                   });
                   try {
-                    final paymentSource =
-                        _method == PaymentMethod.card ? 'card' : 'wallet';
-                    final transaction =
-                        await widget.args.onPay(pin, paymentSource);
+                    final paymentSource = _method == PaymentMethod.card ? 'card' : 'wallet';
+                    final transaction = await widget.args.onPay(pin, paymentSource);
                     if (!sheetContext.mounted) return;
                     Navigator.pop(sheetContext);
 
@@ -469,9 +433,7 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
 
     final result = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        builder: (_) => PaystackWebView(url: charge.authorizationUrl),
-      ),
+      MaterialPageRoute(builder: (_) => PaystackWebView(url: charge.authorizationUrl)),
     );
 
     if (!mounted) return;
@@ -540,17 +502,13 @@ class _ServiceReviewViewState extends State<ServiceReviewView> {
     }
   }
 
-  void _showSuccess(
-    BuildContext targetContext,
-    ServiceTransactionModel transaction,
-  ) {
+  void _showSuccess(BuildContext targetContext, ServiceTransactionModel transaction) {
     Navigator.push(
       targetContext,
       MaterialPageRoute(
         builder: (successContext) => VasSuccessView(
           title: 'Payment Successful!',
-          description:
-              'Your ${widget.args.title} transaction was completed successfully.',
+          description: 'Your ${widget.args.title} transaction was completed successfully.',
           transaction: transaction,
           onDownloadReceipt: (ctx) async {
             await _showReceiptPreview(ctx, transaction);
@@ -619,32 +577,28 @@ class _OrderDetailsCard extends StatelessWidget {
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  args.icon,
-                  color: AppColors.primary,
-                  size: 18,
-                ),
+                child: Icon(args.icon, color: AppColors.primary, size: 18),
               ),
               const SizedBox(width: 12),
               Text(
                 'Order Summary',
-                style: AppTextStyles.headingSmall.copyWith(
-                  color: AppColors.textPrimary,
-                ),
+                style: AppTextStyles.headingSmall.copyWith(color: AppColors.textPrimary),
               ),
             ],
           ),
           const SizedBox(height: 16),
           const Divider(height: 1),
           const SizedBox(height: 12),
-          ...args.summaryDetails.map((detail) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: _DetailRow(
-                  label: detail.label,
-                  value: detail.value,
-                  isHighlight: detail.label.toLowerCase().trim() == 'amount',
-                ),
-              )),
+          ...args.summaryDetails.map(
+            (detail) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: _DetailRow(
+                label: detail.label,
+                value: detail.value,
+                isHighlight: detail.label.toLowerCase().trim() == 'amount',
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -656,11 +610,7 @@ class _DetailRow extends StatelessWidget {
   final String value;
   final bool isHighlight;
 
-  const _DetailRow({
-    required this.label,
-    required this.value,
-    this.isHighlight = false,
-  });
+  const _DetailRow({required this.label, required this.value, this.isHighlight = false});
 
   @override
   Widget build(BuildContext context) {
@@ -670,12 +620,7 @@ class _DetailRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: AppTextStyles.bodyRegular.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
+          Text(label, style: AppTextStyles.bodyRegular.copyWith(color: AppColors.textSecondary)),
           const SizedBox(width: 16),
           Flexible(
             child: Text(
@@ -700,10 +645,7 @@ class _ReceiptPreviewDialog extends StatelessWidget {
   final ServiceTransactionModel transaction;
   final VoidCallback onDownload;
 
-  const _ReceiptPreviewDialog({
-    required this.transaction,
-    required this.onDownload,
-  });
+  const _ReceiptPreviewDialog({required this.transaction, required this.onDownload});
 
   @override
   Widget build(BuildContext context) {
@@ -711,10 +653,7 @@ class _ReceiptPreviewDialog extends StatelessWidget {
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(20),
       child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(24),
-        ),
+        decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(24)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -724,17 +663,11 @@ class _ReceiptPreviewDialog extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               decoration: const BoxDecoration(
                 color: AppColors.primary,
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(24),
-                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Column(
                 children: [
-                  const Icon(
-                    Icons.receipt_long_rounded,
-                    color: AppColors.white,
-                    size: 40,
-                  ),
+                  const Icon(Icons.receipt_long_rounded, color: AppColors.white, size: 40),
                   const SizedBox(height: 8),
                   const Text(
                     'Receipt Preview',
@@ -747,10 +680,7 @@ class _ReceiptPreviewDialog extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'Ref: ${transaction.reference}',
-                    style: TextStyle(
-                      color: AppColors.white.withValues(alpha: 0.75),
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: AppColors.white.withValues(alpha: 0.75), fontSize: 12),
                   ),
                 ],
               ),
@@ -811,10 +741,7 @@ class _ReceiptPreviewDialog extends StatelessWidget {
                       }();
 
                       return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                         decoration: BoxDecoration(
                           color: statusBg,
                           borderRadius: BorderRadius.circular(20),
@@ -823,11 +750,7 @@ class _ReceiptPreviewDialog extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              statusIcon,
-                              color: statusColor,
-                              size: 16,
-                            ),
+                            Icon(statusIcon, color: statusColor, size: 16),
                             const SizedBox(width: 6),
                             Text(
                               upperStatus,
@@ -870,30 +793,17 @@ class _ReceiptPreviewDialog extends StatelessWidget {
                           return Colors.amber.shade800;
                         }
                       }();
-                      return _ReceiptRow(
-                        'Status',
-                        upperStatus,
-                        valueColor: statusColor,
-                      );
+                      return _ReceiptRow('Status', upperStatus, valueColor: statusColor);
                     },
                   ),
-                  _ReceiptRow(
-                    'Amount',
-                    '₦${transaction.amount.toStringAsFixed(2)}',
-                  ),
+                  _ReceiptRow('Amount', '₦${transaction.amount.toStringAsFixed(2)}'),
                   _ReceiptRow('Date', _formatDate(transaction.createdAt)),
                   if (transaction.metadata != null &&
                       transaction.metadata!.receiver.number.isNotEmpty)
-                    _ReceiptRow(
-                      'Recipient',
-                      transaction.metadata!.receiver.number,
-                    ),
+                    _ReceiptRow('Recipient', transaction.metadata!.receiver.number),
                   if (transaction.metadata != null &&
                       transaction.metadata!.receiver.name?.isNotEmpty == true)
-                    _ReceiptRow(
-                      'Account Name',
-                      transaction.metadata!.receiver.name!,
-                    ),
+                    _ReceiptRow('Account Name', transaction.metadata!.receiver.name!),
                   if (transaction.token?.isNotEmpty == true) ...[
                     const Divider(),
                     _ReceiptRow('Token', transaction.token!),
@@ -913,10 +823,7 @@ class _ReceiptPreviewDialog extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: PrimaryButton(
-                          label: 'Download PDF',
-                          onPressed: onDownload,
-                        ),
+                        child: PrimaryButton(label: 'Download PDF', onPressed: onDownload),
                       ),
                     ],
                   ),
@@ -963,12 +870,7 @@ class _ReceiptRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: AppTextStyles.bodyRegular.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
+          Text(label, style: AppTextStyles.bodyRegular.copyWith(color: AppColors.textSecondary)),
           Flexible(
             child: Text(
               value,
@@ -1112,7 +1014,11 @@ class PaymentVerificationManager {
                   if (tx.token != null && tx.token!.isNotEmpty)
                     Text(
                       'Token: ${tx.token}',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                 ],
               ),

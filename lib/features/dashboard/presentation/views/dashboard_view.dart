@@ -41,9 +41,7 @@ class DashboardView extends StatelessWidget {
     final hideBottomNavigation = location.contains('/service/');
 
     return UpgradeAlert(
-      upgrader: Upgrader(
-        dialogStyle: UpgradeDialogStyle.cupertino,
-      ),
+      upgrader: Upgrader(),
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(child: child),

@@ -14,6 +14,8 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 
+import 'package:blithepay/shared/widgets/inputs/password_requirement_widget.dart';
+
 class ResetPasswordView extends StatefulWidget {
   final String email;
   final bool fromProfile;
@@ -38,6 +40,9 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
     super.initState();
     _newPasswordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
+    _newPasswordController.addListener(() {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -135,6 +140,10 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                           obscureText: true,
                           showPasswordToggle: true,
                           validator: Validators.validatePassword,
+                          onChanged: (value) => setState(() {}),
+                        ),
+                        PasswordRequirementWidget(
+                          password: _newPasswordController.text,
                         ),
                         const SizedBox(height: 16),
                         AppTextField(

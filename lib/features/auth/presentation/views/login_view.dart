@@ -13,13 +13,13 @@ import '../../../../core/constants/app_text_styles.dart';
 import 'package:blithepay/core/constants/app_colors.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
+import 'package:blithepay/core/storage/auth_local_storage.dart';
 import '../../../../shared/widgets/buttons/secondary_button.dart';
 import 'package:blithepay/shared/widgets/buttons/social_auth_button.dart';
 import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
+import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_event.dart';
-import 'package:blithepay/core/storage/auth_local_storage.dart';
-
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -34,6 +34,7 @@ class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
   bool _biometricsEnabled = false;
   String? _biometricEmail;
+  String? _savedEmail;
 
   @override
   void initState() {
@@ -46,7 +47,19 @@ class _LoginViewState extends State<LoginView> {
       _passwordController.text = '';
     }
 
+    _loadSavedEmail();
     _checkBiometrics();
+  }
+
+  Future<void> _loadSavedEmail() async {
+    final authRepository = context.read<AuthRepository>();
+    final savedEmail = await authRepository.getSavedEmail();
+    if (savedEmail != null && mounted) {
+      setState(() {
+        _savedEmail = savedEmail;
+        _emailController.text = savedEmail;
+      });
+    }
   }
 
   Future<void> _checkBiometrics() async {
@@ -67,10 +80,7 @@ class _LoginViewState extends State<LoginView> {
     final deviceId = await localDataSource.getOrCreateDeviceId();
     if (mounted) {
       context.read<AuthBloc>().add(
-        BiometricLoginRequested(
-          email: _biometricEmail!,
-          deviceId: deviceId,
-        ),
+        BiometricLoginRequested(email: _biometricEmail!, deviceId: deviceId),
       );
     }
   }
@@ -105,10 +115,7 @@ class _LoginViewState extends State<LoginView> {
       // }
 
       context.read<AuthBloc>().add(
-        LoginRequested(
-          email: _emailController.text,
-          password: _passwordController.text,
-        ),
+        LoginRequested(email: _emailController.text, password: _passwordController.text),
       );
     }
   }
@@ -132,20 +139,13 @@ class _LoginViewState extends State<LoginView> {
 
           context.go(
             AppRoutes.verifyOtp,
-            extra: {
-              'email': _emailController.text,
-              'flow': OtpFlow.verifyEmail,
-            },
+            extra: {'email': _emailController.text, 'flow': OtpFlow.verifyEmail},
           );
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
-              SnackBar(
-                content: Text(
-                  state.errorMessage ?? 'An unknown error occurred',
-                ),
-              ),
+              SnackBar(content: Text(state.errorMessage ?? 'An unknown error occurred')),
             );
         }
       },
@@ -164,27 +164,89 @@ class _LoginViewState extends State<LoginView> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const SizedBox(height: 40),
-                        const Text(
-                          AppStrings.welcomeBack,
-                          style: AppTextStyles.h2,
-                        ),
+                        const Text(AppStrings.welcomeBack, style: AppTextStyles.h2),
                         const SizedBox(height: 8),
                         const Text(
                           AppStrings.welcomeBackSubtitle,
                           style: AppTextStyles.bodyRegular,
                         ),
                         const SizedBox(height: 32),
+                        if (_savedEmail != null) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                                  child: const Icon(
+                                    Icons.person_outline,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Logged in as',
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: AppColors.textTertiary,
+                                        ),
+                                      ),
+                                      Text(
+                                        _savedEmail!,
+                                        style: AppTextStyles.bodyRegular.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    final authRepository = context.read<AuthRepository>();
+                                    await authRepository.clearSavedEmail();
+                                    setState(() {
+                                      _savedEmail = null;
+                                      _emailController.clear();
+                                    });
+                                  },
+                                  child: Text(
+                                    'Switch',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            AppTextField(
-                              label: AppStrings.email,
-                              hint: AppStrings.enterEmail,
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              validator: Validators.validateEmail,
-                            ),
-                            const SizedBox(height: 16),
+                            if (_savedEmail == null) ...[
+                              AppTextField(
+                                label: AppStrings.email,
+                                hint: AppStrings.enterEmail,
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: Validators.validateEmail,
+                              ),
+                              const SizedBox(height: 16),
+                            ],
                             AppTextField(
                               label: AppStrings.password,
                               hint: AppStrings.enterPassword,
@@ -198,8 +260,7 @@ class _LoginViewState extends State<LoginView> {
                               child: SecondaryButton(
                                 label: AppStrings.forgotPassword,
                                 textColor: AppColors.borderDark,
-                                onPressed: () =>
-                                    context.push(AppRoutes.forgotPassword),
+                                onPressed: () => context.push(AppRoutes.forgotPassword),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -221,7 +282,9 @@ class _LoginViewState extends State<LoginView> {
                             if (_biometricsEnabled) ...[
                               const SizedBox(width: 12),
                               InkWell(
-                                onTap: state.status == AuthStatus.loading ? null : _handleBiometricLogin,
+                                onTap: state.status == AuthStatus.loading
+                                    ? null
+                                    : _handleBiometricLogin,
                                 borderRadius: BorderRadius.circular(12),
                                 child: Container(
                                   height: 50,
@@ -231,7 +294,8 @@ class _LoginViewState extends State<LoginView> {
                                     borderRadius: BorderRadius.circular(12),
                                     color: AppColors.primary.withValues(alpha: 0.05),
                                   ),
-                                  child: state.status == AuthStatus.loading &&
+                                  child:
+                                      state.status == AuthStatus.loading &&
                                           state.loadingType == LoadingType.biometric
                                       ? const Padding(
                                           padding: EdgeInsets.all(12.0),
@@ -259,12 +323,7 @@ class _LoginViewState extends State<LoginView> {
                               text: const TextSpan(
                                 text: "Don't have an account? ",
                                 style: AppTextStyles.bodyRegular,
-                                children: [
-                                  TextSpan(
-                                    text: 'Sign Up',
-                                    style: AppTextStyles.link,
-                                  ),
-                                ],
+                                children: [TextSpan(text: 'Sign Up', style: AppTextStyles.link)],
                               ),
                             ),
                           ),
@@ -272,9 +331,7 @@ class _LoginViewState extends State<LoginView> {
                         const SizedBox(height: 40),
                         Row(
                           children: [
-                            const Expanded(
-                              child: Divider(color: AppColors.border),
-                            ),
+                            const Expanded(child: Divider(color: AppColors.border)),
                             const SizedBox(width: 12),
                             Text(
                               AppStrings.orContinueWith,
@@ -284,9 +341,7 @@ class _LoginViewState extends State<LoginView> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const Expanded(
-                              child: Divider(color: AppColors.border),
-                            ),
+                            const Expanded(child: Divider(color: AppColors.border)),
                           ],
                         ),
                         const SizedBox(height: 20),
@@ -297,18 +352,15 @@ class _LoginViewState extends State<LoginView> {
                             // Social Login Section
                             SocialAuthButton(
                               iconPath: 'assets/images/google.svg',
-                              onPressed: () => context.read<AuthBloc>().add(
-                                const GoogleSignInRequested(),
-                              ),
-                              isLoading:
-                                  state.loadingType == LoadingType.google,
+                              onPressed: () =>
+                                  context.read<AuthBloc>().add(const GoogleSignInRequested()),
+                              isLoading: state.loadingType == LoadingType.google,
                             ),
                             const SizedBox(width: 12),
                             SocialAuthButton(
                               iconPath: 'assets/images/apple.svg',
-                              onPressed: () => context.read<AuthBloc>().add(
-                                const AppleSignInRequested(),
-                              ),
+                              onPressed: () =>
+                                  context.read<AuthBloc>().add(const AppleSignInRequested()),
                               isLoading: state.loadingType == LoadingType.apple,
                             ),
                           ],

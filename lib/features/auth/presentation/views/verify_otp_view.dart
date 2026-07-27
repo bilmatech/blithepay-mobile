@@ -43,7 +43,7 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
   @override
   void initState() {
     super.initState();
-    _otpControllers = List.generate(6, (_) => TextEditingController());
+    _otpControllers = List.generate(6, (_) => TextEditingController(text: ' '));
     _focusNodes = List.generate(6, (_) => FocusNode());
     _startCountdown();
   }
@@ -61,7 +61,7 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
   }
 
   void _handleVerifyOtp() {
-    final code = _otpControllers.map((c) => c.text).join();
+    final code = _otpControllers.map((c) => c.text.trim()).join();
 
     if (code.length == 6) {
       if (widget.flow == OtpFlow.forgotPassword) {
@@ -81,12 +81,14 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
   }
 
   void _onOtpFieldChanged(int index, String value) {
-    //  HANDLE PASTE (6-digit or more)
-    if (value.length > 1) {
-      final chars = value.split('');
+    final cleanValue = value.replaceAll(' ', '');
+
+    // HANDLE PASTE
+    if (cleanValue.length > 1) {
+      final chars = cleanValue.split('');
 
       for (int i = 0; i < _otpControllers.length; i++) {
-        _otpControllers[i].text = i < chars.length ? chars[i] : '';
+        _otpControllers[i].text = i < chars.length ? chars[i] : ' ';
       }
 
       _focusNodes.last.requestFocus();
@@ -94,12 +96,27 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
       return;
     }
 
-    // NORMAL typing behavior
-    if (value.isNotEmpty && index < 5) {
-      _focusNodes[index + 1].requestFocus();
+    // BACKSPACE / DELETE
+    if (value.isEmpty) {
+      _otpControllers[index].text = ' ';
+      if (index > 0) {
+        _otpControllers[index - 1].text = ' ';
+        _focusNodes[index - 1].requestFocus();
+      }
+      return;
     }
-    if (value.isEmpty && index > 0) {
-      _focusNodes[index - 1].requestFocus();
+
+    // NORMAL typing behavior
+    if (cleanValue.isNotEmpty) {
+      final char = cleanValue.substring(cleanValue.length - 1);
+      _otpControllers[index].value = TextEditingValue(
+        text: char,
+        selection: TextSelection.collapsed(offset: char.length),
+      );
+      if (index < 5) {
+        _focusNodes[index + 1].requestFocus();
+      }
+      _handleVerifyOtp();
     }
   }
 
@@ -295,7 +312,9 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                                   maxLengthEnforcement:
                                       MaxLengthEnforcement.none,
                                   inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(r'[0-9\s]'),
+                                    ),
                                   ],
                                   onChanged: (value) =>
                                       _onOtpFieldChanged(index, value),
