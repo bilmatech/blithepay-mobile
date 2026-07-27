@@ -39,6 +39,8 @@ abstract class AuthRepositoryInterface {
   Future<bool> isOnboardingCompleted();
   Future<bool> isBiometricsEnabled();
   Future<String?> getBiometricEmail();
+  Future<void> setDontShowBiometricPrompt(bool value);
+  Future<bool> getDontShowBiometricPrompt();
   Future<void> syncFcmToken(String token);
 
   Future<void> deleteAccount();
@@ -209,6 +211,16 @@ class AuthRepository implements AuthRepositoryInterface {
   @override
   Future<String?> getBiometricEmail() async {
     return await _localDataSource.getBiometricEmail();
+  }
+
+  @override
+  Future<void> setDontShowBiometricPrompt(bool value) async {
+    await _localDataSource.setDontShowBiometricPrompt(value);
+  }
+
+  @override
+  Future<bool> getDontShowBiometricPrompt() async {
+    return await _localDataSource.getDontShowBiometricPrompt();
   }
 
   @override

@@ -31,6 +31,8 @@ abstract class AppLocalDataSource {
   Future<void> setBiometricEmail(String email);
   Future<String?> getBiometricEmail();
   Future<void> clearBiometricEmail();
+  Future<void> setDontShowBiometricPrompt(bool value);
+  Future<bool> getDontShowBiometricPrompt();
   Future<String> getOrCreateDeviceId();
 }
 
@@ -56,6 +58,7 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
   static const _balanceVisibleKey = 'wallet_balance_visible';
   static const _biometricsEnabledKey = 'biometrics_enabled';
   static const _biometricEmailKey = 'biometric_email';
+  static const _dontShowBiometricPromptKey = 'dont_show_biometric_prompt';
   static const _deviceIdKey = 'device_id';
 
   @override
@@ -182,6 +185,20 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
   @override
   Future<void> clearBiometricEmail() async {
     await _storage.delete(key: _biometricEmailKey);
+  }
+
+  @override
+  Future<void> setDontShowBiometricPrompt(bool value) async {
+    await _storage.write(
+      key: _dontShowBiometricPromptKey,
+      value: value.toString(),
+    );
+  }
+
+  @override
+  Future<bool> getDontShowBiometricPrompt() async {
+    final value = await _storage.read(key: _dontShowBiometricPromptKey);
+    return value == 'true';
   }
 
   @override

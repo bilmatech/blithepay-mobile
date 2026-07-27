@@ -75,6 +75,20 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
+  Future<void> _navigateAfterAuth() async {
+    final localDataSource = context.read<AppLocalDataSource>();
+    final isEnabled = await localDataSource.isBiometricsEnabled();
+    final dontShow = await localDataSource.getDontShowBiometricPrompt();
+
+    if (!mounted) return;
+    if (!isEnabled && !dontShow) {
+      context.go(AppRoutes.enableBiometrics, extra: _emailController.text);
+    } else {
+      context.go(AppRoutes.home);
+      context.read<DashboardBloc>().add(const FetchDashboardData());
+    }
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -104,9 +118,7 @@ class _LoginViewState extends State<LoginView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.authenticated) {
-          context.go(AppRoutes.home);
-
-          context.read<DashboardBloc>().add(const FetchDashboardData());
+          _navigateAfterAuth();
         } else if (state.status == AuthStatus.error &&
             state.errorMessage?.contains('not verified') == true) {
           ScaffoldMessenger.of(context)

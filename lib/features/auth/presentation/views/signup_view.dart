@@ -89,14 +89,33 @@ class _SignupViewState extends State<SignupView> {
     }
   }
 
+  Future<void> _navigateAfterAuth() async {
+    final localDataSource = context.read<AppLocalDataSource>();
+    final isEnabled = await localDataSource.isBiometricsEnabled();
+    final dontShow = await localDataSource.getDontShowBiometricPrompt();
+
+    if (!mounted) return;
+    if (!isEnabled && !dontShow) {
+      context.go(AppRoutes.enableBiometrics, extra: _emailController.text);
+    } else {
+      context.go(AppRoutes.home);
+      context.read<DashboardBloc>().add(const FetchDashboardData());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.signupSuccess) {
-          context.push(
-            AppRoutes.verifyOtp,
-            extra: {'email': _emailController.text, 'flow': OtpFlow.signup},
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                state.errorMessage ??
+                    'Registration successful! Verification email sent.',
+              ),
+              behavior: SnackBarBehavior.floating,
+            ),
           );
         }
 
@@ -105,8 +124,7 @@ class _SignupViewState extends State<SignupView> {
         }
 
         if (state.status == AuthStatus.authenticated) {
-          context.go(AppRoutes.home);
-          context.read<DashboardBloc>().add(const FetchDashboardData());
+          _navigateAfterAuth();
         }
       },
       child: AppScaffold(

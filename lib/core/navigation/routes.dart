@@ -80,6 +80,13 @@ class AppRouterConfig {
           path: AppRoutes.biometric,
           builder: (_, __) => const BiometricAuthView(),
         ),
+        GoRoute(
+          path: AppRoutes.enableBiometrics,
+          builder: (context, state) {
+            final email = state.extra as String?;
+            return EnableBiometricsView(email: email);
+          },
+        ),
         // GoRoute(
         //   path: AppRoutes.passwordChanged,
         //   builder: (_, __) => const PasswordChangedView(),

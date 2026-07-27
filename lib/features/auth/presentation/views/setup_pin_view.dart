@@ -84,11 +84,12 @@ class _SetupOtpViewState extends State<SetupOtpView> {
           } else {
             context.go(
               AppRoutes.success,
-              extra: const SuccessArgs(
+              extra: SuccessArgs(
                 title: AppStrings.successful,
                 message: AppStrings.anAccounthasbeen,
                 buttonLabel: AppStrings.gotToHome,
-                nextRoute: AppRoutes.home,
+                nextRoute: AppRoutes.enableBiometrics,
+                nextExtra: widget.email,
                 useAuthBackground: true,
               ),
             );
