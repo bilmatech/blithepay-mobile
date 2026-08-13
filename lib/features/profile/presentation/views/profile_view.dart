@@ -17,6 +17,9 @@ import 'package:blithepay/features/profile/presentation/bloc/profile_event.dart'
 import 'package:blithepay/features/profile/presentation/bloc/profile_state.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:blithepay/shared/widgets/dialogs/confirmation_bottom_sheet.dart';
+import 'package:blithepay/core/services/shorebird_service.dart';
+import 'package:shorebird_code_push/shorebird_code_push.dart';
+
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -151,6 +154,7 @@ class ProfileView extends StatelessWidget {
                                 label: 'Help & Support',
                                 onTap: () => context.push('/help-support'),
                               ),
+                              const _ShorebirdUpdateItem(),
                             ],
                           ),
                         ),
@@ -208,7 +212,9 @@ class ProfileView extends StatelessWidget {
       onConfirm: () async {
         final localDataSource = context.read<AppLocalDataSource>();
         await localDataSource.clearSession();
-        context.go('/login');
+        if (context.mounted) {
+          context.go('/login');
+        }
       },
     );
   }
@@ -296,6 +302,7 @@ class _ModernProfileItem extends StatelessWidget {
   final Color iconBgColor;
   final Color iconColor;
   final String label;
+  final String? subtitle;
   final VoidCallback onTap;
   final bool isDestructive;
 
@@ -304,6 +311,7 @@ class _ModernProfileItem extends StatelessWidget {
     required this.iconBgColor,
     required this.iconColor,
     required this.label,
+    this.subtitle,
     required this.onTap,
     this.isDestructive = false,
   });
@@ -325,13 +333,32 @@ class _ModernProfileItem extends StatelessWidget {
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                  color: isDestructive ? AppColors.error : const Color(0xFF061657),
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: isDestructive ? AppColors.error : const Color(0xFF061657),
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDestructive
+                            ? AppColors.error.withValues(alpha: 0.7)
+                            : AppColors.textSecondary,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
             Icon(
@@ -545,3 +572,37 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
     );
   }
 }
+
+class _ShorebirdUpdateItem extends StatelessWidget {
+  const _ShorebirdUpdateItem();
+
+  @override
+  Widget build(BuildContext context) {
+    if (!ShorebirdService.instance.isShorebirdAvailable) {
+      return const SizedBox.shrink();
+    }
+
+    return FutureBuilder<Patch?>(
+      future: ShorebirdService.instance.getCurrentPatch(),
+      builder: (context, snapshot) {
+        final patch = snapshot.data;
+        final subtitle = patch != null ? 'Patch v${patch.number}' : 'Up to date';
+
+        return Column(
+          children: [
+            const _Divider(),
+            _ModernProfileItem(
+              icon: Icons.system_update_rounded,
+              iconBgColor: const Color(0xFFF0F3FF),
+              iconColor: AppColors.primary,
+              label: 'Check for Updates',
+              subtitle: subtitle,
+              onTap: () => ShorebirdService.instance.checkAndPromptUpdate(context, showNoUpdateMessage: true),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
