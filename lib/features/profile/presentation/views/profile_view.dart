@@ -9,14 +9,14 @@ import 'package:blithepay/shared/widgets/layouts/spacing.dart';
 import 'package:blithepay/core/storage/auth_local_storage.dart';
 import 'package:blithepay/shared/widgets/layouts/app_text.dart';
 import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
+import 'package:blithepay/core/services/biometric_crypto_service.dart';
 import 'package:blithepay/features/auth/data/models/auth_response_model.dart';
 import 'package:blithepay/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
 import 'package:blithepay/features/profile/presentation/bloc/profile_event.dart';
 import 'package:blithepay/features/profile/presentation/bloc/profile_state.dart';
 import 'package:blithepay/shared/widgets/buttons/secondary_outlined_button.dart';
 import 'package:blithepay/shared/widgets/dialogs/confirmation_bottom_sheet.dart';
-import 'package:blithepay/core/services/biometric_crypto_service.dart';
-import 'package:blithepay/features/auth/data/repositories/auth_repository.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -58,7 +58,7 @@ class ProfileView extends StatelessWidget {
                             color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
-                          )
+                          ),
                         ],
                         border: Border.all(
                           color: AppColors.primary.withValues(alpha: 0.15),
@@ -71,30 +71,20 @@ class ProfileView extends StatelessWidget {
                                 profilePicture,
                                 fit: BoxFit.cover,
                                 key: ValueKey(profilePicture),
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(
-                                      Icons.person_rounded,
-                                      size: 44,
-                                      color: AppColors.primary,
-                                    ),
+                                errorBuilder: (context, error, stackTrace) => const Icon(
+                                  Icons.person_rounded,
+                                  size: 44,
+                                  color: AppColors.primary,
+                                ),
                               ),
                             )
-                          : const Icon(
-                              Icons.person_rounded,
-                              size: 44,
-                              color: AppColors.primary,
-                            ),
+                          : const Icon(Icons.person_rounded, size: 44, color: AppColors.primary),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  HeadingXl(
-                    '$firstName $lastName',
-                  ),
+                  HeadingXl('$firstName $lastName'),
                   const SizedBox(height: 4),
-                  BodySm(
-                    user?.email ?? 'Account Settings',
-                    color: AppColors.textSecondary,
-                  ),
+                  BodySm(user?.email ?? 'Account Settings', color: AppColors.textSecondary),
                   const SizedBox(height: 32),
                   Expanded(
                     child: ListView(
@@ -110,7 +100,7 @@ class ProfileView extends StatelessWidget {
                                 color: const Color(0xFF061657).withValues(alpha: 0.02),
                                 blurRadius: 16,
                                 offset: const Offset(0, 6),
-                              )
+                              ),
                             ],
                           ),
                           child: Column(
@@ -123,9 +113,7 @@ class ProfileView extends StatelessWidget {
                                 onTap: () {
                                   context.push(AppRoutes.profileDetail).then((_) {
                                     if (context.mounted) {
-                                      context.read<ProfileBloc>().add(
-                                        const GetProfileEvent(),
-                                      );
+                                      context.read<ProfileBloc>().add(const GetProfileEvent());
                                       context.read<AppLocalDataSource>().getSession();
                                     }
                                   });
@@ -246,17 +234,11 @@ class ProfileView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Delete account',
-              style: AppTextStyles.h3,
-              textAlign: TextAlign.center,
-            ),
+            const Text('Delete account', style: AppTextStyles.h3, textAlign: TextAlign.center),
             const SizedBox(height: 16),
             Text(
               'Are you sure want to delete account?',
-              style: AppTextStyles.bodyRegular.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.bodyRegular.copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -265,11 +247,9 @@ class ProfileView extends StatelessWidget {
                 if (state is ProfileDeleted) {
                   Navigator.of(context).pop();
                   context.go('/login');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Account deleted successfully'),
-                    ),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Account deleted successfully')));
                 }
 
                 if (state is ProfileError) {
@@ -295,9 +275,7 @@ class ProfileView extends StatelessWidget {
                         label: 'Yes, Delete',
                         isLoading: state is ProfileLoading,
                         onPressed: () {
-                          context.read<ProfileBloc>().add(
-                            const DeleteAccount(),
-                          );
+                          context.read<ProfileBloc>().add(const DeleteAccount());
                         },
                       ),
                     ),
@@ -342,15 +320,8 @@ class _ModernProfileItem extends StatelessWidget {
             Container(
               width: 38,
               height: 38,
-              decoration: BoxDecoration(
-                color: iconBgColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 20,
-              ),
+              decoration: BoxDecoration(color: iconBgColor, shape: BoxShape.circle),
+              child: Icon(icon, color: iconColor, size: 20),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -440,7 +411,9 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
     if (_isLoading) return;
     if (widget.userEmail.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Cannot enable biometric login without a logged-in user email.")),
+        const SnackBar(
+          content: Text("Cannot enable biometric login without a logged-in user email."),
+        ),
       );
       return;
     }
@@ -479,9 +452,9 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Biometric Login enabled successfully!")),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("Biometric Login enabled successfully!")));
         }
       } catch (e) {
         String errorMsg = "Enrollment failed.";
@@ -491,9 +464,7 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
           errorMsg = "Enrollment failed: ${e.toString().replaceAll('Exception: ', '')}";
         }
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMsg)),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMsg)));
         }
         setState(() {
           _isEnabled = false;
@@ -515,15 +486,15 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
           _isEnabled = false;
         });
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Biometric Login disabled.")),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("Biometric Login disabled.")));
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error: ${e.toString()}")),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
         }
       } finally {
         if (mounted) {
@@ -548,31 +519,20 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
               color: AppColors.primary.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.fingerprint_rounded,
-              color: AppColors.primary,
-              size: 20,
-            ),
+            child: const Icon(Icons.fingerprint_rounded, color: AppColors.primary, size: 20),
           ),
           const SizedBox(width: 14),
           const Expanded(
             child: Text(
               'Biometric Login',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
-                color: Color(0xFF061657),
-              ),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF061657)),
             ),
           ),
           if (_isLoading)
             const SizedBox(
               width: 20,
               height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppColors.primary,
-              ),
+              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
             )
           else
             Switch.adaptive(

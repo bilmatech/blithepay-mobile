@@ -1,6 +1,6 @@
-import 'package:blithepay/features/auth/presentation/bloc/auth_event.dart';
 import 'package:equatable/equatable.dart';
 import '../../data/models/auth_response_model.dart';
+import 'package:blithepay/features/auth/presentation/bloc/auth_event.dart';
 
 class AuthState extends Equatable {
   final AuthStatus status;

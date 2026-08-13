@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../shared/layouts/app_scaffold.dart';
-import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../../shared/widgets/buttons/primary_button.dart';
 
 class ChangePinView extends StatefulWidget {
   final String email;
@@ -26,11 +26,7 @@ class _ChangePinViewState extends State<ChangePinView> {
         if (state.status == AuthStatus.pinResetInitiated) {
           context.push(
             AppRoutes.verifyOtp,
-            extra: {
-              'email': widget.email,
-              'flow': OtpFlow.pinReset,
-              'fromProfile': true,
-            },
+            extra: {'email': widget.email, 'flow': OtpFlow.pinReset, 'fromProfile': true},
           );
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -67,11 +63,13 @@ class _ChangePinViewState extends State<ChangePinView> {
                   const SizedBox(height: 32),
                   PrimaryButton(
                     label: 'Send verification code',
-                    onPressed: isLoading ? null : () {
-                      context.read<AuthBloc>().add(
-                        InitiatePinResetRequested(email: widget.email),
-                      );
-                    },
+                    onPressed: isLoading
+                        ? () {}
+                        : () {
+                            context.read<AuthBloc>().add(
+                              InitiatePinResetRequested(email: widget.email),
+                            );
+                          },
                     isLoading: isLoading,
                     isEnabled: !isLoading,
                   ),

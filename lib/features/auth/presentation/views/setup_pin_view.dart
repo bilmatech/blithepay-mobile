@@ -85,10 +85,7 @@ class _SetupOtpViewState extends State<SetupOtpView> {
               return;
             }
             context.read<AuthBloc>().add(
-              FinalizePinResetRequested(
-                verificationCode: verificationCode,
-                newPin: code,
-              ),
+              FinalizePinResetRequested(verificationCode: verificationCode, newPin: code),
             );
           } else {
             context.read<AuthBloc>().add(
@@ -242,7 +239,9 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        _firstPin == null ? AppStrings.setup : 'Re-enter your 4 digit PIN to confirm.',
+                        _firstPin == null
+                            ? AppStrings.setup
+                            : 'Re-enter your 4 digit PIN to confirm.',
                         style: AppTextStyles.bodyRegular,
                         textAlign: TextAlign.center,
                       ),
@@ -306,10 +305,7 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                           },
                           child: const Text(
                             'Start Over',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],

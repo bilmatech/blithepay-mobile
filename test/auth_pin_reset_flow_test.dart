@@ -1,5 +1,5 @@
-import 'package:blithepay/core/network/api_endpoints.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:blithepay/core/network/api_endpoints.dart';
 
 void main() {
   test('PIN reset endpoints match the new protected API contract', () {

@@ -233,10 +233,7 @@ class AuthRepository implements AuthRepositoryInterface {
   Future<void> resetPin({required String verificationCode, required String newPin}) async {
     final response = await _dioClient.post(
       ApiEndpoints.pinReset,
-      data: {
-        'verificationCode': verificationCode,
-        'newPin': newPin,
-      },
+      data: {'verificationCode': verificationCode, 'newPin': newPin},
     );
     if (response.data == null || response.data['status'] != true) {
       final message = response.data?['message'] ?? 'Failed to reset PIN';
@@ -344,7 +341,6 @@ class AuthRepository implements AuthRepositoryInterface {
     final response = await _dioClient.post(ApiEndpoints.refreshToken, data: {'token': token});
     return AuthTokensModel.fromJson(response.data['data']);
   }
-
 
   Future<String> uploadImage(File picture, String folder) async {
     try {

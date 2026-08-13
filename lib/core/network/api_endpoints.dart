@@ -47,7 +47,6 @@ class ApiEndpoints {
   static const String students = '/students';
   static String studentDetail(String id) => '$students/$id';
 
-
   //wallet tramsaction
   static const String getWalletTransaction = '/transactions/app';
 
