@@ -21,12 +21,14 @@ class SetupOtpView extends StatefulWidget {
   final String email;
   final OtpFlow flow;
   final bool popOnSuccess;
+  final String? verificationCode;
 
   const SetupOtpView({
     super.key,
     required this.email,
     required this.flow,
     this.popOnSuccess = false,
+    this.verificationCode,
   });
 
   @override
@@ -70,9 +72,29 @@ class _SetupOtpViewState extends State<SetupOtpView> {
         _focusNodes[0].requestFocus();
       } else {
         if (code == _firstPin) {
-          context.read<AuthBloc>().add(
-            SetupPinRequested(email: widget.email, code: code, flow: widget.flow),
-          );
+          if (widget.flow == OtpFlow.pinReset) {
+            final verificationCode = widget.verificationCode ?? '';
+            if (verificationCode.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Verification code is missing. Please try again.'),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+              return;
+            }
+            context.read<AuthBloc>().add(
+              FinalizePinResetRequested(
+                verificationCode: verificationCode,
+                newPin: code,
+              ),
+            );
+          } else {
+            context.read<AuthBloc>().add(
+              SetupPinRequested(email: widget.email, code: code, flow: widget.flow),
+            );
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -154,6 +176,19 @@ class _SetupOtpViewState extends State<SetupOtpView> {
             );
             context.read<DashboardBloc>().add(const FetchDashboardData());
           }
+        }
+
+        if (state.status == AuthStatus.pinResetSuccess) {
+          context.go(
+            AppRoutes.success,
+            extra: SuccessArgs(
+              title: 'PIN reset successful',
+              message: 'Your transaction PIN has been updated successfully.',
+              buttonLabel: 'Back to profile',
+              nextRoute: AppRoutes.profile,
+              useAuthBackground: true,
+            ),
+          );
         }
       },
       child: AppScaffold(

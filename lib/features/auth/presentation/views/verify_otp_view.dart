@@ -1,21 +1,20 @@
 import 'dart:async';
-
-import 'package:blithepay/features/common/data/success_args_model.dart';
-import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/constants/app_text_styles.dart';
-import '../../../../core/navigation/app_routes.dart';
-import '../../../../shared/widgets/buttons/primary_button.dart';
-import 'package:blithepay/shared/widgets/step_progress_indicator.dart';
-import '../../../../shared/layouts/app_scaffold.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_strings.dart';
+import '../../../../core/navigation/app_routes.dart';
+import '../../../../shared/layouts/app_scaffold.dart';
+import '../../../../core/constants/app_text_styles.dart';
+import '../../../../shared/widgets/buttons/primary_button.dart';
+import 'package:blithepay/shared/widgets/step_progress_indicator.dart';
+import 'package:blithepay/features/common/data/success_args_model.dart';
+import 'package:blithepay/shared/widgets/background/auth_flow_background.dart';
 
 class VerifyOtpView extends StatefulWidget {
   final String email;
@@ -64,13 +63,21 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
     final code = _otpControllers.map((c) => c.text.trim()).join();
 
     if (code.length == 6) {
+      if (widget.flow == OtpFlow.pinReset) {
+        context.push(
+          AppRoutes.setupOtp,
+          extra: {
+            'email': widget.email,
+            'flow': OtpFlow.pinReset,
+            'verificationCode': code,
+            'fromProfile': widget.fromProfile,
+          },
+        );
+        return;
+      }
       if (widget.flow == OtpFlow.forgotPassword) {
         context.read<AuthBloc>().add(
-          VerifyForgotPasswordOtpRequested(
-            email: widget.email,
-            code: code,
-            flow: widget.flow,
-          ),
+          VerifyForgotPasswordOtpRequested(email: widget.email, code: code, flow: widget.flow),
         );
         return;
       }
@@ -142,12 +149,7 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
     if (!_canResend) return;
     final bloc = context.read<AuthBloc>();
     if (widget.flow == OtpFlow.forgotPassword) {
-      bloc.add(
-        ResendForgotPasswordOtpRequested(
-          email: widget.email,
-          flow: widget.flow,
-        ),
-      );
+      bloc.add(ResendForgotPasswordOtpRequested(email: widget.email, flow: widget.flow));
     } else {
       bloc.add(ResendOtpRequested(email: widget.email, flow: widget.flow));
     }
@@ -157,13 +159,11 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final horizontalPadding = 48.0; // 24 on each side
+    const horizontalPadding = 48.0; // 24 on each side
     final spacing = screenWidth < 360 ? 6.0 : 8.0;
     final totalSpacing = spacing * 5;
     // Calculate precise field width based on actual screen size and padding/spacing
     final fieldWidth = ((screenWidth - horizontalPadding - totalSpacing - 4) / 6).clamp(38.0, 56.0);
-
-
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
@@ -190,10 +190,7 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
             case OtpFlow.forgotPassword:
               context.push(
                 AppRoutes.resetPassword,
-                extra: {
-                  'email': widget.email,
-                  'fromProfile': widget.fromProfile,
-                },
+                extra: {'email': widget.email, 'fromProfile': widget.fromProfile},
               );
               break;
 
@@ -205,11 +202,20 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                   message: AppStrings.anAccounthasbeen,
                   buttonLabel: AppStrings.logIn,
                   nextRoute: AppRoutes.login,
-                  nextExtra: {
-                    'email': widget.email,
-                    'flow': OtpFlow.verifyEmail,
-                  },
+                  nextExtra: {'email': widget.email, 'flow': OtpFlow.verifyEmail},
                 ),
+              );
+              break;
+
+            case OtpFlow.pinReset:
+              context.push(
+                AppRoutes.setupOtp,
+                extra: {
+                  'email': widget.email,
+                  'flow': OtpFlow.pinReset,
+                  'verificationCode': '',
+                  'fromProfile': widget.fromProfile,
+                },
               );
               break;
           }
@@ -232,10 +238,7 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
             builder: (context, state) {
               return SafeArea(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 24,
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -273,10 +276,7 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                         ),
                       ),
                       const SizedBox(height: 28),
-                      const Text(
-                        AppStrings.enterVerificationCode,
-                        style: AppTextStyles.h3,
-                      ),
+                      const Text(AppStrings.enterVerificationCode, style: AppTextStyles.h3),
                       const SizedBox(height: 12),
                       RichText(
                         textAlign: TextAlign.center,
@@ -309,15 +309,11 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                                   textAlign: TextAlign.center,
                                   keyboardType: TextInputType.number,
                                   maxLength: 1,
-                                  maxLengthEnforcement:
-                                      MaxLengthEnforcement.none,
+                                  maxLengthEnforcement: MaxLengthEnforcement.none,
                                   inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'[0-9\s]'),
-                                    ),
+                                    FilteringTextInputFormatter.allow(RegExp(r'[0-9\s]')),
                                   ],
-                                  onChanged: (value) =>
-                                      _onOtpFieldChanged(index, value),
+                                  onChanged: (value) => _onOtpFieldChanged(index, value),
                                   style: AppTextStyles.h3.copyWith(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.bold,
@@ -327,20 +323,14 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                                     isDense: true,
                                     fillColor: AppColors.surface,
                                     filled: true,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(14),
-                                      borderSide: const BorderSide(
-                                        color: AppColors.border,
-                                      ),
+                                      borderSide: const BorderSide(color: AppColors.border),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(14),
-                                      borderSide: const BorderSide(
-                                        color: AppColors.border,
-                                      ),
+                                      borderSide: const BorderSide(color: AppColors.border),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(14),
@@ -367,13 +357,9 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                _canResend
-                                    ? AppStrings.resendCode
-                                    : '${AppStrings.resendCode} in ',
+                                _canResend ? AppStrings.resendCode : '${AppStrings.resendCode} in ',
                                 style: AppTextStyles.link.copyWith(
-                                  color: _canResend
-                                      ? AppColors.primary
-                                      : AppColors.textSecondary,
+                                  color: _canResend ? AppColors.primary : AppColors.textSecondary,
                                   decoration: _canResend
                                       ? TextDecoration.underline
                                       : TextDecoration.none,

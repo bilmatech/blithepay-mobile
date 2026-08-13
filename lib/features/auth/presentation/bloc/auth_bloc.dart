@@ -24,6 +24,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<VerifyForgotPasswordOtpRequested>(_onVerifyForgotPasswordOtpRequested);
     on<ResendForgotPasswordOtpRequested>(_onResendForgotPasswordOtpRequested);
     on<SetupPinRequested>(_onSetupPinRequested);
+    on<InitiatePinResetRequested>(_onInitiatePinResetRequested);
+    on<FinalizePinResetRequested>(_onFinalizePinResetRequested);
     on<ResetPasswordRequested>(_onResetPasswordRequested);
     on<GoogleSignInRequested>(_onGoogleSignInRequested);
     on<AppleSignInRequested>(_onAppleSignInRequested);
@@ -142,6 +144,35 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       await _authRepository.setupPin(event.email, event.code);
       emit(const AuthState.pinSetup());
+    } catch (e) {
+      emit(AuthState.error(extractError(e)));
+    }
+  }
+
+  Future<void> _onInitiatePinResetRequested(
+    InitiatePinResetRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      await _authRepository.initiatePinReset();
+      emit(const AuthState.pinResetInitiated());
+    } catch (e) {
+      emit(AuthState.error(extractError(e)));
+    }
+  }
+
+  Future<void> _onFinalizePinResetRequested(
+    FinalizePinResetRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      await _authRepository.resetPin(
+        verificationCode: event.verificationCode,
+        newPin: event.newPin,
+      );
+      emit(const AuthState.pinResetSuccess());
     } catch (e) {
       emit(AuthState.error(extractError(e)));
     }

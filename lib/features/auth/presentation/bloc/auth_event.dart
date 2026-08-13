@@ -86,6 +86,28 @@ class SetupPinRequested extends AuthEvent {
   List<Object?> get props => [email, code];
 }
 
+class InitiatePinResetRequested extends AuthEvent {
+  final String email;
+
+  const InitiatePinResetRequested({required this.email});
+
+  @override
+  List<Object?> get props => [email];
+}
+
+class FinalizePinResetRequested extends AuthEvent {
+  final String verificationCode;
+  final String newPin;
+
+  const FinalizePinResetRequested({
+    required this.verificationCode,
+    required this.newPin,
+  });
+
+  @override
+  List<Object?> get props => [verificationCode, newPin];
+}
+
 class ResetPasswordRequested extends AuthEvent {
   final String email;
   final String token;
@@ -115,7 +137,7 @@ class AppleSignInRequested extends AuthEvent {
   const AppleSignInRequested();
 }
 
-enum OtpFlow { signup, forgotPassword, verifyEmail }
+enum OtpFlow { signup, forgotPassword, verifyEmail, pinReset }
 
 class SignupPayload extends Equatable {
   final String userId;

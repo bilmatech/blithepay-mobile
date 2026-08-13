@@ -139,7 +139,10 @@ class ProfileView extends StatelessWidget {
                                 iconBgColor: const Color(0xFFF0F3FF),
                                 iconColor: AppColors.primary,
                                 label: 'Change Transaction PIN',
-                                onTap: () => context.push(AppRoutes.changePin),
+                                onTap: () => context.push(
+                                  AppRoutes.changePin,
+                                  extra: {'email': user?.email ?? ''},
+                                ),
                               ),
                               const _Divider(),
                               _ModernProfileItem(

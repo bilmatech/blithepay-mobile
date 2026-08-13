@@ -55,6 +55,7 @@ class AppRouterConfig {
               email: args['email'],
               flow: args['flow'],
               popOnSuccess: args['pop'] ?? false,
+              verificationCode: args['verificationCode'],
             );
           },
         ),
@@ -97,7 +98,10 @@ class AppRouterConfig {
         ),
         GoRoute(
           path: AppRoutes.changePin,
-          builder: (_, __) => const ChangePinView(),
+          builder: (context, state) {
+            final args = state.extra as Map<String, dynamic>?;
+            return ChangePinView(email: args?['email'] ?? '');
+          },
         ),
         ShellRoute(
           builder: (context, state, child) {

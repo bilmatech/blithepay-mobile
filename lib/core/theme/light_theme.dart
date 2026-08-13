@@ -1,12 +1,11 @@
-import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import 'package:flutter/material.dart';
 
 ThemeData buildLightTheme() {
   const colorScheme = ColorScheme.light(
     primary: AppColors.primary,
     secondary: AppColors.primary,
     surface: AppColors.white,
-    background: AppColors.white,
     error: AppColors.error,
     onPrimary: AppColors.white,
     onSurface: AppColors.textPrimary,
@@ -42,9 +41,7 @@ ThemeData buildLightTheme() {
       surfaceTintColor: Colors.transparent,
       modalBackgroundColor: Colors.transparent,
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
     ),
 
     // DIALOGS

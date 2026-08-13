@@ -1,12 +1,11 @@
-import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:flutter/material.dart';
 import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/core/constants/app_colors.dart';
+import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:blithepay/features/dashboard/presentation/bloc/dashboard_state.dart';
-import 'package:blithepay/features/vas/core/presentation/bloc/service_bloc/service_bloc.dart';
 import 'package:blithepay/features/vas/core/presentation/views/shared/bottom_panel.dart';
 import 'package:blithepay/features/vas/core/presentation/views/shared/success_panel.dart';
-import 'package:blithepay/shared/widgets/buttons/primary_button.dart';
-import 'package:flutter/material.dart';
 
 class ReviewPanel extends StatelessWidget {
   final ServiceState state;
@@ -36,10 +35,7 @@ class ReviewPanel extends StatelessWidget {
                     TextSpan(text: '₦${state.amountWhole}'),
                     TextSpan(
                       text: '.${state.amountDecimal}',
-                      style: const TextStyle(
-                        color: Color(0xFF687298),
-                        fontSize: 28,
-                      ),
+                      style: const TextStyle(color: Color(0xFF687298), fontSize: 28),
                     ),
                   ],
                 ),
@@ -53,10 +49,7 @@ class ReviewPanel extends StatelessWidget {
             const SizedBox(height: 28),
             ReviewRow(label: 'Product', value: state.config.title),
             const SizedBox(height: 20),
-            ReviewRow(
-              label: 'Recipient',
-              value: state.recipient.isEmpty ? 'N/A' : state.recipient,
-            ),
+            ReviewRow(label: 'Recipient', value: state.recipient.isEmpty ? 'N/A' : state.recipient),
             const SizedBox(height: 20),
             ReviewRow(label: 'Provider', value: state.selectedProvider),
             const SizedBox(height: 20),
@@ -64,11 +57,7 @@ class ReviewPanel extends StatelessWidget {
             const SizedBox(height: 36),
             const Text(
               'Payment Method',
-              style: TextStyle(
-                color: Color(0xFF061657),
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(color: Color(0xFF061657), fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 16),
             BalancePaymentCard(state: state),
@@ -151,9 +140,7 @@ class BalancePaymentCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    dashboardState is DashboardLoaded
-                        ? 'Available balance'
-                        : 'Loading balance...',
+                    dashboardState is DashboardLoaded ? 'Available balance' : 'Loading balance...',
 
                     style: const TextStyle(
                       color: Color(0xFF55555D),
@@ -167,9 +154,7 @@ class BalancePaymentCard extends StatelessWidget {
                   const Divider(color: Color(0xFFE4E7F1), height: 1),
                   const SizedBox(height: 14),
                   Text(
-                    dashboardState is DashboardLoaded
-                        ? dashboardState.dashboard.walletBalance
-                        : '',
+                    dashboardState is DashboardLoaded ? dashboardState.dashboard.walletBalance : '',
                     style: const TextStyle(
                       color: Color(0xFF061657),
                       fontSize: 14,
@@ -302,10 +287,7 @@ class PanelBackButton extends StatelessWidget {
       child: Ink(
         width: 56,
         height: 56,
-        decoration: const BoxDecoration(
-          color: Color(0xFFF0F1F3),
-          shape: BoxShape.circle,
-        ),
+        decoration: const BoxDecoration(color: Color(0xFFF0F1F3), shape: BoxShape.circle),
         child: const Icon(Icons.arrow_back, color: Colors.black, size: 24),
       ),
     );

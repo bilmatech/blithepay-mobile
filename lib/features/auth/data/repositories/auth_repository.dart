@@ -33,6 +33,8 @@ abstract class AuthRepositoryInterface {
   Future<AuthResponseModel> resendForgotPasswordOtp(String email);
 
   Future<void> setupPin(String email, String code);
+  Future<void> initiatePinReset();
+  Future<void> resetPin({required String verificationCode, required String newPin});
   Future<void> resetPassword(String resetToken, String newPassword);
   Future<void> logout();
   Future<void> persistSession(AuthResponseModel session);
@@ -216,6 +218,30 @@ class AuthRepository implements AuthRepositoryInterface {
   @override
   Future<void> setupPin(String email, String code) async {
     await _dioClient.post(ApiEndpoints.setupPin, data: {"pin": code});
+  }
+
+  @override
+  Future<void> initiatePinReset() async {
+    final response = await _dioClient.post(ApiEndpoints.pinInitiateReset);
+    if (response.data == null || response.data['status'] != true) {
+      final message = response.data?['message'] ?? 'Failed to initiate PIN reset';
+      throw Exception(message);
+    }
+  }
+
+  @override
+  Future<void> resetPin({required String verificationCode, required String newPin}) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.pinReset,
+      data: {
+        'verificationCode': verificationCode,
+        'newPin': newPin,
+      },
+    );
+    if (response.data == null || response.data['status'] != true) {
+      final message = response.data?['message'] ?? 'Failed to reset PIN';
+      throw Exception(message);
+    }
   }
 
   @override
