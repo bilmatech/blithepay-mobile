@@ -253,40 +253,47 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                           (index) => SizedBox(
                             width: 60,
                             height: 60,
-                            child: TextField(
-                              controller: _otpControllers[index],
-                              focusNode: _focusNodes[index],
-                              textAlign: TextAlign.center,
-                              keyboardType: TextInputType.number,
-
-                              maxLength: 1,
-                              maxLengthEnforcement: MaxLengthEnforcement.none,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(RegExp(r'[0-9\s]')),
-                              ],
-                              obscureText: true,
-                              onChanged: (value) => _onOtpFieldChanged(index, value),
-                              style: AppTextStyles.h3.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              decoration: InputDecoration(
-                                counter: const Offstage(),
-                                fillColor: AppColors.surface,
-                                filled: true,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: const BorderSide(color: AppColors.border),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: const BorderSide(color: AppColors.border),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                                ),
-                              ),
+                            child: ValueListenableBuilder<TextEditingValue>(
+                              valueListenable: _otpControllers[index],
+                              builder: (context, value, _) {
+                                final text = value.text;
+                                final isDigit = text.isNotEmpty && text != ' ';
+                                return TextField(
+                                  controller: _otpControllers[index],
+                                  focusNode: _focusNodes[index],
+                                  textAlign: TextAlign.center,
+                                  keyboardType: TextInputType.number,
+                                  maxLength: 1,
+                                  maxLengthEnforcement: MaxLengthEnforcement.none,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(RegExp(r'[0-9\s]')),
+                                  ],
+                                  obscureText: true,
+                                  obscuringCharacter: isDigit ? '•' : ' ',
+                                  onChanged: (value) => _onOtpFieldChanged(index, value),
+                                  style: AppTextStyles.h3.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  decoration: InputDecoration(
+                                    counter: const Offstage(),
+                                    fillColor: AppColors.surface,
+                                    filled: true,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: AppColors.border),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: AppColors.border),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),

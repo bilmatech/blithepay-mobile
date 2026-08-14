@@ -231,7 +231,7 @@ class AuthRepository implements AuthRepositoryInterface {
 
   @override
   Future<void> resetPin({required String verificationCode, required String newPin}) async {
-    final response = await _dioClient.post(
+    final response = await _dioClient.patch(
       ApiEndpoints.pinReset,
       data: {'verificationCode': verificationCode, 'newPin': newPin},
     );
