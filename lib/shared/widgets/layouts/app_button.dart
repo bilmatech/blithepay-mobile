@@ -1,8 +1,7 @@
+import 'app_text.dart';
+import 'package:flutter/material.dart';
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_spacing.dart';
-import 'package:flutter/material.dart';
-
-import 'app_text.dart';
 
 class AppButton extends StatelessWidget {
   final String label;
@@ -16,7 +15,7 @@ class AppButton extends StatelessWidget {
   final double borderRadius;
 
   const AppButton({
-    Key? key,
+    super.key,
     required this.label,
     required this.onPressed,
     this.backgroundColor,
@@ -26,7 +25,7 @@ class AppButton extends StatelessWidget {
     this.isLoading = false,
     this.isEnabled = true,
     this.borderRadius = AppSpacing.radiusBase,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -38,10 +37,8 @@ class AppButton extends StatelessWidget {
           backgroundColor: backgroundColor ?? AppColors.primary,
           foregroundColor: foregroundColor ?? AppColors.white,
           disabledBackgroundColor: AppColors.borderGrey,
-          padding: padding ?? EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
-          ),
+          padding: padding ?? const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius)),
         ),
         child: isLoading
             ? const SizedBox(
@@ -71,7 +68,7 @@ class AppOutlinedButton extends StatelessWidget {
   final double borderWidth;
 
   const AppOutlinedButton({
-    Key? key,
+    super.key,
     required this.label,
     required this.onPressed,
     this.borderColor,
@@ -82,7 +79,7 @@ class AppOutlinedButton extends StatelessWidget {
     this.isEnabled = true,
     this.borderRadius = AppSpacing.radiusBase,
     this.borderWidth = 1.5,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -92,14 +89,9 @@ class AppOutlinedButton extends StatelessWidget {
         onPressed: isLoading || !isEnabled ? null : onPressed,
         style: OutlinedButton.styleFrom(
           foregroundColor: foregroundColor ?? AppColors.primary,
-          side: BorderSide(
-            color: borderColor ?? AppColors.primary,
-            width: borderWidth,
-          ),
-          padding: padding ?? EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
-          ),
+          side: BorderSide(color: borderColor ?? AppColors.primary, width: borderWidth),
+          padding: padding ?? const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius)),
           disabledForegroundColor: AppColors.textHint,
         ),
         child: isLoading
@@ -160,14 +152,14 @@ class AppIconButton extends StatelessWidget {
   final double iconSize;
 
   const AppIconButton({
-    Key? key,
+    super.key,
     required this.icon,
     required this.onPressed,
     this.backgroundColor,
     this.foregroundColor,
     this.size = AppSpacing.buttonHeightMd,
     this.iconSize = AppSpacing.iconMd,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

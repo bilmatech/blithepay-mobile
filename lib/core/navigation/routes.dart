@@ -1,8 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:blithepay/core/navigation/index.dart';
+import 'package:blithepay/features/students/data/models/verify_student_model.dart';
 import 'package:blithepay/features/dashboard/presentation/models/service_model.dart';
 import 'package:blithepay/features/vas/core/presentation/views/service_review_view.dart';
-import 'package:blithepay/features/students/data/models/verify_student_model.dart';
-import 'package:flutter/material.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -13,10 +13,7 @@ class AppRouterConfig {
       initialLocation: AppRoutes.splash,
       routes: [
         GoRoute(path: AppRoutes.splash, builder: (_, __) => const SplashView()),
-        GoRoute(
-          path: AppRoutes.onboarding,
-          builder: (_, __) => const OnboardingView(),
-        ),
+        GoRoute(path: AppRoutes.onboarding, builder: (_, __) => const OnboardingView()),
         GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginView()),
         GoRoute(path: AppRoutes.signup, builder: (_, __) => const SignupView()),
         // GoRoute(
@@ -55,6 +52,7 @@ class AppRouterConfig {
               email: args['email'],
               flow: args['flow'],
               popOnSuccess: args['pop'] ?? false,
+              verificationCode: args['verificationCode'],
             );
           },
         ),
@@ -76,10 +74,7 @@ class AppRouterConfig {
             return PasswordChangedView(fromProfile: fromProfile);
           },
         ),
-        GoRoute(
-          path: AppRoutes.biometric,
-          builder: (_, __) => const BiometricAuthView(),
-        ),
+        GoRoute(path: AppRoutes.biometric, builder: (_, __) => const BiometricAuthView()),
         GoRoute(
           path: AppRoutes.enableBiometrics,
           builder: (context, state) {
@@ -91,23 +86,20 @@ class AppRouterConfig {
         //   path: AppRoutes.passwordChanged,
         //   builder: (_, __) => const PasswordChangedView(),
         // ),
-        GoRoute(
-          path: AppRoutes.changePassword,
-          builder: (_, __) => const ChangePasswordView(),
-        ),
+        GoRoute(path: AppRoutes.changePassword, builder: (_, __) => const ChangePasswordView()),
         GoRoute(
           path: AppRoutes.changePin,
-          builder: (_, __) => const ChangePinView(),
+          builder: (context, state) {
+            final args = state.extra as Map<String, dynamic>?;
+            return ChangePinView(email: args?['email'] ?? '');
+          },
         ),
         ShellRoute(
           builder: (context, state, child) {
             return DashboardView(child: child);
           },
           routes: [
-            GoRoute(
-              path: AppRoutes.home,
-              builder: (context, state) => const HomeView(),
-            ),
+            GoRoute(path: AppRoutes.home, builder: (context, state) => const HomeView()),
             // GoRoute(
             //   path: AppRoutes.linkedStudents,
             //   builder: (_, __) => const LinkedStudentsView(),
@@ -148,16 +140,10 @@ class AppRouterConfig {
               path: AppRoutes.transactions,
               builder: (context, state) => const TransactionsScreen(),
             ),
-            GoRoute(
-              path: AppRoutes.profile,
-              builder: (context, state) => const ProfileView(),
-            ),
+            GoRoute(path: AppRoutes.profile, builder: (context, state) => const ProfileView()),
           ],
         ),
-        GoRoute(
-          path: AppRoutes.linkedStudents,
-          builder: (_, __) => const LinkedStudentsView(),
-        ),
+        GoRoute(path: AppRoutes.linkedStudents, builder: (_, __) => const LinkedStudentsView()),
         GoRoute(
           path: AppRoutes.walletManagement,
           builder: (context, state) => const WalletManagementView(),
@@ -166,22 +152,10 @@ class AppRouterConfig {
           path: AppRoutes.profileDetail,
           builder: (context, state) => const ProfileDetailView(),
         ),
-        GoRoute(
-          path: AppRoutes.confirmSchool,
-          builder: (_, __) => const ConfirmSchoolView(),
-        ),
-        GoRoute(
-          path: AppRoutes.searchSchool,
-          builder: (_, __) => const SearchSchoolView(),
-        ),
-        GoRoute(
-          path: AppRoutes.addSchool,
-          builder: (_, __) => const AddSchoolView(),
-        ),
-        GoRoute(
-          path: AppRoutes.linkchildSchool,
-          builder: (_, __) => const LinkChildSchoolView(),
-        ),
+        GoRoute(path: AppRoutes.confirmSchool, builder: (_, __) => const ConfirmSchoolView()),
+        GoRoute(path: AppRoutes.searchSchool, builder: (_, __) => const SearchSchoolView()),
+        GoRoute(path: AppRoutes.addSchool, builder: (_, __) => const AddSchoolView()),
+        GoRoute(path: AppRoutes.linkchildSchool, builder: (_, __) => const LinkChildSchoolView()),
         GoRoute(
           path: AppRoutes.linkProfile,
           builder: (context, state) {
@@ -242,10 +216,7 @@ class AppRouterConfig {
         //     );
         //   },
         // ),
-        GoRoute(
-          path: AppRoutes.editSchools,
-          builder: (_, __) => const EditSchoolsView(),
-        ),
+        GoRoute(path: AppRoutes.editSchools, builder: (_, __) => const EditSchoolsView()),
         GoRoute(
           path: AppRoutes.editSchoolDetail,
           builder: (context, state) {
@@ -254,10 +225,7 @@ class AppRouterConfig {
           },
         ),
 
-        GoRoute(
-          path: AppRoutes.linkStudents,
-          builder: (_, __) => const LinkStudentsView(),
-        ),
+        GoRoute(path: AppRoutes.linkStudents, builder: (_, __) => const LinkStudentsView()),
 
         GoRoute(
           path: AppRoutes.guardianVerification,
@@ -269,10 +237,7 @@ class AppRouterConfig {
           builder: (_, __) => const ChangePhoneNumberView(),
         ),
 
-        GoRoute(
-          path: AppRoutes.fundWallet,
-          builder: (_, __) => const FundWalletView(),
-        ),
+        GoRoute(path: AppRoutes.fundWallet, builder: (_, __) => const FundWalletView()),
         GoRoute(
           path: AppRoutes.transactionReceiptView,
           builder: (context, state) {
@@ -312,29 +277,14 @@ class AppRouterConfig {
             return TransactionDetailView(transaction: transaction);
           },
         ),
-        GoRoute(
-          path: AppRoutes.payFees,
-          builder: (_, __) => const PayFeesView(),
-        ),
+        GoRoute(path: AppRoutes.payFees, builder: (_, __) => const PayFeesView()),
 
-        GoRoute(
-          path: AppRoutes.notifications,
-          builder: (_, __) => const NotificationsView(),
-        ),
+        GoRoute(path: AppRoutes.notifications, builder: (_, __) => const NotificationsView()),
 
-        GoRoute(
-          path: AppRoutes.helpSupport,
-          builder: (_, __) => const HelpSupportView(),
-        ),
+        GoRoute(path: AppRoutes.helpSupport, builder: (_, __) => const HelpSupportView()),
 
-        GoRoute(
-          path: AppRoutes.requestPending,
-          builder: (_, __) => const RequestPendingView(),
-        ),
-        GoRoute(
-          path: AppRoutes.requestFailed,
-          builder: (_, __) => const RequestFailedView(),
-        ),
+        GoRoute(path: AppRoutes.requestPending, builder: (_, __) => const RequestPendingView()),
+        GoRoute(path: AppRoutes.requestFailed, builder: (_, __) => const RequestFailedView()),
         GoRoute(
           path: AppRoutes.feeTransactions,
           builder: (context, state) {
@@ -384,10 +334,7 @@ class AppRouterConfig {
             return ServiceReviewView(args: args);
           },
         ),
-        GoRoute(
-          path: AppRoutes.betting,
-          builder: (_, __) => const BettingsPurchaseView(),
-        ),
+        GoRoute(path: AppRoutes.betting, builder: (_, __) => const BettingsPurchaseView()),
 
         GoRoute(
           path: AppRoutes.success,

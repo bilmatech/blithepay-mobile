@@ -1,6 +1,6 @@
-import 'dart:convert';
-import 'dart:math';
 import 'dart:io';
+import 'dart:math';
+import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -9,13 +9,9 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 /// Generates a cryptographically secure random nonce, to be included in a
 /// credential request.
 String generateNonce([int length = 32]) {
-  const charset =
-      '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+  const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
   final random = Random.secure();
-  return List.generate(
-    length,
-    (_) => charset[random.nextInt(charset.length)],
-  ).join();
+  return List.generate(length, (_) => charset[random.nextInt(charset.length)]).join();
 }
 
 /// Returns the sha256 hash of [input] in hex notation.
@@ -33,19 +29,17 @@ class FirebaseAuthService {
 
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn
-          .authenticate();
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
 
       if (googleUser == null) return null;
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
       // Create the credential for Firebase
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        idToken: googleAuth.idToken,
-      );
+      final AuthCredential credential = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
 
-      final UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithCredential(credential);
+      final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
 
       return userCredential;
     } catch (e) {
@@ -69,10 +63,7 @@ class FirebaseAuthService {
 
       // Request credential for the currently signed in Apple account.
       final appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
+        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
         nonce: nonce,
       );
 

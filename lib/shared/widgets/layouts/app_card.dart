@@ -1,6 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:blithepay/core/constants/app_colors.dart';
 import 'package:blithepay/core/constants/app_spacing.dart';
-import 'package:flutter/material.dart';
 
 class AppCard extends StatelessWidget {
   final Widget child;
@@ -63,7 +63,7 @@ class AppListCard extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
 
   const AppListCard({
-    Key? key,
+    super.key,
     required this.leading,
     required this.title,
     this.subtitle,
@@ -72,7 +72,7 @@ class AppListCard extends StatelessWidget {
     this.backgroundColor,
     this.borderRadius = AppSpacing.radiusMd,
     this.padding,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -90,17 +90,11 @@ class AppListCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 title,
-                if (subtitle != null) ...[
-                  const SizedBox(height: AppSpacing.xs),
-                  subtitle!,
-                ],
+                if (subtitle != null) ...[const SizedBox(height: AppSpacing.xs), subtitle!],
               ],
             ),
           ),
-          if (trailing != null) ...[
-            const SizedBox(width: AppSpacing.base),
-            trailing!,
-          ],
+          if (trailing != null) ...[const SizedBox(width: AppSpacing.base), trailing!],
         ],
       ),
     );

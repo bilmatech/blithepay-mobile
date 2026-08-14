@@ -1,12 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
-
 import 'auth_event.dart';
 import 'auth_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'package:blithepay/core/network/dio_error_mapper.dart';
-import 'package:blithepay/core/services/firebase_notifications.dart';
 import 'package:blithepay/core/services/firebase_auth_service.dart';
+import 'package:blithepay/core/services/firebase_notifications.dart';
 import 'package:blithepay/core/services/biometric_crypto_service.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -24,16 +23,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<VerifyForgotPasswordOtpRequested>(_onVerifyForgotPasswordOtpRequested);
     on<ResendForgotPasswordOtpRequested>(_onResendForgotPasswordOtpRequested);
     on<SetupPinRequested>(_onSetupPinRequested);
+    on<InitiatePinResetRequested>(_onInitiatePinResetRequested);
+    on<FinalizePinResetRequested>(_onFinalizePinResetRequested);
     on<ResetPasswordRequested>(_onResetPasswordRequested);
     on<GoogleSignInRequested>(_onGoogleSignInRequested);
     on<AppleSignInRequested>(_onAppleSignInRequested);
     on<BiometricLoginRequested>(_onBiometricLoginRequested);
   }
 
-  Future<void> _onSignupRequested(
-    SignupRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onSignupRequested(SignupRequested event, Emitter<AuthState> emit) async {
     emit(const AuthState.loading());
 
     try {
@@ -48,9 +46,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       emit(
-        AuthState.signupSuccess(
-          SignupPayload(userId: result.id ?? '', email: result.email ?? ''),
-        ),
+        AuthState.signupSuccess(SignupPayload(userId: result.id ?? '', email: result.email ?? '')),
       );
     } catch (e) {
       emit(AuthState.error(extractError(e)));
@@ -66,16 +62,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onLoginRequested(
-    LoginRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(
-      state.copyWith(
-        status: AuthStatus.loading,
-        loadingType: LoadingType.email,
-      ),
-    );
+  Future<void> _onLoginRequested(LoginRequested event, Emitter<AuthState> emit) async {
+    emit(state.copyWith(status: AuthStatus.loading, loadingType: LoadingType.email));
     try {
       final result = await _authRepository.login(event.email, event.password);
 
@@ -106,10 +94,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onVerifyOtpRequested(
-    VerifyOtpRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onVerifyOtpRequested(VerifyOtpRequested event, Emitter<AuthState> emit) async {
     emit(const AuthState.loading());
     try {
       var result = await _authRepository.verifyOtp(event.code);
@@ -121,10 +106,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onResendOtpRequested(
-    ResendOtpRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onResendOtpRequested(ResendOtpRequested event, Emitter<AuthState> emit) async {
     emit(const AuthState.loading());
     try {
       await _authRepository.resendOtp(event.email);
@@ -134,14 +116,40 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onSetupPinRequested(
-    SetupPinRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onSetupPinRequested(SetupPinRequested event, Emitter<AuthState> emit) async {
     emit(const AuthState.loading());
     try {
       await _authRepository.setupPin(event.email, event.code);
       emit(const AuthState.pinSetup());
+    } catch (e) {
+      emit(AuthState.error(extractError(e)));
+    }
+  }
+
+  Future<void> _onInitiatePinResetRequested(
+    InitiatePinResetRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      await _authRepository.initiatePinReset();
+      emit(const AuthState.pinResetInitiated());
+    } catch (e) {
+      emit(AuthState.error(extractError(e)));
+    }
+  }
+
+  Future<void> _onFinalizePinResetRequested(
+    FinalizePinResetRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      await _authRepository.resetPin(
+        verificationCode: event.verificationCode,
+        newPin: event.newPin,
+      );
+      emit(const AuthState.pinResetSuccess());
     } catch (e) {
       emit(AuthState.error(extractError(e)));
     }
@@ -191,12 +199,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     GoogleSignInRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(
-      state.copyWith(
-        status: AuthStatus.loading,
-        loadingType: LoadingType.google,
-      ),
-    );
+    emit(state.copyWith(status: AuthStatus.loading, loadingType: LoadingType.google));
     try {
       final userCredential = await _firebaseAuthService.signInWithGoogle();
 
@@ -222,24 +225,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onAppleSignInRequested(
-    AppleSignInRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(
-      state.copyWith(
-        status: AuthStatus.loading,
-        loadingType: LoadingType.apple,
-      ),
-    );
+  Future<void> _onAppleSignInRequested(AppleSignInRequested event, Emitter<AuthState> emit) async {
+    emit(state.copyWith(status: AuthStatus.loading, loadingType: LoadingType.apple));
     try {
       final appleProvider = AppleAuthProvider()
         ..addScope('email')
         ..addScope('name');
 
-      final userCredential = await FirebaseAuth.instance.signInWithProvider(
-        appleProvider,
-      );
+      final userCredential = await FirebaseAuth.instance.signInWithProvider(appleProvider);
 
       if (userCredential.user == null) {
         emit(const AuthState.error('Apple sign-in failed.'));
@@ -299,12 +292,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     BiometricLoginRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(
-      state.copyWith(
-        status: AuthStatus.loading,
-        loadingType: LoadingType.biometric,
-      ),
-    );
+    emit(state.copyWith(status: AuthStatus.loading, loadingType: LoadingType.biometric));
     try {
       // 1. Get single-use challenge from NestJS backend
       final challenge = await _authRepository.getBiometricChallenge(

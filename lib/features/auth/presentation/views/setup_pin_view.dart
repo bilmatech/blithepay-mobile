@@ -21,12 +21,14 @@ class SetupOtpView extends StatefulWidget {
   final String email;
   final OtpFlow flow;
   final bool popOnSuccess;
+  final String? verificationCode;
 
   const SetupOtpView({
     super.key,
     required this.email,
     required this.flow,
     this.popOnSuccess = false,
+    this.verificationCode,
   });
 
   @override
@@ -70,9 +72,26 @@ class _SetupOtpViewState extends State<SetupOtpView> {
         _focusNodes[0].requestFocus();
       } else {
         if (code == _firstPin) {
-          context.read<AuthBloc>().add(
-            SetupPinRequested(email: widget.email, code: code, flow: widget.flow),
-          );
+          if (widget.flow == OtpFlow.pinReset) {
+            final verificationCode = widget.verificationCode ?? '';
+            if (verificationCode.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Verification code is missing. Please try again.'),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+              return;
+            }
+            context.read<AuthBloc>().add(
+              FinalizePinResetRequested(verificationCode: verificationCode, newPin: code),
+            );
+          } else {
+            context.read<AuthBloc>().add(
+              SetupPinRequested(email: widget.email, code: code, flow: widget.flow),
+            );
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -155,6 +174,19 @@ class _SetupOtpViewState extends State<SetupOtpView> {
             context.read<DashboardBloc>().add(const FetchDashboardData());
           }
         }
+
+        if (state.status == AuthStatus.pinResetSuccess) {
+          context.go(
+            AppRoutes.success,
+            extra: SuccessArgs(
+              title: 'PIN reset successful',
+              message: 'Your transaction PIN has been updated successfully.',
+              buttonLabel: 'Back to profile',
+              nextRoute: AppRoutes.profile,
+              useAuthBackground: true,
+            ),
+          );
+        }
       },
       child: AppScaffold(
         showBackButton: true,
@@ -207,7 +239,9 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        _firstPin == null ? AppStrings.setup : 'Re-enter your 4 digit PIN to confirm.',
+                        _firstPin == null
+                            ? AppStrings.setup
+                            : 'Re-enter your 4 digit PIN to confirm.',
                         style: AppTextStyles.bodyRegular,
                         textAlign: TextAlign.center,
                       ),
@@ -219,40 +253,47 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                           (index) => SizedBox(
                             width: 60,
                             height: 60,
-                            child: TextField(
-                              controller: _otpControllers[index],
-                              focusNode: _focusNodes[index],
-                              textAlign: TextAlign.center,
-                              keyboardType: TextInputType.number,
-
-                              maxLength: 1,
-                              maxLengthEnforcement: MaxLengthEnforcement.none,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(RegExp(r'[0-9\s]')),
-                              ],
-                              obscureText: true,
-                              onChanged: (value) => _onOtpFieldChanged(index, value),
-                              style: AppTextStyles.h3.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              decoration: InputDecoration(
-                                counter: const Offstage(),
-                                fillColor: AppColors.surface,
-                                filled: true,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: const BorderSide(color: AppColors.border),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: const BorderSide(color: AppColors.border),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                                ),
-                              ),
+                            child: ValueListenableBuilder<TextEditingValue>(
+                              valueListenable: _otpControllers[index],
+                              builder: (context, value, _) {
+                                final text = value.text;
+                                final isDigit = text.isNotEmpty && text != ' ';
+                                return TextField(
+                                  controller: _otpControllers[index],
+                                  focusNode: _focusNodes[index],
+                                  textAlign: TextAlign.center,
+                                  keyboardType: TextInputType.number,
+                                  maxLength: 1,
+                                  maxLengthEnforcement: MaxLengthEnforcement.none,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(RegExp(r'[0-9\s]')),
+                                  ],
+                                  obscureText: true,
+                                  obscuringCharacter: isDigit ? '•' : ' ',
+                                  onChanged: (value) => _onOtpFieldChanged(index, value),
+                                  style: AppTextStyles.h3.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  decoration: InputDecoration(
+                                    counter: const Offstage(),
+                                    fillColor: AppColors.surface,
+                                    filled: true,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: AppColors.border),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: AppColors.border),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -271,10 +312,7 @@ class _SetupOtpViewState extends State<SetupOtpView> {
                           },
                           child: const Text(
                             'Start Over',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],

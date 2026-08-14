@@ -1,17 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_text_styles.dart';
 import '../../../../shared/layouts/app_scaffold.dart';
-import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../domain/entities/recurring_payment.dart';
+import '../../../../core/constants/app_text_styles.dart';
+import '../../../../shared/widgets/buttons/primary_button.dart';
 
 class RecurringPaymentListView extends StatefulWidget {
   const RecurringPaymentListView({super.key});
 
   @override
-  State<RecurringPaymentListView> createState() =>
-      _RecurringPaymentListViewState();
+  State<RecurringPaymentListView> createState() => _RecurringPaymentListViewState();
 }
 
 class _RecurringPaymentListViewState extends State<RecurringPaymentListView> {
@@ -64,24 +63,19 @@ class _RecurringPaymentListViewState extends State<RecurringPaymentListView> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      appBar: AppBar(
-        title: const Text('Recurring Payments'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Recurring Payments'), centerTitle: true),
       body: recurringPayments.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.payment, size: 64, color: AppColors.textTertiary),
+                  const Icon(Icons.payment, size: 64, color: AppColors.textTertiary),
                   const SizedBox(height: 16),
-                  Text('No Recurring Payments', style: AppTextStyles.h3),
+                  const Text('No Recurring Payments', style: AppTextStyles.h3),
                   const SizedBox(height: 8),
                   Text(
                     'Create a recurring payment to get started',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
@@ -141,9 +135,7 @@ class RecurringPaymentCard extends StatelessWidget {
                 ),
                 child: Text(
                   payment.isActive ? 'Active' : 'Inactive',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.white,
-                  ),
+                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.white),
                 ),
               ),
             ],
@@ -151,28 +143,20 @@ class RecurringPaymentCard extends StatelessWidget {
           const SizedBox(height: 12),
           _InfoRow(label: 'Type', value: payment.type),
           _InfoRow(label: 'Meter', value: payment.meterNumber),
-          _InfoRow(
-            label: 'Amount',
-            value: '₦${payment.amount.toStringAsFixed(2)}',
-          ),
+          _InfoRow(label: 'Amount', value: '₦${payment.amount.toStringAsFixed(2)}'),
           _InfoRow(label: 'Duration', value: payment.duration),
           const SizedBox(height: 12),
           if (payment.nextPaymentDate != null)
             Text(
               'Next Payment: ${DateFormat('MMM dd, yyyy').format(payment.nextPaymentDate!)}',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
             ),
-          if (payment.paymentsRemaining != null &&
-              payment.paymentsRemaining! > 0)
+          if (payment.paymentsRemaining != null && payment.paymentsRemaining! > 0)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 'Payments remaining: ${payment.paymentsRemaining}',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
               ),
             ),
           const SizedBox(height: 12),
@@ -185,9 +169,7 @@ class RecurringPaymentCard extends StatelessWidget {
                   },
                   style: TextButton.styleFrom(
                     side: const BorderSide(color: AppColors.border),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                   child: const Text('Edit'),
                 ),
@@ -200,15 +182,11 @@ class RecurringPaymentCard extends StatelessWidget {
                   },
                   style: TextButton.styleFrom(
                     side: const BorderSide(color: AppColors.error),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                   child: Text(
                     'Delete',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.error,
-                    ),
+                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
                   ),
                 ),
               ),
@@ -233,12 +211,7 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
+          Text(label, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
           Text(value, style: AppTextStyles.bodyMedium),
         ],
       ),

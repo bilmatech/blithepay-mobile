@@ -1,38 +1,19 @@
 import 'dart:io';
-
-import 'package:blithepay/core/storage/auth_local_storage.dart';
-import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
-import 'package:blithepay/shared/widgets/index.dart';
-import 'package:blithepay/shared/widgets/layouts/app_text.dart';
-import 'package:country_picker/country_picker.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import '../bloc/profile_bloc.dart';
 import '../bloc/profile_event.dart';
 import '../bloc/profile_state.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_text_styles.dart';
-
-import 'dart:io';
-
-import 'package:blithepay/core/storage/auth_local_storage.dart';
-import 'package:blithepay/shared/layouts/app_scaffold.dart';
-import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
-import 'package:blithepay/shared/widgets/index.dart';
-import 'package:blithepay/shared/widgets/layouts/app_text.dart';
-import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import '../bloc/profile_bloc.dart';
-import '../bloc/profile_event.dart';
-import '../bloc/profile_state.dart';
+import 'package:country_picker/country_picker.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'package:blithepay/shared/widgets/index.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import 'package:blithepay/shared/layouts/app_scaffold.dart';
+import 'package:blithepay/core/storage/auth_local_storage.dart';
+import 'package:blithepay/shared/widgets/layouts/app_text.dart';
+import 'package:blithepay/shared/widgets/buttons/arrow_button_icon.dart';
 
 class ProfileDetailView extends StatefulWidget {
   const ProfileDetailView({super.key});
@@ -70,8 +51,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
 
   void _checkForChanges() {
     final changed =
-        nameController.text.trim() != _initialName ||
-        phoneController.text.trim() != _initialPhone;
+        nameController.text.trim() != _initialName || phoneController.text.trim() != _initialPhone;
 
     if (changed != _hasFormChanges) {
       setState(() => _hasFormChanges = changed);
@@ -83,9 +63,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
     if (!mounted || session?.user == null) return;
 
     setState(() {
-      _initialName =
-          '${session!.user!.firstName ?? ''} ${session.user!.lastName ?? ''}'
-              .trim();
+      _initialName = '${session!.user!.firstName ?? ''} ${session.user!.lastName ?? ''}'.trim();
       _initialPhone = session.user!.phone ?? '';
 
       nameController.text = _initialName;
@@ -93,8 +71,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
       emailController.text = session.user!.email ?? '';
       print(session.user!.profileImage);
       // Map picture from local session immediately on screen boot
-      if (session.user!.profileImage != null &&
-          session.user!.profileImage!.isNotEmpty) {
+      if (session.user!.profileImage != null && session.user!.profileImage!.isNotEmpty) {
         _profileImageUrl = session.user!.profileImage!;
       }
     });
@@ -130,8 +107,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
         if (state is ProfileLoaded) {
           setState(() {
             // Update the single source of truth URL from server map payload
-            if (state.profile['picture'] != null &&
-                state.profile['picture']!.isNotEmpty) {
+            if (state.profile['picture'] != null && state.profile['picture']!.isNotEmpty) {
               _profileImageUrl = state.profile['picture']!;
             }
 
@@ -143,8 +119,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
               nameController.text = _initialName;
               phoneController.text = _initialPhone;
             }
-            emailController.text =
-                state.profile['email'] ?? emailController.text;
+            emailController.text = state.profile['email'] ?? emailController.text;
 
             // Image uploaded completely, clear the local file indicator track
             _selectedImageFile = null;
@@ -160,9 +135,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
           );
         }
         if (state is ProfileError) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
         }
       },
       builder: (context, state) {
@@ -170,9 +143,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
 
         // Show shimmer only if we have absolute zero data loaded anywhere yet
         final isInitialLoad =
-            state is ProfileLoading &&
-            nameController.text.isEmpty &&
-            _profileImageUrl.isEmpty;
+            state is ProfileLoading && nameController.text.isEmpty && _profileImageUrl.isEmpty;
 
         if (isInitialLoad) {
           return const AppScaffold(body: ShimmerProfileLoader());
@@ -210,10 +181,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                         },
                         child: const Text(
                           'Save',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
+                          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
                         ),
                       ),
             ],
@@ -250,7 +218,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                                   color: Colors.black.withValues(alpha: 0.04),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
-                                )
+                                ),
                               ],
                               border: Border.all(
                                 color: isSubmitting
@@ -261,26 +229,19 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                             ),
                             child: _selectedImageFile != null
                                 ? ClipOval(
-                                    child: Image.file(
-                                      _selectedImageFile!,
-                                      fit: BoxFit.cover,
-                                    ),
+                                    child: Image.file(_selectedImageFile!, fit: BoxFit.cover),
                                   )
                                 : _profileImageUrl.isNotEmpty
                                 ? ClipOval(
                                     child: Image.network(
                                       _profileImageUrl,
                                       fit: BoxFit.cover,
-                                      key: ValueKey(
-                                        _profileImageUrl,
+                                      key: ValueKey(_profileImageUrl),
+                                      errorBuilder: (context, error, stackTrace) => const Icon(
+                                        Icons.person_rounded,
+                                        size: 44,
+                                        color: AppColors.primary,
                                       ),
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              const Icon(
-                                                Icons.person_rounded,
-                                                size: 44,
-                                                color: AppColors.primary,
-                                              ),
                                     ),
                                   )
                                 : const Icon(
@@ -297,9 +258,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                             height: 98,
                             child: CircularProgressIndicator(
                               strokeWidth: 3,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.primary,
-                              ),
+                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                             ),
                           ),
 
@@ -313,11 +272,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                                 shape: BoxShape.circle,
                                 color: AppColors.primary,
                               ),
-                              child: const Icon(
-                                Icons.camera_alt,
-                                size: 14,
-                                color: AppColors.white,
-                              ),
+                              child: const Icon(Icons.camera_alt, size: 14, color: AppColors.white),
                             ),
                           ),
                       ],
@@ -354,32 +309,18 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const SizedBox(width: 12),
-                        Text(
-                          _selectedCountry.flagEmoji,
-                          style: const TextStyle(fontSize: 18),
-                        ),
+                        Text(_selectedCountry.flagEmoji, style: const TextStyle(fontSize: 18)),
                         const SizedBox(width: 6),
-                        Text(
-                          '+${_selectedCountry.phoneCode}',
-                          style: AppTextStyles.bodyRegular,
-                        ),
+                        Text('+${_selectedCountry.phoneCode}', style: AppTextStyles.bodyRegular),
                         const SizedBox(width: 8),
-                        Container(
-                          height: 24,
-                          width: 1,
-                          color: AppColors.textTertiary,
-                        ),
+                        Container(height: 24, width: 1, color: AppColors.textTertiary),
                         const SizedBox(width: 8),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                AppTextField(
-                  label: 'Email',
-                  controller: emailController,
-                  enabled: false,
-                ),
+                AppTextField(label: 'Email', controller: emailController, enabled: false),
               ],
             ),
           ),
@@ -390,10 +331,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
 
   void _pickProfileImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80,
-    );
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
 
     if (image != null) {
       setState(() => _selectedImageFile = File(image.path));

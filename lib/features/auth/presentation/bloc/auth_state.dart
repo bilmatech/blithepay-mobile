@@ -1,6 +1,6 @@
-import 'package:blithepay/features/auth/presentation/bloc/auth_event.dart';
 import 'package:equatable/equatable.dart';
 import '../../data/models/auth_response_model.dart';
+import 'package:blithepay/features/auth/presentation/bloc/auth_event.dart';
 
 class AuthState extends Equatable {
   final AuthStatus status;
@@ -72,6 +72,22 @@ class AuthState extends Equatable {
       token = null,
       loadingType = LoadingType.none;
 
+  const AuthState.pinResetInitiated()
+    : status = AuthStatus.pinResetInitiated,
+      authResponse = null,
+      errorMessage = null,
+      signupResponse = null,
+      token = null,
+      loadingType = LoadingType.none;
+
+  const AuthState.pinResetSuccess()
+    : status = AuthStatus.pinResetSuccess,
+      authResponse = null,
+      errorMessage = null,
+      signupResponse = null,
+      token = null,
+      loadingType = LoadingType.none;
+
   const AuthState.passwordReset()
     : status = AuthStatus.passwordReset,
       authResponse = null,
@@ -124,6 +140,8 @@ enum AuthStatus {
   otpSent,
   otpVerified,
   pinSetup,
+  pinResetInitiated,
+  pinResetSuccess,
   passwordReset,
   error,
 }
